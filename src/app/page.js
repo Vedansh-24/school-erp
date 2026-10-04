@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase'; // 👈 पाथ सही कर दिया गया है
+import { supabase } from '@/lib/supabase'; // 👈 Path sahi kar diya gaya hai
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,7 +33,7 @@ export default function LoginPage() {
         localStorage.setItem('userRole', 'super_admin');
         router.push('/super-admin-dashboard'); 
       } else {
-        alert('गलत Super Admin Credentials! (Demo ID: ADMIN-101 या BHKA-101 / Pass: 123456)');
+        alert('Galat Super Admin Credentials! (Demo ID: ADMIN-101 ya BHKA-101 / Pass: 123456)');
       }
       return;
     }
@@ -48,17 +48,17 @@ export default function LoginPage() {
           .single();
 
         if (error || !school) {
-          alert('गलत Username या यह स्कूल रजिस्टर नहीं है!');
+          alert('Galat Username ya yah school register nahi hai!');
           return;
         }
 
         if (school.password !== password) {
-          alert('गलत Password!');
+          alert('Galat Password!');
           return;
         }
 
         if (school.status !== 'approved') {
-          alert('⚠️ आपका स्कूल रजिस्ट्रेशन अभी पेंडिंग (Pending) है या रिजेक्ट हो गया है। कृपया Super Admin के अप्रूवल का इंतज़ार करें।');
+          alert('⚠️ Aapka school registration abhi pending hai ya reject ho gaya hai. Kripya Super Admin ke approval ka intezaar kare.');
           return;
         }
 
@@ -72,21 +72,56 @@ export default function LoginPage() {
       return;
     }
 
-    // 👨‍💼 Staff & Parents Demo Login
-    if (username === 'BHKA-101' && password === '123456') {
-      if (selectedRole === 'Staff Dashboard') {
+    // 👨‍💼 3. Staff Dashboard Login (Database Verified from staff table using username & password columns)
+    if (selectedRole === 'Staff Dashboard') {
+      try {
+        const { data: staffData, error: staffError } = await supabase
+          .from('staff')
+          .select('*')
+          .eq('username', username)
+          .eq('password', password)
+          .single();
+
+        if (staffError || !staffData) {
+          alert('Galat Staff Username ya Password hai! Kripya dobara koshish kare.');
+          return;
+        }
+
         localStorage.setItem('userRole', 'staff');
+        localStorage.setItem('staffInfo', JSON.stringify(staffData));
         router.push('/staff-dashboard');
-      } else if (selectedRole === 'Parents Dashboard') {
-        localStorage.setItem('userRole', 'parent');
-        router.push('/parents-dashboard');
+      } catch (err) {
+        alert('Staff Login Error: ' + err.message);
       }
-    } else {
-      alert('गलत ID या Password!');
+      return;
+    }
+
+    // 👨‍👩‍👧 4. Parents Dashboard Login (Database Verified from parent_credentials table using portal_login_id & password)
+    if (selectedRole === 'Parents Dashboard') {
+      try {
+        const { data: parentData, error: parentError } = await supabase
+          .from('parent_credentials')
+          .select('*')
+          .eq('portal_login_id', username)
+          .eq('password', password)
+          .single();
+
+        if (parentError || !parentData) {
+          alert('Galat Parents Portal Login ID ya Password hai! Kripya dobara koshish kare.');
+          return;
+        }
+
+        localStorage.setItem('userRole', 'parent');
+        localStorage.setItem('parentInfo', JSON.stringify(parentData));
+        router.push('/parents-dashboard');
+      } catch (err) {
+        alert('Parents Login Error: ' + err.message);
+      }
+      return;
     }
   };
 
-  // 🚀 Supabase में Username और Password के साथ Data Save करने का Logic
+  // 🚀 Supabase me Username aur Password ke sath Data Save karne ka Logic
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -94,7 +129,7 @@ export default function LoginPage() {
     try {
       let uploadedLogoUrl = null;
 
-      // 1. अगर लोगो अपलोड किया है तो Storage Bucket में सेव करें
+      // 1. Agar logo upload kiya hai to Storage Bucket me save kare
       if (logoFile) {
         const fileExt = logoFile.name.split('.').pop();
         const fileName = `${Date.now()}_${regData.schoolCode}.${fileExt}`;
@@ -114,7 +149,7 @@ export default function LoginPage() {
         }
       }
 
-      // 2. Supabase की 'schools' टेबल में Username और Password के साथ डाटा सेव करें
+      // 2. Supabase ki 'schools' table me Username aur Password ke sath data save kare
       const { error: insertError } = await supabase
         .from('schools')
         .insert([
@@ -124,15 +159,15 @@ export default function LoginPage() {
             address: regData.schoolAddress,
             phone: regData.contactNumber,
             logo_url: uploadedLogoUrl,
-            username: regData.username,    // 👈 अब यहाँ सेव होगा
-            password: regData.password,    // 👈 अब यहाँ सेव होगा
+            username: regData.username,
+            password: regData.password,
             status: 'pending'
           }
         ]);
 
       if (insertError) throw insertError;
 
-      alert(`स्कूल "${regData.schoolName}" का रजिस्ट्रेशन सफ़लतापूर्वक सबमिट हो गया है! (Approval Pending)`);
+      alert(`School "${regData.schoolName}" ka registration safaltapoorvak submit ho gaya hai! (Approval Pending)`);
       setIsRegisterOpen(false);
       setLogoFile(null);
     } catch (err) {
@@ -214,7 +249,7 @@ export default function LoginPage() {
                 <option value="School Dashboard">🏫 School Admin Dashboard</option>
                 <option value="Super Admin Dashboard">👑 Super Admin Dashboard</option>
                 <option value="Staff Dashboard">👨‍💼 Staff Dashboard</option>
-                <option value="Parents Dashboard">👨‍👩‍👧 Parents Dashboard</option>
+                <option value="Parents Dashboard">👨‍👩‍‍👧 Parents Dashboard</option>
               </select>
 
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-500">
@@ -406,7 +441,6 @@ export default function LoginPage() {
                   placeholder="e.g. bhka-101 (No spaces)"
                   value={regData.username}
                   className="w-full px-3 py-2.5 rounded-xl text-xs text-slate-900 bg-white/90 border-2 border-cyan-300/80 outline-none font-bold shadow-sm focus:border-cyan-400 focus:bg-white transition-all"
-                  // 👇 यह ऑटोमैटिक स्पेस हटा देगा और छोटे अक्षर कर देगा
                   onChange={(e) => setRegData({ ...regData, username: e.target.value.toLowerCase().replace(/\s+/g, '') })}
                 />
               </div>

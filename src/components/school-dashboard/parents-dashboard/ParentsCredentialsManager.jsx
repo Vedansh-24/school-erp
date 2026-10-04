@@ -51,18 +51,29 @@ export default function ParentsPortalCredentialsManager() {
         const { data: credsData, error: credsError } = await supabase.from('parent_credentials').select('*');
         if (credsError) throw credsError;
 
-        // Map credentials with respective students
+        // Map credentials with respective students based on Student ID (if present) else SR No
         const mergedData = studentsData.map((st) => {
-          const cred = credsData?.find((c) => String(c.student_id) === String(st.id) || String(c.student_id) === String(st.student_id));
+          const hasStudentId = st.student_id && String(st.student_id).trim() !== '';
+          const activeIdentifier = hasStudentId ? st.student_id : st.sr_no;
+
+          // Find credential matching student_id or sr_no
+          const cred = credsData?.find((c) => 
+            String(c.student_id) === String(st.id) || 
+            String(c.student_id) === String(activeIdentifier) ||
+            String(c.student_id) === String(st.student_id) ||
+            String(c.student_id) === String(st.sr_no) ||
+            String(c.sr_no) === String(st.sr_no)
+          );
+
           return {
             id: st.id,
-            student_id: st.student_id,
-            srNo: st.sr_no || st.student_id || 'N/A',
+            student_id: st.student_id || '',
+            srNo: st.sr_no || 'N/A',
             name: st.student_full_name || 'Unknown',
             className: st.class_name || 'Unassigned',
             fatherName: st.father_name || 'N/A',
             mobile: st.mobile_number || st.whatsapp_number || 'N/A',
-            loginId: cred ? cred.portal_login_id : (st.sr_no || st.student_id || ''),
+            loginId: cred ? cred.portal_login_id : (activeIdentifier || ''),
             password: cred ? cred.password : '123456',
             credId: cred ? cred.id : null,
           };
@@ -90,14 +101,20 @@ export default function ParentsPortalCredentialsManager() {
     );
   };
 
-  // Save Handler - Updates or Inserts into parent_credentials table
+  // Save Handler - Includes sr_no and student_id to satisfy database constraints
   const handleSave = async (student) => {
     try {
+      const targetIdentifier = (student.student_id && String(student.student_id).trim() !== '') 
+        ? student.student_id 
+        : student.srNo;
+
       if (student.credId) {
         // Update existing record
         const { error } = await supabase
           .from('parent_credentials')
           .update({
+            student_id: targetIdentifier,
+            sr_no: student.srNo,
             portal_login_id: student.loginId,
             password: student.password,
             updated_at: new Date()
@@ -106,12 +123,13 @@ export default function ParentsPortalCredentialsManager() {
 
         if (error) throw error;
       } else {
-        // Insert new record if not exists
+        // Insert new record passing both sr_no and student_id
         const { data, error } = await supabase
           .from('parent_credentials')
           .insert([
             {
-              student_id: student.id,
+              student_id: student.student_id || null,
+              sr_no: student.srNo,
               portal_login_id: student.loginId,
               password: student.password
             }
@@ -213,7 +231,7 @@ export default function ParentsPortalCredentialsManager() {
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
               <tr className="bg-slate-100 text-slate-700 text-[11px] font-black uppercase tracking-wider border-b-2 border-slate-200">
-                <th className="p-4 pl-6">SR No</th>
+                <th className="p-4 pl-6">SR No / ID</th>
                 <th className="p-4">Student Name & Class</th>
                 <th className="p-4">Father Name</th>
                 <th className="p-4 text-center">Mobile No.</th>
@@ -236,7 +254,12 @@ export default function ParentsPortalCredentialsManager() {
                 students.map((student) => (
                   <tr key={student.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="p-4 pl-6 text-sm font-bold text-slate-600">
-                      {student.srNo}
+                      <div className="flex flex-col">
+                        <span>SR: {student.srNo}</span>
+                        {student.student_id && (
+                          <span className="text-[11px] font-extrabold text-emerald-600">ID: {student.student_id}</span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col">
