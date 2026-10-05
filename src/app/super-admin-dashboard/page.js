@@ -288,42 +288,83 @@ export default function SuperAdminDashboard() {
   );
 }
 
-// --- Question Approvals Manager Component connected with 'question_bank' table ---
+// --- Question Approvals Manager Component with 5 Advanced Filters ---
 const QuestionApprovalsManager = () => {
-  const [questions, setQuestions] = useState([]);
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchPendingQuestions();
-  }, []);
+  // Filter States
+  const [selectedClass, setSelectedClass] = useState('all');
+  const [selectedSubject, setSelectedSubject] = useState('all');
+  const [selectedBook, setSelectedBook] = useState('all');
+  const [selectedChapter, setSelectedChapter] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
 
   const fetchPendingQuestions = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('question_bank') // 👈 Connected to question_bank table
+        .from('question_bank')
         .select('*')
         .eq('status', 'pending');
 
       if (error) throw error;
-      setQuestions(data || []);
+      setAllQuestions(data || []);
+      setFilteredQuestions(data || []);
     } catch (err) {
       console.error('Error fetching questions:', err.message);
-      setQuestions([]);
+      setAllQuestions([]);
+      setFilteredQuestions([]);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchPendingQuestions();
+  }, []);
+
+  // Extract unique options dynamically for dropdowns from pending data
+  const classList = [...new Set(allQuestions.map(q => q.class || q.class_name).filter(Boolean))];
+  const subjectList = [...new Set(allQuestions.map(q => q.subject || q.subject_name).filter(Boolean))];
+  const bookList = [...new Set(allQuestions.map(q => q.book || q.book_name).filter(Boolean))];
+  const chapterList = [...new Set(allQuestions.map(q => q.chapter || q.chapter_name).filter(Boolean))];
+  const typeList = [...new Set(allQuestions.map(q => q.question_type || q.type).filter(Boolean))];
+
+  // Filter logic based on 5 selected parameters
+  useEffect(() => {
+    let result = [...allQuestions];
+
+    if (selectedClass !== 'all') {
+      result = result.filter(q => (q.class || q.class_name) === selectedClass);
+    }
+    if (selectedSubject !== 'all') {
+      result = result.filter(q => (q.subject || q.subject_name) === selectedSubject);
+    }
+    if (selectedBook !== 'all') {
+      result = result.filter(q => (q.book || q.book_name) === selectedBook);
+    }
+    if (selectedChapter !== 'all') {
+      result = result.filter(q => (q.chapter || q.chapter_name) === selectedChapter);
+    }
+    if (selectedType !== 'all') {
+      result = result.filter(q => (q.question_type || q.type) === selectedType);
+    }
+
+    setFilteredQuestions(result);
+  }, [selectedClass, selectedSubject, selectedBook, selectedChapter, selectedType, allQuestions]);
+
   const handleAction = async (id, status) => {
     try {
       const { error } = await supabase
-        .from('question_bank') // 👈 Connected to question_bank table
+        .from('question_bank')
         .update({ status: status })
         .eq('id', id);
 
       if (error) throw error;
-      setQuestions(questions.filter(q => q.id !== id));
+      const updated = allQuestions.filter(q => q.id !== id);
+      setAllQuestions(updated);
     } catch (err) {
       alert('Error updating question status: ' + err.message);
     }
@@ -339,7 +380,7 @@ const QuestionApprovalsManager = () => {
             </div>
             <div>
               <h2 className="text-lg font-black text-[#1B3A6B]">Question Bank Approvals</h2>
-              <p className="text-xs text-slate-500 font-bold">Review and approve or reject questions submitted by schools.</p>
+              <p className="text-xs text-slate-500 font-bold">Review and approve or filter questions submitted by schools.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -350,25 +391,120 @@ const QuestionApprovalsManager = () => {
               🔄 Refresh
             </button>
             <span className="bg-[#FFD400]/20 text-[#1A2332] text-xs font-extrabold px-3 py-1 rounded-full border border-[#FFD400]">
-              {questions.length} Pending
+              {filteredQuestions.length} Pending Records Found
             </span>
+          </div>
+        </div>
+
+        {/* 🔍 5 Advanced Filter Dropdowns Section (Class, Subject, Book, Chapter, Type) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 bg-[#F5F7FA] p-4 rounded-xl border border-slate-200 mb-6 shadow-sm">
+          {/* Class Filter */}
+          <div>
+            <label className="block text-[11px] font-black text-[#1B3A6B] mb-1">Filter by Class</label>
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-semibold text-[#1A2332] outline-none focus:border-[#00AEEF]"
+            >
+              <option value="all">All Classes</option>
+              {classList.map((cls, idx) => (
+                <option key={idx} value={cls}>{cls}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Subject Filter */}
+          <div>
+            <label className="block text-[11px] font-black text-[#1B3A6B] mb-1">Filter by Subject</label>
+            <select
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+              className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-semibold text-[#1A2332] outline-none focus:border-[#00AEEF]"
+            >
+              <option value="all">All Subjects</option>
+              {subjectList.map((sub, idx) => (
+                <option key={idx} value={sub}>{sub}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Book Filter */}
+          <div>
+            <label className="block text-[11px] font-black text-[#1B3A6B] mb-1">Filter by Book</label>
+            <select
+              value={selectedBook}
+              onChange={(e) => setSelectedBook(e.target.value)}
+              className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-semibold text-[#1A2332] outline-none focus:border-[#00AEEF]"
+            >
+              <option value="all">All Books</option>
+              {bookList.map((bk, idx) => (
+                <option key={idx} value={bk}>{bk}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Chapter Filter */}
+          <div>
+            <label className="block text-[11px] font-black text-[#1B3A6B] mb-1">Filter by Chapter</label>
+            <select
+              value={selectedChapter}
+              onChange={(e) => setSelectedChapter(e.target.value)}
+              className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-semibold text-[#1A2332] outline-none focus:border-[#00AEEF]"
+            >
+              <option value="all">All Chapters</option>
+              {chapterList.map((ch, idx) => (
+                <option key={idx} value={ch}>{ch}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Question Type Filter */}
+          <div>
+            <label className="block text-[11px] font-black text-[#1B3A6B] mb-1">Filter by Type</label>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="w-full bg-white border border-[#CBD5E1] rounded-lg px-3 py-2 text-xs font-semibold text-[#1A2332] outline-none focus:border-[#00AEEF]"
+            >
+              <option value="all">All Question Types</option>
+              {typeList.map((tp, idx) => (
+                <option key={idx} value={tp}>{tp}</option>
+              ))}
+            </select>
           </div>
         </div>
 
         {loading ? (
           <p className="text-center py-8 font-bold text-slate-500 text-xs">Loading pending questions...</p>
-        ) : questions.length === 0 ? (
+        ) : filteredQuestions.length === 0 ? (
           <div className="py-6 bg-[#F5F7FA] rounded-xl text-center border border-dashed border-slate-300">
-            <p className="text-xs font-bold text-slate-500">🎉 No pending question approvals right now! All caught up.</p>
+            <p className="text-xs font-bold text-slate-500">🎉 No pending questions found matching this filter criteria.</p>
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {questions.map((q) => (
+            {filteredQuestions.map((q) => (
               <div key={q.id} className="p-4 rounded-xl bg-white border-2 border-slate-200 hover:border-[#00AEEF] transition-all shadow-sm flex flex-col justify-between">
                 <div className="space-y-2">
-                  <span className="text-[11px] font-extrabold px-2.5 py-1 bg-purple-100 text-purple-700 rounded-md uppercase inline-block">
-                    {q.subject || 'General'} • {q.class || 'N/A'}
-                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-md uppercase inline-block">
+                      {q.subject || q.subject_name || 'General'} • {q.class || q.class_name || 'N/A'}
+                    </span>
+                    {(q.book || q.book_name) && (
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md uppercase inline-block">
+                        {q.book || q.book_name}
+                      </span>
+                    )}
+                    {(q.chapter || q.chapter_name) && (
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-md uppercase inline-block">
+                        {q.chapter || q.chapter_name}
+                      </span>
+                    )}
+                    {(q.question_type || q.type) && (
+                      <span className="text-[10px] font-extrabold px-2 py-0.5 bg-amber-100 text-amber-800 rounded-md uppercase inline-block">
+                        {q.question_type || q.type}
+                      </span>
+                    )}
+                  </div>
                   <p className="font-extrabold text-sm text-[#1A2332] mt-2">{q.question_text || q.text}</p>
                   <p className="text-[11px] font-bold text-slate-500 mt-1">Submitted by: {q.school_name || 'Unknown School'}</p>
                 </div>
