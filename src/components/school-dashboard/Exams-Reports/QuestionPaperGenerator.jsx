@@ -431,7 +431,7 @@ export default function QuestionPaperGenerator() {
       const currentCount = selectedQuestionsObjects.filter(item => item.question_type === q.question_type).length;
       const maxAllowed = getMaxQtyForType(q.question_type);
       if (currentCount >= maxAllowed) {
-        alert(`Aap ${q.question_type} keval ${maxAllowed} hi select kar sakte hain! Kripya pehle koi dusra select kiya ہوا question uncheck karein.`);
+        alert(`Aap ${q.question_type} keval ${maxAllowed} hi select kar sakte hain! Kripya pehle koi dusra select kiya huva question uncheck karein.`);
         return;
       }
       setSelectedManualQuestions(prev => [...prev, q.id]);
@@ -519,7 +519,6 @@ export default function QuestionPaperGenerator() {
         option_c: q.option_c || null,
         option_d: q.option_d || null,
         correct_answer: q.correct_answer || null,
-        answer_text: q.answer_text || null,
         marks: q.marks || q.max_marks || 1,
         medium: bulkMedium,
         is_global: false,
@@ -1597,7 +1596,7 @@ export default function QuestionPaperGenerator() {
 
                     {filteredManualQuestions.length === 0 ? (
                       <div className="text-center text-gray-400 py-10 text-sm font-medium">
-                        Is book, chapter ya question type ke anusaار koi question nahi mila. Upar dropdown se dusri book/chapter select karein!
+                        Is book, chapter ya question type ke anusaar koi question nahi mila. Upar dropdown se dusri book/chapter select karein!
                       </div>
                     ) : (
                       <div className="overflow-x-auto border border-gray-200 rounded-xl">
@@ -1839,10 +1838,10 @@ export default function QuestionPaperGenerator() {
                   <button 
                     onClick={handleGeneratePaper}
                     disabled={isGenerating}
-                    className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white font-extrabold py-4 rounded-2xl flex items-center justify-center gap-3 border-b-8 border-indigo-950 active:border-b-0 active:translate-y-2 transition-all uppercase tracking-wider shadow-2xl text-base ring-2 ring-blue-300 cursor-pointer disabled:opacity-50"
+                    className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 hover:from-blue-700 hover:to-purple-800 text-white font-extrabold py-4 rounded-2xl flex items-center justify-center gap-3 border-b-8 border-indigo-950 active:border-b-0 active:translate-y-2 transition-all uppercase tracking-wider shadow-2xl text-base ring-4 ring-blue-300 cursor-pointer disabled:opacity-50"
                   >
-                    <Zap size={22} className="text-[#FFC107] animate-pulse" fill="currentColor" /> 
-                    {isGenerating ? 'Fetching Questions from Database...' : `Generate Detailed Test Paper (Max Marks: ${totalGenerateMaxMarks})`}
+                    {isGenerating ? <Loader2 className="animate-spin" size={22} /> : <Zap size={22} className="text-yellow-300" />} 
+                    Generate Question Paper ({totalGenerateMaxMarks} Marks)
                   </button>
                 </div>
               )}
