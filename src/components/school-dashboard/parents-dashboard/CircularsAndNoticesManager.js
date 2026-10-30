@@ -13,7 +13,11 @@ export default function CircularsAndNoticesManager() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [notices, setNotices] = useState([]);
+
+  // Attachment State
+  const [selectedFile, setSelectedFile] = useState(null);
 
   // Form State for New Notice Modal
   const [newNotice, setNewNotice] = useState({
@@ -60,7 +64,29 @@ export default function CircularsAndNoticesManager() {
     fetchNotices();
   }, []);
 
-  // Handle Publish Notice Insert to Supabase
+  // Handle File Select
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size 5MB se zyada nahi honi chahiye!');
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  // Helper to convert file to Base64 data URL as reliable fallback
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Handle Publish Notice Insert to Supabase with File Upload
   const handlePublish = async (e) => {
     e.preventDefault();
     if (!newNotice.title || !newNotice.description) {
@@ -68,7 +94,34 @@ export default function CircularsAndNoticesManager() {
       return;
     }
 
+    setUploading(true);
+    let uploadedFileUrl = '';
+    let hasFile = false;
+
     try {
+      if (selectedFile) {
+        hasFile = true;
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `notices/${fileName}`;
+
+        const { error: uploadErr } = await supabase.storage
+          .from('notice_attachments')
+          .upload(filePath, selectedFile);
+
+        if (uploadErr) {
+          console.warn('Storage bucket note, using base64 fallback:', uploadErr.message);
+          // Convert to Base64 so it opens perfectly without 404 error
+          uploadedFileUrl = await convertFileToBase64(selectedFile);
+        } else {
+          const { data: publicUrlData } = supabase.storage
+            .from('notice_attachments')
+            .getPublicUrl(filePath);
+          uploadedFileUrl = publicUrlData?.publicUrl || filePath;
+        }
+      }
+
+      // Insert Notice into Database Table
       const { error } = await supabase
         .from('circulars_and_notices')
         .insert([{
@@ -79,13 +132,15 @@ export default function CircularsAndNoticesManager() {
           audience: newNotice.audience,
           priority: newNotice.priority,
           session: newNotice.session,
-          has_attachment: false
+          has_attachment: hasFile,
+          attachment_url: uploadedFileUrl
         }]);
 
       if (error) throw error;
 
       alert('Notice successfully publish ho gaya hai!');
       setIsModalOpen(false);
+      setSelectedFile(null);
       setNewNotice({
         title: '',
         category: 'Academic',
@@ -98,6 +153,8 @@ export default function CircularsAndNoticesManager() {
       fetchNotices();
     } catch (err) {
       alert('Error publishing notice: ' + err.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -120,7 +177,6 @@ export default function CircularsAndNoticesManager() {
 
   const categories = ['All', 'Academic', 'Holiday', 'Fee & Dues', 'General'];
 
-  // Alag-Alag Colors Ke 3D Gradient Styles Har Category Ke Liye
   const categoryStyles = {
     'All': {
       active: 'bg-gradient-to-r from-slate-800 via-slate-900 to-black text-white border-t border-slate-500 border-b-[5px] border-slate-950 shadow-lg active:translate-y-1 active:border-b-[1px] active:shadow-none',
@@ -162,7 +218,6 @@ export default function CircularsAndNoticesManager() {
   return (
     <div className="space-y-6 animate-in fade-in zoom-in duration-300">
       
-      {/* 🚀 Header & Controls Section */}
       <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 p-6 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center gap-4 text-white border border-indigo-400/30">
         <div className="flex items-center gap-4">
           <div className="w-13 h-13 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner p-3">
@@ -175,7 +230,6 @@ export default function CircularsAndNoticesManager() {
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
-          {/* Search Bar */}
           <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
@@ -187,7 +241,6 @@ export default function CircularsAndNoticesManager() {
             />
           </div>
 
-          {/* 🌊 3D Ubhra Hua & Dabne Wala Aasmani (Sky Blue) Gradient Button */}
           <button 
             onClick={() => setIsModalOpen(true)}
             className="flex items-center gap-2 bg-gradient-to-r from-sky-400 via-cyan-500 to-blue-600 hover:from-sky-300 hover:to-blue-700 text-white px-6 py-2.5 rounded-xl font-black text-sm tracking-wide uppercase transition-all duration-150 border-t border-sky-200/80 border-b-[5px] border-blue-950 shadow-[0_0_20px_rgba(56,189,248,0.45)] active:translate-y-1 active:border-b-[1px] active:shadow-none whitespace-nowrap cursor-pointer transform hover:scale-[1.01]"
@@ -197,7 +250,6 @@ export default function CircularsAndNoticesManager() {
         </div>
       </div>
 
-      {/* 🏷️ 3D Ubhre Hue Aur Dabne Wale Color Gradient Filters */}
       <div className="flex flex-wrap gap-3">
         {categories.map((cat) => {
           const isSelected = activeFilter === cat;
@@ -217,7 +269,6 @@ export default function CircularsAndNoticesManager() {
         })}
       </div>
 
-      {/* 📋 Notices Grid */}
       {loading ? (
         <div className="py-20 flex justify-center items-center">
           <Loader2 className="animate-spin text-indigo-600" size={36} />
@@ -270,16 +321,25 @@ export default function CircularsAndNoticesManager() {
                   </div>
                 </div>
                 
-                {/* Card Footer */}
                 {notice.hasAttachment && (
                   <div className="bg-slate-50 px-5 py-3 border-t border-slate-100 flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                      <Paperclip size={16} className="text-slate-400" />
-                      <span>Attached Document</span>
+                      <Paperclip size={16} className="text-indigo-600" />
+                      <span>Attached Document (PDF/Image)</span>
                     </div>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-t border-indigo-300 border-b-[3px] border-indigo-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] transition-all cursor-pointer">
-                      <Download size={14} /> Download
-                    </button>
+                    {notice.attachmentUrl ? (
+                      <a 
+                        href={notice.attachmentUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        download
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-t border-indigo-300 border-b-[3px] border-indigo-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] transition-all cursor-pointer"
+                      >
+                        <Download size={14} /> View / Download
+                      </a>
+                    ) : (
+                      <span className="text-xs text-slate-400 font-semibold">No URL available</span>
+                    )}
                   </div>
                 )}
               </div>
@@ -294,7 +354,6 @@ export default function CircularsAndNoticesManager() {
         </div>
       )}
 
-      {/* 🚀 Create New Notice Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
@@ -303,7 +362,13 @@ export default function CircularsAndNoticesManager() {
               <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
                 <Plus className="text-indigo-600" /> Publish New Circular
               </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer">
+              <button 
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setSelectedFile(null);
+                }} 
+                className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+              >
                 <X size={24} />
               </button>
             </div>
@@ -363,7 +428,7 @@ export default function CircularsAndNoticesManager() {
                   <input 
                     type="text" 
                     value={newNotice.audience}
-                    onChange={(e) => setNewNotice({ ...newNotice, audience: e.target.value })}
+                    onChange={(e) => setNewNotice({ ...newNotice.audience, audience: e.target.value })}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:border-sky-500 outline-none" 
                     placeholder="e.g., All Students & Parents" 
                   />
@@ -381,27 +446,58 @@ export default function CircularsAndNoticesManager() {
                 ></textarea>
               </div>
 
-              <div className="p-4 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer group">
-                <Paperclip size={24} className="text-slate-400 group-hover:text-sky-500 mb-2" />
-                <p className="text-sm font-bold text-slate-700">Click to attach a file (PDF/Image)</p>
-                <p className="text-xs text-slate-500">Max size: 5MB</p>
+              <div className="relative p-4 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer group">
+                <input 
+                  type="file" 
+                  accept="application/pdf,image/*" 
+                  onChange={handleFileChange}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                />
+                
+                {selectedFile ? (
+                  <div className="flex items-center gap-3 bg-sky-50 border border-sky-200 px-4 py-2 rounded-xl text-sky-900 font-bold text-sm z-20">
+                    <FileText size={20} className="text-sky-600" />
+                    <span className="truncate max-w-[280px]">{selectedFile.name}</span>
+                    <span className="text-xs text-sky-500">({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                    <button 
+                      type="button" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedFile(null);
+                      }}
+                      className="ml-2 text-rose-500 hover:text-rose-700"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <Paperclip size={24} className="text-slate-400 group-hover:text-sky-500 mb-2" />
+                    <p className="text-sm font-bold text-slate-700">Click to attach a file (PDF/Image)</p>
+                    <p className="text-xs text-slate-500">Max size: 5MB</p>
+                  </>
+                )}
               </div>
             </div>
 
             <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
               <button 
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setSelectedFile(null);
+                }}
                 className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-200 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
 
-              {/* Modal 3D Sky-Blue Gradient Publish Button */}
               <button 
                 onClick={handlePublish}
-                className="bg-gradient-to-r from-sky-400 via-cyan-500 to-blue-600 hover:from-sky-300 hover:to-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-black border-t border-sky-200 border-b-[4px] border-blue-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-2 cursor-pointer"
+                disabled={uploading}
+                className="bg-gradient-to-r from-sky-400 via-cyan-500 to-blue-600 hover:from-sky-300 hover:to-blue-700 text-white px-6 py-2.5 rounded-xl text-sm font-black border-t border-sky-200 border-b-[4px] border-blue-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                Publish Notice
+                {uploading ? <Loader2 className="animate-spin" size={18} /> : null}
+                {uploading ? 'Publishing...' : 'Publish Notice'}
               </button>
             </div>
           </div>
