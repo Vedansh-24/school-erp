@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { 
   Bell, Calendar, Search, Plus, Paperclip, 
-  Trash2, Edit, AlertCircle, FileText, X, CheckCircle, Download, Loader2
+  Trash2, Edit, AlertCircle, FileText, X, CheckCircle, Download, Loader2, Eye
 } from 'lucide-react';
 
 export default function CircularsAndNoticesManager() {
@@ -16,8 +16,11 @@ export default function CircularsAndNoticesManager() {
   const [uploading, setUploading] = useState(false);
   const [notices, setNotices] = useState([]);
 
-  // Attachment State
+  // Attachment State for Form
   const [selectedFile, setSelectedFile] = useState(null);
+
+  // View Document Modal State
+  const [viewingNotice, setViewingNotice] = useState(null);
 
   // Form State for New Notice Modal
   const [newNotice, setNewNotice] = useState({
@@ -89,8 +92,8 @@ export default function CircularsAndNoticesManager() {
   // Handle Publish Notice Insert to Supabase with File Upload
   const handlePublish = async (e) => {
     e.preventDefault();
-    if (!newNotice.title || !newNotice.description) {
-      alert('Kripya Title aur Description zaroor bharein!');
+    if (!newNotice.title) {
+      alert('Kripya Notice Title zaroor bharein!');
       return;
     }
 
@@ -111,7 +114,6 @@ export default function CircularsAndNoticesManager() {
 
         if (uploadErr) {
           console.warn('Storage bucket note, using base64 fallback:', uploadErr.message);
-          // Convert to Base64 so it opens perfectly without 404 error
           uploadedFileUrl = await convertFileToBase64(selectedFile);
         } else {
           const { data: publicUrlData } = supabase.storage
@@ -121,12 +123,12 @@ export default function CircularsAndNoticesManager() {
         }
       }
 
-      // Insert Notice into Database Table
+      // Insert Notice into Database Table (Supports text only, file only, or both)
       const { error } = await supabase
         .from('circulars_and_notices')
         .insert([{
           title: newNotice.title,
-          description: newNotice.description,
+          description: newNotice.description || '',
           category: newNotice.category,
           notice_date: newNotice.date,
           audience: newNotice.audience,
@@ -299,9 +301,11 @@ export default function CircularsAndNoticesManager() {
                     {notice.title}
                   </h3>
                   
-                  <p className="text-slate-600 text-sm font-medium line-clamp-2 mb-4">
-                    {notice.description}
-                  </p>
+                  {notice.description && (
+                    <p className="text-slate-600 text-sm font-medium line-clamp-3 mb-4">
+                      {notice.description}
+                    </p>
+                  )}
 
                   <div className="flex items-center gap-4 text-xs font-bold text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100">
                     <div className="flex items-center gap-1.5">
@@ -328,15 +332,12 @@ export default function CircularsAndNoticesManager() {
                       <span>Attached Document (PDF/Image)</span>
                     </div>
                     {notice.attachmentUrl ? (
-                      <a 
-                        href={notice.attachmentUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        download
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-t border-indigo-300 border-b-[3px] border-indigo-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] transition-all cursor-pointer"
+                      <button 
+                        onClick={() => setViewingNotice(notice)}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-t border-indigo-300 border-b-[3px] border-indigo-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] transition-all cursor-pointer"
                       >
-                        <Download size={14} /> View / Download
-                      </a>
+                        <Eye size={14} /> View File
+                      </button>
                     ) : (
                       <span className="text-xs text-slate-400 font-semibold">No URL available</span>
                     )}
@@ -354,6 +355,64 @@ export default function CircularsAndNoticesManager() {
         </div>
       )}
 
+      {/* 👁️ View Document Popup Modal */}
+      {viewingNotice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-200">
+            
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 className="text-lg font-black text-slate-900">{viewingNotice.title}</h3>
+                <p className="text-xs text-slate-500 font-semibold">Document Preview & Download</p>
+              </div>
+              <button 
+                onClick={() => setViewingNotice(null)} 
+                className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 hover:bg-rose-100 hover:text-rose-600 transition-colors cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 bg-slate-100 p-4 overflow-auto flex items-center justify-center">
+              {viewingNotice.attachmentUrl.includes('.pdf') || viewingNotice.attachmentUrl.startsWith('data:application/pdf') ? (
+                <iframe 
+                  src={viewingNotice.attachmentUrl} 
+                  className="w-full h-full rounded-xl border border-slate-300 bg-white shadow-inner"
+                  title="PDF Viewer"
+                />
+              ) : (
+                <img 
+                  src={viewingNotice.attachmentUrl} 
+                  alt="Attachment Preview" 
+                  className="max-w-full max-h-full object-contain rounded-xl shadow-md border border-slate-300 bg-white" 
+                />
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-white">
+              <button 
+                onClick={() => setViewingNotice(null)}
+                className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 transition-colors cursor-pointer"
+              >
+                Cancel / Close
+              </button>
+
+              <a 
+                href={viewingNotice.attachmentUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                download
+                className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 hover:from-emerald-400 hover:to-teal-600 text-white px-6 py-2.5 rounded-xl text-sm font-black border-t border-emerald-300 border-b-[4px] border-emerald-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer"
+              >
+                <Download size={18} /> Download File
+              </a>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* 🚀 Create New Notice Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
@@ -376,7 +435,7 @@ export default function CircularsAndNoticesManager() {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-xs font-black text-slate-500 uppercase mb-1.5">Notice Title</label>
+                  <label className="block text-xs font-black text-slate-500 uppercase mb-1.5">Notice Title *</label>
                   <input 
                     type="text" 
                     value={newNotice.title}
@@ -428,7 +487,7 @@ export default function CircularsAndNoticesManager() {
                   <input 
                     type="text" 
                     value={newNotice.audience}
-                    onChange={(e) => setNewNotice({ ...newNotice.audience, audience: e.target.value })}
+                    onChange={(e) => setNewNotice({ ...newNotice, audience: e.target.value })}
                     className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:border-sky-500 outline-none" 
                     placeholder="e.g., All Students & Parents" 
                   />
@@ -436,9 +495,9 @@ export default function CircularsAndNoticesManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase mb-1.5">Detailed Description</label>
+                <label className="block text-xs font-black text-slate-500 uppercase mb-1.5">Detailed Description (Optional if File Attached)</label>
                 <textarea 
-                  rows="4" 
+                  rows="3" 
                   value={newNotice.description}
                   onChange={(e) => setNewNotice({ ...newNotice, description: e.target.value })}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:border-sky-500 outline-none resize-none" 
@@ -473,7 +532,7 @@ export default function CircularsAndNoticesManager() {
                 ) : (
                   <>
                     <Paperclip size={24} className="text-slate-400 group-hover:text-sky-500 mb-2" />
-                    <p className="text-sm font-bold text-slate-700">Click to attach a file (PDF/Image)</p>
+                    <p className="text-sm font-bold text-slate-700">Click to attach a file (PDF/Image) Optional</p>
                     <p className="text-xs text-slate-500">Max size: 5MB</p>
                   </>
                 )}
