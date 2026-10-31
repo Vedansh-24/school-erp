@@ -19,7 +19,7 @@ import FeeCollectionReceipt from '@/components/school-dashboard/FeeCollectionRec
 import StudentRegistration from '@/components/school-dashboard/studentHub/studentRegistration';
 import StudentsDirectory from '@/components/school-dashboard/studentHub/studentsDirectory';
 import PenaltyManager from '@/components/school-dashboard/PenaltyManager';
-import ParentsCommunication from '@/components/school-dashboard/ParentsCommunication';
+import ParentsCommunication from '@/components/school-dashboard/parents-dashboard/ParentsCommunication';
 import ExpensesLog from '@/components/school-dashboard/ExpensesLog';
 import StaffPayrollEngine from '@/components/school-dashboard/StaffPayrollEngine';
 import AttendanceHolidays from '@/components/school-dashboard/AttendanceHolidays';
@@ -131,7 +131,6 @@ export default function SchoolDashboard() {
     { name: 'Student Analytics & RTE', icon: IconChart },
     { name: 'Fee Collection & Receipt', icon: IconReceipt },
     { name: 'Penalty Manager', icon: IconAlert },
-    { name: 'Parents Communication', icon: IconMsg },
     { name: 'Expenses Log', icon: IconWallet },
     { name: 'Staff & Payroll Engine', icon: IconCheck },
     { name: 'Certificates & Cards ▾', icon: IconAward },
@@ -178,11 +177,12 @@ export default function SchoolDashboard() {
 
   const parentsDashboardSubTabMap = {
     'Parent Portal Overview': ParentsPortalOverview,
-    'Student Fee Payment History & Ledger': StudentFeePaymentHistoryAndLedger,
-    'Student Attendance & Remarks': StudentAttendanceAndRemarks,
-    'Circulars & Notices': CircularsAndNoticesManager,
-    'Credentials Manager': ParentsCredentialsManager,
     'Homework Manager': HomeworkPublisherManager,
+    'Student Attendance & Remarks': StudentAttendanceAndRemarks,
+    'Student Fee Payment History & Ledger': StudentFeePaymentHistoryAndLedger,
+    'Circulars & Notices': CircularsAndNoticesManager,
+    'Parents Communication': ParentsCommunication,
+    'Credentials Manager': ParentsCredentialsManager,
   };
 
   const renderSubComponent = (ComponentMap, currentKey) => {
@@ -452,7 +452,6 @@ export default function SchoolDashboard() {
             {activeTab === 'Student Analytics & RTE' && <StudentAnalyticsRTE />}
             {activeTab === 'Fee Collection & Receipt' && <FeeCollectionReceipt />}
             {activeTab === 'Penalty Manager' && <PenaltyManager />}
-            {activeTab === 'Parents Communication' && <ParentsCommunication />}
             {activeTab === 'Expenses Log' && <ExpensesLog />}
             {activeTab === 'Staff & Payroll Engine' && <StaffPayrollEngine />}
             {activeTab === 'Attendance & Holidays' && <AttendanceHolidays />}

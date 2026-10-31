@@ -53,6 +53,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     attendanceRate: '0%',
     totalPresents: '0 Days',
     totalAbsents: '0 Days',
+    totalLates: '0 Days',
     annualFee: '₹ 0',
     paidFee: '₹ 0',
     pendingFee: '₹ 0',
@@ -67,7 +68,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   // View Document Modal State for Notices
   const [viewingNotice, setViewingNotice] = useState(null);
 
-  // Homework History Filter States - Default current date set automatically
+  // Homework History Filter States
   const [historyFilterClass, setHistoryFilterClass] = useState('');
   const [historyFilterDate, setHistoryFilterDate] = useState(() => {
     const today = new Date();
@@ -81,7 +82,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     async function fetchPortalData() {
       setLoading(true);
       try {
-        // 1. Fetch Logged-in Student Profile Data from Supabase 'students' table[cite: 20]
+        // 1. Fetch Logged-in Student Profile Data
         let studentQuery = supabase.from('students').select('*');
         if (loggedInParentId) {
           studentQuery = studentQuery.eq('id', loggedInParentId);
@@ -118,7 +119,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setHistoryFilterClass(currentClass);
         }
 
-        // 2. Fetch Daily Homework Tasks strictly from Supabase 'daily_homework' table based on Student's Class[cite: 20]
+        // 2. Fetch Daily Homework Tasks
         if (currentClass) {
           const { data: hwData, error: hwErr } = await supabase
             .from('daily_homework')
@@ -131,7 +132,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }
         }
 
-        // 3. Fetch Attendance Data & Remarks strictly from Supabase 'attendance' table[cite: 20]
+        // 3. Fetch Attendance Data & Remarks (OPTION 1 + OPTION 3 LOGIC INTEGRATED)
         let attQuery = supabase
           .from('attendance')
           .select('id, student_id, sr_no, attendance_date, date, status, remarks, class_name, created_at');
@@ -151,21 +152,28 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
           setAttendanceRecords(filteredAtt);
 
-          const dbPresents = filteredAtt.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
+          // Dedicated Counters
+          const dbPresentsOnly = filteredAtt.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
+          const dbLates = filteredAtt.filter(a => a.status?.toLowerCase() === 'late' || a.status?.toLowerCase() === 'l').length;
           const dbAbsents = filteredAtt.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
           
-          const totalDays = dbPresents + dbAbsents;
-          const percentage = totalDays > 0 ? Math.round((dbPresents / totalDays) * 100) : 0;
+          // Option 1 Logic: Late ko Present count me (+1) add kiya gaya hai
+          const totalPresentIncludingLate = dbPresentsOnly + dbLates;
+          const totalWorkingDays = totalPresentIncludingLate + dbAbsents;
           
+          const percentage = totalWorkingDays > 0 ? Math.round((totalPresentIncludingLate / totalWorkingDays) * 100) : 0;
+          
+          // Option 3 Logic: Dedicated 'Late' counter update
           setStudentInfo(prev => ({
             ...prev,
             attendanceRate: `${percentage}%`,
-            totalPresents: `${dbPresents} Days`,
-            totalAbsents: `${dbAbsents} Days`
+            totalPresents: `${totalPresentIncludingLate} Days`,
+            totalAbsents: `${dbAbsents} Days`,
+            totalLates: `${dbLates} Times`
           }));
         }
 
-        // 4. Fetch School Notices from Supabase 'circulars_and_notices' table[cite: 20]
+        // 4. Fetch School Notices
         const { data: noticeData, error: noticeErr } = await supabase
           .from('circulars_and_notices')
           .select('*')
@@ -185,7 +193,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fee Records strictly from Supabase 'fee_collections' table[cite: 20]
+        // 5. Fetch Fee Records
         let feeQuery = supabase
           .from('fee_collections')
           .select('id, receipt_no, student_id, class_name, allocation_month, receipt_date, payment_mode, total_paid, sr_no');
@@ -236,7 +244,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     fetchPortalData();
   }, [loggedInParentId]);
 
-  // Homework History Filter Logic strictly restricted to student's own class[cite: 20]
+  // Homework History Filter Logic
   const getFilteredHomework = () => {
     let results = rawHomeworkList || [];
 
@@ -261,7 +269,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const filteredHomework = getFilteredHomework();
 
-  // Subject-wise consolidated data for filtered class[cite: 20]
+  // Subject-wise consolidated data for filtered class
   const getSubjectWiseConsolidatedData = () => {
     const subjectMap = {};
     filteredHomework.forEach(item => {
@@ -327,7 +335,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         </div>
       </div>
 
-      {/* Quick Summary Cards */}
+      {/* Quick Summary Cards (Includes Dedicated Late Counter) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Attendance Rate */}
@@ -335,7 +343,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           <div className="text-[11px] uppercase tracking-wider font-extrabold text-emerald-100">Attendance Rate</div>
           <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.attendanceRate}</div>
           <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-emerald-50 whitespace-nowrap">
-            Presents: {studentInfo.totalPresents} | Absents: {studentInfo.totalAbsents}
+            Presents: {studentInfo.totalPresents} | Absents: {studentInfo.totalAbsents} | Late: {studentInfo.totalLates}
           </div>
         </div>
 
@@ -452,14 +460,19 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* Student Attendance & Remarks Sub-Tab (Live from Supabase) */}
+          {/* Student Attendance & Remarks Sub-Tab */}
           {activeTab === 'attendance' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                 <h2 className="text-[16px] font-black text-[#1E293B]">Student Attendance History & Teacher Remarks</h2>
-                <span className="text-[11px] bg-emerald-100 text-emerald-800 px-3 py-1 rounded-md font-extrabold">
-                  Overall Status: {studentInfo.attendanceRate}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] bg-emerald-100 text-emerald-800 px-3 py-1 rounded-md font-extrabold">
+                    Overall Status: {studentInfo.attendanceRate}
+                  </span>
+                  <span className="text-[11px] bg-amber-100 text-amber-800 px-3 py-1 rounded-md font-extrabold">
+                    Late Count: {studentInfo.totalLates}
+                  </span>
+                </div>
               </div>
 
               <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm overflow-x-auto">
@@ -530,10 +543,9 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* Daily Homework Sub-Tab with Class & Date Filtering */}
+          {/* Daily Homework Sub-Tab */}
           {activeTab === 'homework' && (
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-              
               <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b-2 border-slate-100">
                 <div>
                   <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
@@ -545,7 +557,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 </div>
 
                 <div className="flex items-center gap-4 flex-wrap">
-                  {/* Class Filter Dropdown (Locked / Restricted to student's class for security) */}
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black uppercase text-slate-500">CLASS FILTER:</span>
                     <select
@@ -580,7 +591,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 </div>
               </div>
 
-              {/* Consolidated Subject-wise View with 3D Gradients */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {Object.keys(subjectWiseConsolidatedData).length > 0 ? (
                   Object.keys(subjectWiseConsolidatedData).map((subject) => {
@@ -628,7 +638,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                   </div>
                 )}
               </div>
-
             </div>
           )}
 
