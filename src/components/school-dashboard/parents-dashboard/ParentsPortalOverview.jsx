@@ -67,15 +67,21 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   // View Document Modal State for Notices
   const [viewingNotice, setViewingNotice] = useState(null);
 
-  // Homework History Filter States - Strictly restricted & locked to logged-in student's class
+  // Homework History Filter States - Default current date set automatically
   const [historyFilterClass, setHistoryFilterClass] = useState('');
-  const [historyFilterDate, setHistoryFilterDate] = useState('');
+  const [historyFilterDate, setHistoryFilterDate] = useState(() => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  });
 
   useEffect(() => {
     async function fetchPortalData() {
       setLoading(true);
       try {
-        // 1. Fetch Logged-in Student Profile Data from 'students' table
+        // 1. Fetch Logged-in Student Profile Data from Supabase 'students' table[cite: 20]
         let studentQuery = supabase.from('students').select('*');
         if (loggedInParentId) {
           studentQuery = studentQuery.eq('id', loggedInParentId);
@@ -101,7 +107,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             id: st.id,
             name: currentStudentName,
             class: currentClass,
-            section: 'A',
+            section: st.section || 'A',
             rollNo: st.sr_no || st.student_id || '',
             admissionNo: st.sr_no ? `SR-${st.sr_no}` : `STU-${st.id}`,
             fatherName: st.father_name || '',
@@ -109,11 +115,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0'
           }));
 
-          // Restrict filter strictly to student's own class
           setHistoryFilterClass(currentClass);
         }
 
-        // 2. Fetch Daily Homework Tasks (Strictly Filtered by Student's Class Only)
+        // 2. Fetch Daily Homework Tasks strictly from Supabase 'daily_homework' table based on Student's Class[cite: 20]
         if (currentClass) {
           const { data: hwData, error: hwErr } = await supabase
             .from('daily_homework')
@@ -126,7 +131,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }
         }
 
-        // 3. Fetch Attendance Data ONLY for this specific student
+        // 3. Fetch Attendance Data & Remarks strictly from Supabase 'attendance' table[cite: 20]
         let attQuery = supabase
           .from('attendance')
           .select('id, student_id, sr_no, attendance_date, date, status, remarks, class_name, created_at');
@@ -140,7 +145,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         const { data: attData, error: attErr } = await attQuery.order('attendance_date', { ascending: false });
 
         if (!attErr && attData) {
-          // Additional safety check: filter records strictly matching student's class
           const filteredAtt = currentClass 
             ? attData.filter(a => !a.class_name || a.class_name.trim().toLowerCase() === currentClass.toLowerCase())
             : attData;
@@ -161,7 +165,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // 4. Fetch School Notices from 'circulars_and_notices' table
+        // 4. Fetch School Notices from Supabase 'circulars_and_notices' table[cite: 20]
         const { data: noticeData, error: noticeErr } = await supabase
           .from('circulars_and_notices')
           .select('*')
@@ -181,7 +185,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fee Records ONLY for this specific student from 'fee_collections' table
+        // 5. Fetch Fee Records strictly from Supabase 'fee_collections' table[cite: 20]
         let feeQuery = supabase
           .from('fee_collections')
           .select('id, receipt_no, student_id, class_name, allocation_month, receipt_date, payment_mode, total_paid, sr_no');
@@ -232,11 +236,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     fetchPortalData();
   }, [loggedInParentId]);
 
-  // Homework History Filter Logic strictly restricted to student's own class
+  // Homework History Filter Logic strictly restricted to student's own class[cite: 20]
   const getFilteredHomework = () => {
     let results = rawHomeworkList || [];
 
-    // Forcefully enforce student's own class filter for absolute data isolation security
     const lockedClass = (studentInfo.class || historyFilterClass).trim().toLowerCase();
     if (lockedClass) {
       results = results.filter(item => {
@@ -258,7 +261,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const filteredHomework = getFilteredHomework();
 
-  // Subject-wise consolidated data for filtered class
+  // Subject-wise consolidated data for filtered class[cite: 20]
   const getSubjectWiseConsolidatedData = () => {
     const subjectMap = {};
     filteredHomework.forEach(item => {
@@ -284,7 +287,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const handleResetFilters = () => {
     setHistoryFilterClass(studentInfo.class || '');
-    setHistoryFilterDate('');
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    setHistoryFilterDate(`${yyyy}-${mm}-${dd}`);
   };
 
   return (
@@ -445,7 +452,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* Student Attendance Sub-Tab */}
+          {/* Student Attendance & Remarks Sub-Tab (Live from Supabase) */}
           {activeTab === 'attendance' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -617,7 +624,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                   })
                 ) : (
                   <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
-                    No homework published yet for Class {studentInfo.class}.
+                    No homework published yet for Class {studentInfo.class} on {historyFilterDate}.
                   </div>
                 )}
               </div>
