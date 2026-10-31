@@ -60,7 +60,6 @@ export default function AttendanceHolidays() {
 
   const fetchHolidays = async () => {
     try {
-      // Date wise order (from_date ascending)
       const { data, error } = await supabase
         .from('school_holidays')
         .select('*')
@@ -83,7 +82,6 @@ export default function AttendanceHolidays() {
     }
   };
 
-  // Check if a date falls within any holiday range
   const getCustomHolidayReason = (dateStr) => {
     const match = holidaysList.find(h => {
       const fDate = h.from_date || h.from;
@@ -162,14 +160,14 @@ export default function AttendanceHolidays() {
       return;
     }
 
-    const { data, error } = await supabase.from('school_holidays').insert([
+    const { error } = await supabase.from('school_holidays').insert([
       { reason: holidayReason, from_date: fromDate, to_date: toDate, session: '2026-2027' }
-    ]).select();
+    ]);
 
     if (error) {
       alert('Holiday save karne me error aaya: ' + error.message);
     } else {
-      fetchHolidays(); // Refresh and sort list date wise
+      fetchHolidays();
       setHolidayReason('');
       alert('Holiday successfully save ho gaya!');
     }
@@ -277,15 +275,71 @@ export default function AttendanceHolidays() {
       const { data, error } = await query;
       if (error) throw error;
 
-      const attendanceMap = {};
-      if (data) {
-        data.forEach(item => {
-          attendanceMap[item.attendance_date] = item.status;
-        });
-      }
+      const allDates = generateDateArray(reportFromDate, reportToDate);
+      const isAllSelected = selectEntity === 'All';
 
-      let selectedPersonInfo = '';
-      if (selectEntity !== 'All') {
+      if (isAllSelected) {
+        // Multi-Entity View (Class-wise or All Staff)
+        let entities = [];
+        if (isStudent) {
+          entities = reportClassFilter === 'All' 
+            ? allStudentsList 
+            : allStudentsList.filter(s => s.class_name === reportClassFilter);
+        } else {
+          entities = allStaffList;
+        }
+
+        const reportRows = [];
+        allDates.forEach(dateStr => {
+          const dayName = getDayName(dateStr);
+          const customHoliday = getCustomHolidayReason(dateStr);
+
+          entities.forEach(entity => {
+            const attRecord = (data || []).find(d => 
+              String(d[idColumn]) === String(entity.id) && d.attendance_date === dateStr
+            );
+
+            let status = attRecord ? attRecord.status : '-- Not Marked --';
+
+            if (customHoliday) {
+              status = `Holiday: ${customHoliday}`;
+            } else if (dayName === 'Sunday') {
+              status = isStudent ? 'Sunday (Holiday)' : 'Paid Holiday (Sunday)';
+            }
+
+            reportRows.push({
+              date: dateStr,
+              day: dayName,
+              entityName: isStudent ? entity.student_full_name : entity.full_name,
+              entityDetail: isStudent ? `Class: ${entity.class_name} | SR: ${entity.sr_no}` : (entity.designation || 'Staff'),
+              status: status
+            });
+          });
+        });
+
+        let headerTitle = isStudent 
+          ? (reportClassFilter !== 'All' ? `All Students of Class: ${reportClassFilter}` : 'All Students (All Classes)')
+          : 'All Staff Members';
+
+        setReportData({
+          isMulti: true,
+          personInfo: headerTitle,
+          fromDate: reportFromDate,
+          toDate: reportToDate,
+          rows: reportRows,
+          personType: selectPersonType
+        });
+
+      } else {
+        // Single Entity View
+        const attendanceMap = {};
+        if (data) {
+          data.forEach(item => {
+            attendanceMap[item.attendance_date] = item.status;
+          });
+        }
+
+        let selectedPersonInfo = '';
         if (isStudent) {
           const st = allStudentsList.find(s => String(s.id) === String(selectEntity));
           if (st) selectedPersonInfo = `${st.student_full_name} (Class: ${st.class_name} -- SR: ${st.sr_no})`;
@@ -293,43 +347,36 @@ export default function AttendanceHolidays() {
           const sf = allStaffList.find(s => String(s.id) === String(selectEntity));
           if (sf) selectedPersonInfo = `${sf.full_name} (${sf.designation || 'Staff'})`;
         }
-      } else {
-        if (isStudent) {
-          selectedPersonInfo = reportClassFilter !== 'All' ? `All Students of Class: ${reportClassFilter}` : 'All Students';
-        } else {
-          selectedPersonInfo = 'All Staff Members';
-        }
+
+        const rows = allDates.map(dateStr => {
+          const dayName = getDayName(dateStr);
+          const customHoliday = getCustomHolidayReason(dateStr);
+
+          let status = attendanceMap[dateStr] || '-- Not Marked --';
+
+          if (customHoliday) {
+            status = `Holiday: ${customHoliday}`;
+          } else if (dayName === 'Sunday') {
+            status = isStudent ? 'Sunday (Holiday)' : 'Paid Holiday (Sunday)';
+          }
+
+          return {
+            date: dateStr,
+            day: dayName,
+            status: status
+          };
+        });
+
+        setReportData({
+          isMulti: false,
+          personInfo: selectedPersonInfo,
+          fromDate: reportFromDate,
+          toDate: reportToDate,
+          rows: rows,
+          personType: selectPersonType
+        });
       }
 
-      const allDates = generateDateArray(reportFromDate, reportToDate);
-      const rows = allDates.map(dateStr => {
-        const dayName = getDayName(dateStr);
-        const customHoliday = getCustomHolidayReason(dateStr);
-
-        let status = attendanceMap[dateStr] || '-- Not Marked --';
-
-        // Check for Custom Holiday or Sunday
-        if (customHoliday) {
-          status = `Holiday: ${customHoliday}`;
-        } else if (dayName === 'Sunday') {
-          status = isStudent ? 'Sunday (Holiday)' : 'Paid Holiday (Sunday)';
-        }
-
-        return {
-          date: dateStr,
-          day: dayName,
-          status: status
-        };
-      });
-
-      setReportData({
-        personInfo: selectedPersonInfo,
-        fromDate: reportFromDate,
-        toDate: reportToDate,
-        rows: rows,
-        personType: selectPersonType,
-        rawCount: data ? data.length : 0
-      });
     } catch (err) {
       alert('Report fetch error: ' + err.message);
     } finally {
@@ -396,7 +443,6 @@ export default function AttendanceHolidays() {
   const todayCustomHoliday = getCustomHolidayReason(attendanceDate);
   const isTodayOff = isTodaySunday || !!todayCustomHoliday;
 
-  // Date Wise Sorted List
   const sortedHolidaysList = [...holidaysList].sort((a, b) => {
     const dateA = new Date(a.from_date || a.from || 0);
     const dateB = new Date(b.from_date || b.from || 0);
@@ -455,7 +501,6 @@ export default function AttendanceHolidays() {
           </div>
         </form>
 
-        {/* Date Wise Vertical Holiday List */}
         <div className="pt-2">
           <p className="block text-[13px] font-bold text-sky-700 mb-2">Registered Holidays List (Date-Wise)</p>
           <div className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
@@ -796,23 +841,38 @@ export default function AttendanceHolidays() {
                   <tr className="border-b border-slate-200 text-[13px] text-sky-800 font-bold bg-slate-100">
                     <th className="px-4 py-3">Date</th>
                     <th className="px-4 py-3">Day</th>
+                    {reportData.isMulti && <th className="px-4 py-3">Name & Details</th>}
                     <th className="px-4 py-3">Attendance Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-[13px] text-slate-700">
-                  {reportData.rows.map((row, idx) => (
-                    <tr key={idx} className={`hover:bg-slate-50 transition ${row.day === 'Sunday' || row.status.startsWith('Holiday:') ? 'bg-amber-50/40' : ''}`}>
-                      <td className="px-4 py-3 font-medium font-mono">
-                        {formatDateDisplay(row.date)}
-                      </td>
-                      <td className={`px-4 py-3 font-semibold ${row.day === 'Sunday' ? 'text-amber-700 font-bold' : 'text-slate-600'}`}>
-                        {row.day}
-                      </td>
-                      <td className="px-4 py-3">
-                        {getStatusBadge(row.status, row.day, reportData.personType)}
+                  {reportData.rows.length > 0 ? (
+                    reportData.rows.map((row, idx) => (
+                      <tr key={idx} className={`hover:bg-slate-50 transition ${row.day === 'Sunday' || row.status.startsWith('Holiday:') ? 'bg-amber-50/40' : ''}`}>
+                        <td className="px-4 py-3 font-medium font-mono whitespace-nowrap">
+                          {formatDateDisplay(row.date)}
+                        </td>
+                        <td className={`px-4 py-3 font-semibold whitespace-nowrap ${row.day === 'Sunday' ? 'text-amber-700 font-bold' : 'text-slate-600'}`}>
+                          {row.day}
+                        </td>
+                        {reportData.isMulti && (
+                          <td className="px-4 py-3">
+                            <div className="font-bold text-slate-900">{row.entityName}</div>
+                            <div className="text-[11px] text-slate-500">{row.entityDetail}</div>
+                          </td>
+                        )}
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {getStatusBadge(row.status, row.day, reportData.personType)}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={reportData.isMulti ? 4 : 3} className="px-4 py-6 text-center text-slate-400 font-bold">
+                        No attendance records found for this date range.
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
