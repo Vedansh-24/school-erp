@@ -67,7 +67,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   // View Document Modal State for Notices
   const [viewingNotice, setViewingNotice] = useState(null);
 
-  // Homework History Filter States - Strictly default to logged in student's class
+  // Homework History Filter States - Strictly restricted & locked to logged-in student's class
   const [historyFilterClass, setHistoryFilterClass] = useState('');
   const [historyFilterDate, setHistoryFilterDate] = useState('');
 
@@ -93,7 +93,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           currentStudentId = st.id;
           currentSrNo = st.sr_no;
           currentStudentName = st.student_full_name || '';
-          currentClass = st.class_name || '';
+          currentClass = (st.class_name || '').trim();
           annualFeesNum = Number(st.annual_fees || 0);
 
           setStudentInfo(prev => ({
@@ -109,10 +109,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0'
           }));
 
+          // Restrict filter strictly to student's own class
           setHistoryFilterClass(currentClass);
         }
 
-        // 2. Fetch Daily Homework Tasks (Filtered by Student's Class Only)
+        // 2. Fetch Daily Homework Tasks (Strictly Filtered by Student's Class Only)
         if (currentClass) {
           const { data: hwData, error: hwErr } = await supabase
             .from('daily_homework')
@@ -139,10 +140,15 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         const { data: attData, error: attErr } = await attQuery.order('attendance_date', { ascending: false });
 
         if (!attErr && attData) {
-          setAttendanceRecords(attData);
+          // Additional safety check: filter records strictly matching student's class
+          const filteredAtt = currentClass 
+            ? attData.filter(a => !a.class_name || a.class_name.trim().toLowerCase() === currentClass.toLowerCase())
+            : attData;
 
-          const dbPresents = attData.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
-          const dbAbsents = attData.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
+          setAttendanceRecords(filteredAtt);
+
+          const dbPresents = filteredAtt.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
+          const dbAbsents = filteredAtt.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
           
           const totalDays = dbPresents + dbAbsents;
           const percentage = totalDays > 0 ? Math.round((dbPresents / totalDays) * 100) : 0;
@@ -226,15 +232,16 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     fetchPortalData();
   }, [loggedInParentId]);
 
-  // Homework History Filter Logic matching student's class
+  // Homework History Filter Logic strictly restricted to student's own class
   const getFilteredHomework = () => {
     let results = rawHomeworkList || [];
 
-    if (historyFilterClass && historyFilterClass !== 'All') {
+    // Forcefully enforce student's own class filter for absolute data isolation security
+    const lockedClass = (studentInfo.class || historyFilterClass).trim().toLowerCase();
+    if (lockedClass) {
       results = results.filter(item => {
         const dbClass = (item.class_name || '').trim().toLowerCase();
-        const filterClass = historyFilterClass.trim().toLowerCase();
-        return dbClass === filterClass || dbClass.includes(filterClass) || filterClass.includes(dbClass);
+        return dbClass === lockedClass || dbClass.includes(lockedClass) || lockedClass.includes(dbClass);
       });
     }
 
@@ -276,7 +283,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   const subjectWiseConsolidatedData = getSubjectWiseConsolidatedData();
 
   const handleResetFilters = () => {
-    setHistoryFilterClass(studentInfo.class || 'All');
+    setHistoryFilterClass(studentInfo.class || '');
     setHistoryFilterDate('');
   };
 
@@ -516,7 +523,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* Daily Homework Sub-Tab with 3D Subject Gradients */}
+          {/* Daily Homework Sub-Tab with Class & Date Filtering */}
           {activeTab === 'homework' && (
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
               
@@ -526,11 +533,24 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                     <span>📜</span> Published Homework History
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-1">
-                    Showing homework tasks specifically for Class: <strong className="text-indigo-600 font-black">{studentInfo.class}</strong>
+                    Showing homework tasks specifically locked for Class: <strong className="text-indigo-600 font-black">{studentInfo.class}</strong>
                   </p>
                 </div>
 
                 <div className="flex items-center gap-4 flex-wrap">
+                  {/* Class Filter Dropdown (Locked / Restricted to student's class for security) */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black uppercase text-slate-500">CLASS FILTER:</span>
+                    <select
+                      value={historyFilterClass}
+                      disabled
+                      className="bg-slate-100 border-2 border-slate-300 text-xs text-slate-700 font-extrabold rounded-xl px-3 py-1.5 outline-none cursor-not-allowed shadow-inner"
+                      title="You can only view your own child's class data"
+                    >
+                      <option value={studentInfo.class}>{studentInfo.class} (Assigned)</option>
+                    </select>
+                  </div>
+
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-black uppercase text-slate-500">FILTER DATE:</span>
                     <input
