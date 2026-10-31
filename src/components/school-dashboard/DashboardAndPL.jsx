@@ -21,7 +21,7 @@ export default function DashboardAndPL() {
   const [isMounted, setIsMounted] = useState(false);
 
   const [totalStudents, setTotalStudents] = useState(97);
-  const [totalFees, setTotalFees] = useState(10000);
+  const [totalFees, setTotalFees] = useState(0); // Real-time value updated from Supabase
   const [totalPenalty, setTotalPenalty] = useState(71250);
   const [penaltyReceived, setPenaltyReceived] = useState(0);
   const [pendingDue, setPendingDue] = useState(736677);
@@ -35,8 +35,38 @@ export default function DashboardAndPL() {
 
   useEffect(() => {
     setIsMounted(true);
+    fetchTotalFeesReceived();
     fetchTodayBirthdays();
   }, []);
+
+  // 💰 Real Supabase Fetch for Total Fees Received Formula: SUM(total_paid)
+  const fetchTotalFeesReceived = async () => {
+    try {
+      if (!supabase) return;
+
+      const { data: feeRecords, error } = await supabase
+        .from('fee_collections')
+        .select('total_paid, tuition_fee_amount');
+
+      if (error) {
+        console.error('Error fetching Total Fees Received from Supabase:', error.message);
+        return;
+      }
+
+      if (feeRecords && feeRecords.length > 0) {
+        const calculatedTotalFees = feeRecords.reduce((sum, item) => {
+          const paidAmount = Number(item.total_paid || item.tuition_fee_amount || 0);
+          return sum + paidAmount;
+        }, 0);
+
+        setTotalFees(calculatedTotalFees);
+      } else {
+        setTotalFees(0);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching fees:', err);
+    }
+  };
 
   const fetchTodayBirthdays = async () => {
     try {
@@ -115,7 +145,7 @@ export default function DashboardAndPL() {
               <Wallet size={18} />
             </div>
           </div>
-          <div className="text-2xl font-black text-[#1A2332]">₹{totalFees}</div>
+          <div className="text-2xl font-black text-[#1A2332]">₹{totalFees.toLocaleString()}</div>
         </div>
 
         {/* Total Penalty */}
@@ -216,7 +246,7 @@ export default function DashboardAndPL() {
             </div>
           </div>
           <div className={`text-2xl font-black ${profitAndLoss < 0 ? 'text-[#EF4444]' : 'text-emerald-600'}`}>
-            {profitAndLoss < 0 ? '-' : ''}₹{Math.abs(profitAndLoss)}
+            {profitAndLoss < 0 ? '-' : ''}₹{Math.abs(profitAndLoss).toLocaleString()}
           </div>
         </div>
 
