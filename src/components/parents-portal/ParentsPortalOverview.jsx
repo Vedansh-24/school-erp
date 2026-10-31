@@ -155,7 +155,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // 4. Fetch School Notices from 'circulars_and_notices' table (Full CircularAndNotice3 fields)
+        // 4. Fetch School Notices from 'circulars_and_notices' table
         const { data: noticeData, error: noticeErr } = await supabase
           .from('circulars_and_notices')
           .select('*')
@@ -393,17 +393,21 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 </h2>
                 <div className="space-y-3">
                   {rawHomeworkList.length > 0 ? (
-                    rawHomeworkList.slice(0, 5).map((hw) => (
-                      <div key={hw.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1 shadow-sm">
-                        <div className="flex justify-between items-center text-[12px]">
-                          <span className="font-extrabold text-blue-900">{hw.subject_name || 'General'}</span>
-                          <span className="text-slate-500 text-[11px] font-bold">{hw.assign_date}</span>
+                    rawHomeworkList.slice(0, 5).map((hw) => {
+                      const subjectName = hw.subject_name || 'General';
+                      const { dark } = getSubjectStyles(subjectName);
+                      return (
+                        <div key={hw.id} className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                          <div className={`${dark} px-3 py-1.5 text-[11px] font-black flex justify-between items-center`}>
+                            <span>📘 {subjectName}</span>
+                            <span>{hw.assign_date}</span>
+                          </div>
+                          <div className="p-3 text-[12px] text-slate-700 font-medium">
+                            {hw.chapter_title ? `${hw.chapter_title}: ` : ''}{hw.instructions}
+                          </div>
                         </div>
-                        <p className="text-[12px] text-slate-700 font-medium">
-                          {hw.chapter_title ? `${hw.chapter_title}: ` : ''}{hw.instructions}
-                        </p>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <p className="text-xs font-semibold text-slate-400 py-4 text-center">No homework tasks found for {studentInfo.class}.</p>
                   )}
@@ -512,7 +516,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* Daily Homework Sub-Tab */}
+          {/* Daily Homework Sub-Tab with 3D Subject Gradients */}
           {activeTab === 'homework' && (
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
               
@@ -549,7 +553,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 </div>
               </div>
 
-              {/* Consolidated Subject-wise View */}
+              {/* Consolidated Subject-wise View with 3D Gradients */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {Object.keys(subjectWiseConsolidatedData).length > 0 ? (
                   Object.keys(subjectWiseConsolidatedData).map((subject) => {
@@ -601,7 +605,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* School Notices Sub-Tab with Full CircularAndNotice3 Data and View Modal */}
+          {/* School Notices Sub-Tab */}
           {activeTab === 'notices' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
               <h2 className="text-[18px] font-black text-blue-900">School Notices & Announcements</h2>
