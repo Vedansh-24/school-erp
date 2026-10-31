@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, Clock, Bell, Calendar, FileText, CheckCircle, Download, Eye, AlertCircle, Paperclip, X } from 'lucide-react';
 
 // 🎨 Subject 3D Color Gradients & Styles
 const getSubjectStyles = (subject) => {
@@ -27,6 +27,14 @@ const getSubjectStyles = (subject) => {
   }
   
   return { light: 'bg-slate-100 text-slate-800 border-slate-300', dark: 'bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 text-white border-t border-slate-300 border-b-[4px] border-slate-950 shadow-md' };
+};
+
+const getPriorityColor = (priority) => {
+  switch (priority) {
+    case 'High': return 'bg-red-100 text-red-700 border-red-200';
+    case 'Medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+    default: return 'bg-green-100 text-green-700 border-green-200';
+  }
 };
 
 export default function ParentsPortalOverview({ loggedInParentId = null }) {
@@ -55,6 +63,9 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   const [rawHomeworkList, setRawHomeworkList] = useState([]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [feeRecordsList, setFeeRecordsList] = useState([]);
+
+  // View Document Modal State for Notices
+  const [viewingNotice, setViewingNotice] = useState(null);
 
   // Homework History Filter States - Strictly default to logged in student's class
   const [historyFilterClass, setHistoryFilterClass] = useState('');
@@ -144,18 +155,23 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // 4. Fetch School Notices from 'circulars_and_notices' table
+        // 4. Fetch School Notices from 'circulars_and_notices' table (Full CircularAndNotice3 fields)
         const { data: noticeData, error: noticeErr } = await supabase
           .from('circulars_and_notices')
-          .select('id, title, description, category, audience, notice_date, created_at')
-          .order('notice_date', { ascending: false });
+          .select('*')
+          .order('created_at', { ascending: false });
 
         if (!noticeErr && noticeData) {
           setNoticesList(noticeData.map((n, idx) => ({
             id: n.id || idx + 1,
-            date: n.notice_date || '',
+            date: n.notice_date || n.created_at?.split('T')[0] || '',
             title: n.title || 'Notice',
-            desc: n.description || ''
+            description: n.description || '',
+            category: n.category || 'General',
+            audience: n.audience || 'All Students & Parents',
+            priority: n.priority || 'Medium',
+            hasAttachment: n.has_attachment || false,
+            attachmentUrl: n.attachment_url || ''
           })));
         }
 
@@ -401,13 +417,13 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 </h2>
                 <div className="space-y-3">
                   {noticesList.length > 0 ? (
-                    noticesList.map((n) => (
+                    noticesList.slice(0, 3).map((n) => (
                       <div key={n.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1 shadow-sm">
                         <div className="flex justify-between items-center text-[12px]">
                           <span className="font-extrabold text-slate-900">{n.title}</span>
                           <span className="text-slate-500 text-[11px] font-bold">{n.date}</span>
                         </div>
-                        <p className="text-[12px] text-slate-700 font-medium">{n.desc}</p>
+                        {n.description && <p className="text-[12px] text-slate-700 font-medium line-clamp-1">{n.description}</p>}
                       </div>
                     ))
                   ) : (
@@ -585,22 +601,74 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
+          {/* School Notices Sub-Tab with Full CircularAndNotice3 Data and View Modal */}
           {activeTab === 'notices' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-              <h2 className="text-[16px] font-black text-blue-900">School Notices & Announcements</h2>
-              <div className="space-y-3">
+              <h2 className="text-[18px] font-black text-blue-900">School Notices & Announcements</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 {noticesList.length > 0 ? (
-                  noticesList.map((n) => (
-                    <div key={n.id} className="bg-slate-50 border border-slate-300 rounded-xl p-4 space-y-2 shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-[14px] font-extrabold text-blue-900">{n.title}</h3>
-                        <span className="text-[12px] bg-slate-200 text-slate-800 px-3 py-1 rounded-full font-bold">{n.date}</span>
+                  noticesList.map((notice) => (
+                    <div key={notice.id} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
+                      <div className="p-5">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide border ${getPriorityColor(notice.priority)} flex items-center gap-1.5`}>
+                            <AlertCircle size={14} />
+                            {notice.priority} Priority
+                          </div>
+                        </div>
+
+                        <h3 className="text-lg font-black text-slate-800 leading-tight mb-2">
+                          {notice.title}
+                        </h3>
+                        
+                        {notice.description && (
+                          <p className="text-slate-600 text-sm font-medium mb-4 whitespace-pre-wrap">
+                            {notice.description}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-4 text-xs font-bold text-slate-500 bg-white p-3 rounded-xl border border-slate-100 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar size={14} className="text-slate-400" />
+                            {notice.date ? new Date(notice.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
+                          </div>
+                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                          <div className="flex items-center gap-1.5 text-indigo-600">
+                            <FileText size={14} />
+                            {notice.category}
+                          </div>
+                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                          <div className="flex items-center gap-1.5">
+                            <CheckCircle size={14} className="text-slate-400" />
+                            {notice.audience}
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-[13px] text-slate-700 font-medium">{n.desc}</p>
+                      
+                      {notice.hasAttachment && (
+                        <div className="bg-white px-5 py-3 border-t border-slate-200 flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                            <Paperclip size={16} className="text-indigo-600" />
+                            <span>Attached Document (PDF/Image)</span>
+                          </div>
+                          {notice.attachmentUrl ? (
+                            <button 
+                              onClick={() => setViewingNotice(notice)}
+                              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-t border-indigo-300 border-b-[3px] border-indigo-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] transition-all cursor-pointer"
+                            >
+                              <Eye size={14} /> View File
+                            </button>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-semibold">No URL available</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs font-semibold text-slate-400 py-4 text-center">No notices found.</p>
+                  <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
+                    No notices found.
+                  </div>
                 )}
               </div>
             </div>
@@ -676,6 +744,63 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
         </>
+      )}
+
+      {/* 👁️ View Document Popup Modal for Notices */}
+      {viewingNotice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-200">
+            
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 className="text-lg font-black text-slate-900">{viewingNotice.title}</h3>
+                <p className="text-xs text-slate-500 font-semibold">Document Preview & Download</p>
+              </div>
+              <button 
+                onClick={() => setViewingNotice(null)} 
+                className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 hover:bg-rose-100 hover:text-rose-600 transition-colors cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="flex-1 bg-slate-100 p-4 overflow-auto flex items-center justify-center">
+              {viewingNotice.attachmentUrl.includes('.pdf') || viewingNotice.attachmentUrl.startsWith('data:application/pdf') ? (
+                <iframe 
+                  src={viewingNotice.attachmentUrl} 
+                  className="w-full h-full rounded-xl border border-slate-300 bg-white shadow-inner"
+                  title="PDF Viewer"
+                />
+              ) : (
+                <img 
+                  src={viewingNotice.attachmentUrl} 
+                  alt="Attachment Preview" 
+                  className="max-w-full max-h-full object-contain rounded-xl shadow-md border border-slate-300 bg-white" 
+                />
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-white">
+              <button 
+                onClick={() => setViewingNotice(null)}
+                className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 transition-colors cursor-pointer"
+              >
+                Cancel / Close
+              </button>
+
+              <a 
+                href={viewingNotice.attachmentUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                download
+                className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 hover:from-emerald-400 hover:to-teal-600 text-white px-6 py-2.5 rounded-xl text-sm font-black border-t border-emerald-300 border-b-[4px] border-emerald-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer"
+              >
+                <Download size={18} /> Download File
+              </a>
+            </div>
+
+          </div>
+        </div>
       )}
 
     </div>
