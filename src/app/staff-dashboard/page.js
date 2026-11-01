@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+import MyDashboardView from '@/components/staff-dashboard/mydashboard';
 import AttendanceView from '@/components/staff-dashboard/AttendanceView';
 import ClassSchedule from '@/components/staff-dashboard/ClassSchedule';
 import NoticesCard from '@/components/staff-dashboard/NoticesCard';
@@ -47,16 +48,6 @@ const TransparentSchoolLogo = ({ src = '/school-logo.png' }) => {
     </div>
   );
 };
-
-const StatCard = ({ label, value, accent, valueColor = '#1A2332' }) => (
-  <div
-    className="p-4 rounded-md border-l-4 shadow-sm"
-    style={{ ...card, borderLeftColor: accent }}
-  >
-    <span className="text-[9.5px] uppercase font-bold tracking-wider block" style={{ color: '#5C6B7A' }}>{label}</span>
-    <div className="text-2xl font-black mt-1" style={{ color: valueColor }}>{value}</div>
-  </div>
-);
 
 export default function StaffDashboard() {
   const router = useRouter();
@@ -128,11 +119,6 @@ export default function StaffDashboard() {
   const [attendance, setAttendance] = useState(
     Object.fromEntries(students.map((s) => [s.id, 'P']))
   );
-  const presentCount = Object.values(attendance).filter((v) => v === 'P').length;
-  const absentCount = students.length - presentCount;
-
-  const markAll = (val) =>
-    setAttendance(Object.fromEntries(students.map((s) => [s.id, val])));
 
   return (
     <div className="flex flex-col min-h-screen font-sans" style={{ background: '#F5F7FA', color: '#1A2332' }}>
@@ -199,7 +185,7 @@ export default function StaffDashboard() {
             </nav>
           </div>
 
-          {/* Staff identity */}
+          {/* Staff Identity */}
           <div className="mt-4 pt-3 flex items-center gap-3" style={{ borderTop: '1px solid #E2E7EE' }}>
             <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ background: '#1B3A6B' }}>
               {staff.name.split(' ')[1].charAt(0)}
@@ -211,7 +197,7 @@ export default function StaffDashboard() {
           </div>
         </aside>
 
-        {/* Main */}
+        {/* Main Content */}
         <main className="flex-1 flex flex-col min-w-0" style={{ background: '#F5F7FA' }}>
 
           {/* Controls Bar */}
@@ -255,80 +241,29 @@ export default function StaffDashboard() {
             </div>
           </header>
 
-          {/* Workspace */}
+          {/* Workspace Area */}
           <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
 
             {activeTab === 'My Dashboard' && (
-              <div className="space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5">
-                  {stats.map((s) => (
-                    <StatCard key={s.label} {...s} />
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                  {/* Today's timetable */}
-                  <div className="lg:col-span-2 rounded-lg shadow-sm" style={card}>
-                    <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #E2E7EE' }}>
-                      <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: '#1B3A6B' }}>Today's Timetable</h3>
-                    </div>
-                    <ul>
-                      {timetable.map((t, i) => (
-                        <li
-                          key={t.time}
-                          className="px-5 py-3 flex items-center justify-between"
-                          style={{ borderTop: i ? '1px solid #E2E7EE' : 'none', background: i % 2 ? '#FAFBFC' : 'transparent' }}
-                        >
-                          <div>
-                            <div className="text-sm font-bold" style={{ color: '#1A2332' }}>{t.subject} — Class {t.cls}</div>
-                            <div className="text-xs font-semibold" style={{ color: '#5C6B7A' }}>{t.time}</div>
-                          </div>
-                          <span
-                            className="px-2 py-1 rounded-sm text-xs font-semibold"
-                            style={{
-                              background: t.done ? '#EAF4EE' : '#FBF1DE',
-                              color: t.done ? '#2E7D4F' : '#8A6512',
-                            }}
-                          >
-                            {t.done ? 'Completed' : 'Upcoming'}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Pending tasks */}
-                  <div className="rounded-lg shadow-sm" style={card}>
-                    <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #E2E7EE' }}>
-                      <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: '#1B3A6B' }}>Pending Tasks</h3>
-                    </div>
-                    <ul className="p-5 space-y-3">
-                      {tasks.map((t) => (
-                        <li key={t} className="flex gap-2.5 text-sm font-semibold" style={{ color: '#1A2332' }}>
-                          <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#C6952C' }} />
-                          {t}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                {/* Notices */}
-                <div className="rounded-lg p-5 shadow-sm" style={card}>
-                  <h3 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: '#8A6512' }}>📢 Notices</h3>
-                  <div className="space-y-2">
-                    {notices.map((n) => (
-                      <div key={n.title} className="flex items-center justify-between p-3 rounded-md" style={{ background: '#F5F7FA', border: '1px solid #E2E7EE' }}>
-                        <span className="text-sm font-bold" style={{ color: '#1A2332' }}>{n.title}</span>
-                        <span className="text-xs font-semibold" style={{ color: '#5C6B7A' }}>{n.when}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <MyDashboardView
+                stats={stats}
+                timetable={timetable}
+                tasks={tasks}
+                notices={notices}
+                cardStyle={card}
+              />
             )}
 
-            {activeTab === 'Mark Attendance' && <AttendanceView students={students} attClass={attClass} setAttClass={setAttClass} myClasses={myClasses} attendance={attendance} setAttendance={setAttendance} />}
+            {activeTab === 'Mark Attendance' && (
+              <AttendanceView
+                students={students}
+                attClass={attClass}
+                setAttClass={setAttClass}
+                myClasses={myClasses}
+                attendance={attendance}
+                setAttendance={setAttendance}
+              />
+            )}
 
             {activeTab === 'My Timetable' && <TimetableView timetable={timetable} />}
 
@@ -342,13 +277,20 @@ export default function StaffDashboard() {
 
             {activeTab === 'Notices' && <NoticesCard notices={notices} />}
 
-            {activeTab !== 'My Dashboard' && activeTab !== 'Mark Attendance' && activeTab !== 'My Timetable' && activeTab !== 'Class Schedule' && activeTab !== 'Homework & Assignments' && activeTab !== 'Question Paper Generator' && activeTab !== 'Parents Communication' && activeTab !== 'Notices' && (
-              <div
-                className="flex items-center justify-center h-64 rounded-2xl shadow-sm font-bold uppercase tracking-widest text-sm"
-                style={{ ...card, color: '#5C6B7A' }}
-              >
-                Module '{activeTab}' is under development
-              </div>
+            {activeTab !== 'My Dashboard' &&
+              activeTab !== 'Mark Attendance' &&
+              activeTab !== 'My Timetable' &&
+              activeTab !== 'Class Schedule' &&
+              activeTab !== 'Homework & Assignments' &&
+              activeTab !== 'Question Paper Generator' &&
+              activeTab !== 'Parents Communication' &&
+              activeTab !== 'Notices' && (
+                <div
+                  className="flex items-center justify-center h-64 rounded-2xl shadow-sm font-bold uppercase tracking-widest text-sm"
+                  style={{ ...card, color: '#5C6B7A' }}
+                >
+                  Module '{activeTab}' is under development
+                </div>
             )}
 
           </div>
