@@ -43,6 +43,7 @@ import GatePass from '@/components/school-dashboard/certificates-cards/GatePass'
 import ParentsPortalOverview from '@/components/parents-portal/ParentsPortalOverview';
 import StudentFeePaymentHistoryAndLedger from '@/components/school-dashboard/parents-dashboard/StudentFeePaymentHistoryAndLedger';
 import StudentAttendanceAndRemarks from '@/components/school-dashboard/parents-dashboard/StudentAttendanceAndRemarks';
+import OnlineTestQuiz from '@/components/school-dashboard/parents-dashboard/OnlineTestQuiz';
 
 const TransparentSchoolLogo = ({ src = '/school-logo.png' }) => {
   const [cleanLogoSrc, setCleanLogoSrc] = useState(src);
@@ -182,6 +183,7 @@ export default function SchoolDashboard() {
     'Student Fee Payment History & Ledger': StudentFeePaymentHistoryAndLedger,
     'Circulars & Notices': CircularsAndNoticesManager,
     'Parents Communication': ParentsCommunication,
+    'Online Test / Quiz': OnlineTestQuiz,
     'Credentials Manager': ParentsCredentialsManager,
   };
 
