@@ -14,7 +14,8 @@ import QuestionPaperGenerator from '@/components/staff-dashboard/QuestionPaperGe
 import StaffProfile from '@/components/staff-dashboard/staffprofile';
 import LeaveRequests from '@/components/staff-dashboard/leaverequests';
 import SalarySlips from '@/components/staff-dashboard/salaryslips';
-import NoticesView from '@/components/staff-dashboard/notices'; // Import added
+import NoticesView from '@/components/staff-dashboard/notices';
+import OnlineTestPaperGenerator from '@/components/staff-dashboard/onlinetestpapergenerator';
 
 const card = { background: '#FFFFFF', border: '1px solid #E2E7EE' };
 
@@ -72,6 +73,7 @@ export default function StaffDashboard() {
     'Homework & Assignments',
     'Marks Entry',
     'Question Paper Generator',
+    'Online Test Paper Generator',
     'Leave Requests',
     'Salary Slips',
     'Parents Communication',
@@ -277,6 +279,8 @@ export default function StaffDashboard() {
 
             {activeTab === 'Question Paper Generator' && <QuestionPaperGenerator />}
 
+            {activeTab === 'Online Test Paper Generator' && <OnlineTestPaperGenerator />}
+
             {activeTab === 'Leave Requests' && <LeaveRequests />}
 
             {activeTab === 'Salary Slips' && <SalarySlips />}
@@ -293,6 +297,7 @@ export default function StaffDashboard() {
               activeTab !== 'Class Schedule' &&
               activeTab !== 'Homework & Assignments' &&
               activeTab !== 'Question Paper Generator' &&
+              activeTab !== 'Online Test Paper Generator' &&
               activeTab !== 'Leave Requests' &&
               activeTab !== 'Salary Slips' &&
               activeTab !== 'Parents Communication' &&
