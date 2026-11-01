@@ -7,7 +7,7 @@ import MyDashboardView from '@/components/staff-dashboard/mydashboard';
 import AttendanceView from '@/components/staff-dashboard/AttendanceView';
 import ClassSchedule from '@/components/staff-dashboard/ClassSchedule';
 import NoticesCard from '@/components/staff-dashboard/NoticesCard';
-import TimetableView from '@/components/staff-dashboard/TimetableView';
+import TimetableView from '@/components/staff-dashboard/mytimetable';
 import HomeworkAndAssignments from '@/components/staff-dashboard/HomeworkAndAssignments';
 import ParentsCommunication from '@/components/staff-dashboard/ParentsCommunication';
 import QuestionPaperGenerator from '@/components/staff-dashboard/QuestionPaperGenerator';
