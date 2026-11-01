@@ -9,6 +9,7 @@ import NoticesCard from '@/components/staff-dashboard/NoticesCard';
 import TimetableView from '@/components/staff-dashboard/TimetableView';
 import HomeworkAndAssignments from '@/components/staff-dashboard/HomeworkAndAssignments';
 import ParentsCommunication from '@/components/staff-dashboard/ParentsCommunication';
+import QuestionPaperGenerator from '@/components/staff-dashboard/QuestionPaperGenerator';
 
 const card = { background: '#FFFFFF', border: '1px solid #E2E7EE' };
 
@@ -75,6 +76,7 @@ export default function StaffDashboard() {
     'Class Schedule',
     'Homework & Assignments',
     'Marks Entry',
+    'Question Paper Generator',
     'Leave Requests',
     'Salary Slips',
     'Parents Communication',
@@ -334,11 +336,13 @@ export default function StaffDashboard() {
 
             {activeTab === 'Homework & Assignments' && <HomeworkAndAssignments />}
 
+            {activeTab === 'Question Paper Generator' && <QuestionPaperGenerator />}
+
             {activeTab === 'Parents Communication' && <ParentsCommunication />}
 
             {activeTab === 'Notices' && <NoticesCard notices={notices} />}
 
-            {activeTab !== 'My Dashboard' && activeTab !== 'Mark Attendance' && activeTab !== 'My Timetable' && activeTab !== 'Class Schedule' && activeTab !== 'Homework & Assignments' && activeTab !== 'Parents Communication' && activeTab !== 'Notices' && (
+            {activeTab !== 'My Dashboard' && activeTab !== 'Mark Attendance' && activeTab !== 'My Timetable' && activeTab !== 'Class Schedule' && activeTab !== 'Homework & Assignments' && activeTab !== 'Question Paper Generator' && activeTab !== 'Parents Communication' && activeTab !== 'Notices' && (
               <div
                 className="flex items-center justify-center h-64 rounded-2xl shadow-sm font-bold uppercase tracking-widest text-sm"
                 style={{ ...card, color: '#5C6B7A' }}
