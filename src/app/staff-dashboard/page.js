@@ -12,6 +12,8 @@ import HomeworkAndAssignments from '@/components/staff-dashboard/HomeworkAndAssi
 import ParentsCommunication from '@/components/staff-dashboard/ParentsCommunication';
 import QuestionPaperGenerator from '@/components/staff-dashboard/QuestionPaperGenerator';
 import StaffProfile from '@/components/staff-dashboard/staffprofile';
+import LeaveRequests from '@/components/staff-dashboard/leaverequests';
+import SalarySlips from '@/components/staff-dashboard/salaryslips';
 
 const card = { background: '#FFFFFF', border: '1px solid #E2E7EE' };
 
@@ -274,6 +276,10 @@ export default function StaffDashboard() {
 
             {activeTab === 'Question Paper Generator' && <QuestionPaperGenerator />}
 
+            {activeTab === 'Leave Requests' && <LeaveRequests />}
+
+            {activeTab === 'Salary Slips' && <SalarySlips />}
+
             {activeTab === 'Parents Communication' && <ParentsCommunication />}
 
             {activeTab === 'Notices' && <NoticesCard notices={notices} />}
@@ -286,6 +292,8 @@ export default function StaffDashboard() {
               activeTab !== 'Class Schedule' &&
               activeTab !== 'Homework & Assignments' &&
               activeTab !== 'Question Paper Generator' &&
+              activeTab !== 'Leave Requests' &&
+              activeTab !== 'Salary Slips' &&
               activeTab !== 'Parents Communication' &&
               activeTab !== 'Notices' &&
               activeTab !== 'My Profile' && (
