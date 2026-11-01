@@ -14,6 +14,7 @@ import QuestionPaperGenerator from '@/components/staff-dashboard/QuestionPaperGe
 import StaffProfile from '@/components/staff-dashboard/staffprofile';
 import LeaveRequests from '@/components/staff-dashboard/leaverequests';
 import SalarySlips from '@/components/staff-dashboard/salaryslips';
+import NoticesView from '@/components/staff-dashboard/notices'; // Import added
 
 const card = { background: '#FFFFFF', border: '1px solid #E2E7EE' };
 
@@ -282,7 +283,7 @@ export default function StaffDashboard() {
 
             {activeTab === 'Parents Communication' && <ParentsCommunication />}
 
-            {activeTab === 'Notices' && <NoticesCard notices={notices} />}
+            {activeTab === 'Notices' && <NoticesView notices={notices} />}
 
             {activeTab === 'My Profile' && <StaffProfile staff={staff} />}
 
