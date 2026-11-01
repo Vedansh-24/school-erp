@@ -292,6 +292,7 @@ export default function FeeCollectionReceipt() {
       ? String(currentStudent.sr_no) 
       : (!isValidUUID(selectedStudentId) ? String(selectedStudentId) : null);
 
+    // Explicitly mapping all 19 columns of fee_collections table
     const txData = {
       receipt_no: manualReceiptNo || Math.floor(1000 + Math.random() * 9000).toString(),
       student_id: studentUuid,
@@ -306,6 +307,8 @@ export default function FeeCollectionReceipt() {
       installment_2_amount: i2,
       installment_3_amount: i3,
       installment_4_amount: i4,
+      fee_paid: mainFee,           // Stores fee amount (tuition / installment) for the row
+      penalty_paid: pAmount,       // Stores penalty amount for the row
       total_paid: totalPaidVal,
       session: currentStudent?.session || '2026-2027'
     };
@@ -349,13 +352,17 @@ export default function FeeCollectionReceipt() {
     setReceiptDate(tx.receipt_date);
     setPaymentMode(tx.payment_mode || 'Cash');
     
-    const existingMainFee = (tx.tuition_fee_amount || 0) + 
+    // Primary extraction from fee_paid or fallback to sum of fee fields
+    const existingMainFee = tx.fee_paid ?? (
+                            (tx.tuition_fee_amount || 0) + 
                             (tx.installment_1_amount || 0) + 
                             (tx.installment_2_amount || 0) + 
                             (tx.installment_3_amount || 0) + 
-                            (tx.installment_4_amount || 0);
+                            (tx.installment_4_amount || 0));
+    const existingPenalty = tx.penalty_paid ?? tx.penalty_amount ?? 0;
+
     setFeeAmount(existingMainFee.toString());
-    setPenaltyAmount(tx.penalty_amount || '0');
+    setPenaltyAmount(existingPenalty.toString());
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -380,12 +387,13 @@ export default function FeeCollectionReceipt() {
     const { name, father, sr } = getStudentDetails(tx);
     const formattedDate = formatDate(tx.receipt_date);
     
-    const tuitionPaid = (tx.tuition_fee_amount || 0) + 
+    const tuitionPaid = tx.fee_paid ?? (
+                        (tx.tuition_fee_amount || 0) + 
                         (tx.installment_1_amount || 0) + 
                         (tx.installment_2_amount || 0) + 
                         (tx.installment_3_amount || 0) + 
-                        (tx.installment_4_amount || 0);
-    const penaltyPaid = tx.penalty_amount || 0;
+                        (tx.installment_4_amount || 0));
+    const penaltyPaid = tx.penalty_paid ?? tx.penalty_amount ?? 0;
     const modeDisplay = tx.payment_mode === 'Cash' ? 'Cash (नकद)' : tx.payment_mode;
 
     const msg = `🧾 *BLUE HEAVEN KIDS ACADEMY*
@@ -753,11 +761,13 @@ Thank you!
               ) : (
                 transactions.map((tx) => {
                   const { name } = getStudentDetails(tx);
-                  const feeAmt = (tx.tuition_fee_amount || 0) + 
+                  const feeAmt = tx.fee_paid ?? (
+                                 (tx.tuition_fee_amount || 0) + 
                                  (tx.installment_1_amount || 0) + 
                                  (tx.installment_2_amount || 0) + 
                                  (tx.installment_3_amount || 0) + 
-                                 (tx.installment_4_amount || 0);
+                                 (tx.installment_4_amount || 0));
+                  const penaltyAmt = tx.penalty_paid ?? tx.penalty_amount ?? 0;
 
                   return (
                     <tr key={tx.id} className="hover:bg-slate-50/80 transition">
@@ -775,7 +785,7 @@ Thank you!
                       </td>
                       <td className="p-3.5 text-indigo-800 font-bold text-[12px]">
                         <div>Fee Amount: ₹{feeAmt}</div>
-                        {tx.penalty_amount > 0 && <div className="text-rose-600">Penalty: ₹{tx.penalty_amount}</div>}
+                        {penaltyAmt > 0 && <div className="text-rose-600">Penalty: ₹{penaltyAmt}</div>}
                       </td>
                       <td className="p-3.5 font-extrabold text-emerald-600 text-[15px]">₹{tx.total_paid}</td>
                       
@@ -823,12 +833,13 @@ Thank you!
       {selectedReceiptTx && (() => {
         const { name, father, sr } = getStudentDetails(selectedReceiptTx);
 
-        const tuitionPaid = (selectedReceiptTx.tuition_fee_amount || 0) + 
+        const tuitionPaid = selectedReceiptTx.fee_paid ?? (
+                            (selectedReceiptTx.tuition_fee_amount || 0) + 
                             (selectedReceiptTx.installment_1_amount || 0) + 
                             (selectedReceiptTx.installment_2_amount || 0) + 
                             (selectedReceiptTx.installment_3_amount || 0) + 
-                            (selectedReceiptTx.installment_4_amount || 0);
-        const penaltyPaid = selectedReceiptTx.penalty_amount || 0;
+                            (selectedReceiptTx.installment_4_amount || 0));
+        const penaltyPaid = selectedReceiptTx.penalty_paid ?? selectedReceiptTx.penalty_amount ?? 0;
         const totalReceived = selectedReceiptTx.total_paid || (tuitionPaid + penaltyPaid);
 
         return (

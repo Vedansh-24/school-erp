@@ -1,5 +1,7 @@
 'use client';
-import { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function ExpensesLog() {
   // Helper function current date (YYYY-MM-DD) input date picker ke liye
@@ -14,12 +16,11 @@ export default function ExpensesLog() {
         // YYYY-MM-DD -> DD-MM-YYYY
         return `${parts[2]}-${parts[1]}-${parts[0]}`;
       }
-      return dateStr; // Pehle se hi DD-MM-YYYY hai
+      return dateStr;
     }
     if (dateStr.includes('/')) {
       const parts = dateStr.split('/');
       if (parts[2].length === 4) {
-        // DD/MM/YYYY -> DD-MM-YYYY
         return `${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}-${parts[2]}`;
       }
     }
@@ -32,11 +33,11 @@ export default function ExpensesLog() {
     if (dateStr.includes('-')) {
       const parts = dateStr.split('-');
       if (parts[0].length === 4) return dateStr; // YYYY-MM-DD
-      if (parts[2].length === 4) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`; // DD-MM-YYYY -> YYYY-MM-DD
+      if (parts[2].length === 4) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
     }
     if (dateStr.includes('/')) {
       const parts = dateStr.split('/');
-      if (parts[2].length === 4) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`; // DD/MM/YYYY -> YYYY-MM-DD
+      if (parts[2].length === 4) return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
     }
     return dateStr;
   };
@@ -50,14 +51,46 @@ export default function ExpensesLog() {
   // Edit track karne ke liye state
   const [editingId, setEditingId] = useState(null);
 
-  const [expensesList, setExpensesList] = useState([
-    { id: 1, date: '24-08-2026', particulars: 'Petrol', category: 'Other Expense', mode: 'UPI / Online', amount: 2000 },
-    { id: 2, date: '14-08-2026', particulars: 'petrol', category: 'Other Expense', mode: 'Cash', amount: 2000 },
-    { id: 3, date: '19-08-2026', particulars: 'Petrol', category: 'Other Expense', mode: 'UPI / Online', amount: 2000 },
-    { id: 4, date: '11-08-2026', particulars: 'Socks Amount', category: 'Other Expense', mode: 'UPI / Online', amount: 1500 },
-    { id: 5, date: '12-08-2026', particulars: 'Socks Amount', category: 'Other Expense', mode: 'UPI / Online', amount: 2250 },
-    { id: 6, date: '12-08-2026', particulars: 'Advance for uniform making', category: 'Other Expense', mode: 'UPI / Online', amount: 10000 },
-  ]);
+  // Dynamic state replacing all dummy data
+  const [expensesList, setExpensesList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Initial Data Fetch from Supabase Table: expenses
+  useEffect(() => {
+    fetchExpenses();
+  }, []);
+
+  const fetchExpenses = async () => {
+    setLoading(true);
+    try {
+      if (!supabase) return;
+
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('id, expense_title, category, payment_mode, amount, expense_date, session')
+        .order('expense_date', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching expenses from Supabase:', error.message);
+      } else if (data) {
+        // Map Supabase columns directly to table display structure
+        const mappedList = data.map(item => ({
+          id: item.id,
+          date: item.expense_date,
+          particulars: item.expense_title,
+          category: item.category,
+          mode: item.payment_mode,
+          amount: item.amount,
+          session: item.session
+        }));
+        setExpensesList(mappedList);
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const resetForm = () => {
     setTitle('');
@@ -68,54 +101,75 @@ export default function ExpensesLog() {
     setEditingId(null);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!title.trim() || !amount) {
       alert('कृपया Expense Title और Amount भरें!');
       return;
     }
 
-    const formattedDate = formatDateForDisplay(expenseDate || getTodayDateForInput());
+    const payload = {
+      expense_title: title,
+      category: category,
+      payment_mode: paymentMode,
+      amount: Number(amount),
+      expense_date: expenseDate || getTodayDateForInput()
+    };
 
-    if (editingId) {
-      // Record ko update karne ke liye
-      setExpensesList(
-        expensesList.map((item) =>
-          item.id === editingId
-            ? {
-                ...item,
-                date: formattedDate,
-                particulars: title,
-                category: category,
-                mode: paymentMode,
-                amount: Number(amount)
-              }
-            : item
-        )
-      );
-      alert('खर्च का रिकॉर्ड सफलतापूर्वक अपडेट कर दिया गया है!');
-    } else {
-      // Naya record add karne ke liye
-      const newRecord = {
-        id: Date.now(),
-        date: formattedDate,
-        particulars: title,
-        category: category,
-        mode: paymentMode,
-        amount: Number(amount)
-      };
-      setExpensesList([newRecord, ...expensesList]);
-      alert('खर्च का रिकॉर्ड सफलतापूर्वक सेव कर लिया गया है!');
+    try {
+      if (editingId) {
+        // Update Supabase Record
+        const { error } = await supabase
+          .from('expenses')
+          .update(payload)
+          .eq('id', editingId);
+
+        if (error) {
+          alert('Error updating record: ' + error.message);
+          return;
+        }
+
+        alert('खर्च का रिकॉर्ड सफलतापूर्वक अपडेट कर दिया गया है!');
+      } else {
+        // Insert New Supabase Record
+        const { error } = await supabase
+          .from('expenses')
+          .insert([payload]);
+
+        if (error) {
+          alert('Error saving record: ' + error.message);
+          return;
+        }
+
+        alert('खर्च का रिकॉर्ड सफलतापूर्वक सेव कर लिया गया है!');
+      }
+
+      resetForm();
+      fetchExpenses(); // Refresh list after saving
+    } catch (err) {
+      console.error('Save error:', err);
     }
-
-    resetForm();
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('क्या आप इस खर्च के रिकॉर्ड को डिलीट करना चाहते हैं?')) {
-      setExpensesList(expensesList.filter(item => item.id !== id));
-      if (editingId === id) {
-        resetForm();
+      try {
+        const { error } = await supabase
+          .from('expenses')
+          .delete()
+          .eq('id', id);
+
+        if (error) {
+          alert('Error deleting record: ' + error.message);
+          return;
+        }
+
+        setExpensesList(expensesList.filter(item => item.id !== id));
+        if (editingId === id) {
+          resetForm();
+        }
+      } catch (err) {
+        console.error('Delete error:', err);
       }
     }
   };
@@ -254,7 +308,13 @@ export default function ExpensesLog() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 text-[13px] font-normal text-slate-800">
-                {expensesList.length > 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="6" className="p-10 text-center text-[13px] text-slate-500 font-medium">
+                      Loading expenses data from database...
+                    </td>
+                  </tr>
+                ) : expensesList.length > 0 ? (
                   expensesList.map((item) => (
                     <tr 
                       key={item.id} 
@@ -290,7 +350,7 @@ export default function ExpensesLog() {
                 ) : (
                   <tr>
                     <td colSpan="6" className="p-10 text-center text-[13px] text-slate-500">
-                      No expense records found.
+                      No expense records found in database.
                     </td>
                   </tr>
                 )}

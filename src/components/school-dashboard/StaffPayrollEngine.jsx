@@ -40,6 +40,7 @@ export default function StaffPayrollEngine() {
   const [payModalStaff, setPayModalStaff] = useState(null);
   const [payAmountInput, setPayAmountInput] = useState('');
   const [payDateInput, setPayDateInput] = useState('');
+  const [payModeInput, setPayModeInput] = useState('Cash');
 
   // Load data from Supabase on component mount
   useEffect(() => {
@@ -51,6 +52,9 @@ export default function StaffPayrollEngine() {
   const fetchStaffList = async () => {
     setLoading(true);
     try {
+      if (!supabase) return;
+
+      // Fetch Staff main table along with relational joins for staff_class_subjects and staff_payments
       const { data: staffData, error: staffErr } = await supabase
         .from('staff')
         .select(`
@@ -62,13 +66,17 @@ export default function StaffPayrollEngine() {
 
       if (staffErr) throw staffErr;
 
-      const { data: attData } = await supabase
+      // Fetch Attendance logs for present/absent counts
+      const { data: attData, error: attErr } = await supabase
         .from('staff_attendance')
-        .select('staff_id, status');
+        .select('id, staff_id, staff_name, attendance_date, status, remarks, session, created_at, marked_by, check_in_time, check_out_time');
+
+      if (attErr) console.error('Attendance fetch error:', attErr.message);
 
       const attendanceMap = {};
       if (attData) {
         attData.forEach((item) => {
+          if (!item.staff_id) return;
           if (!attendanceMap[item.staff_id]) {
             attendanceMap[item.staff_id] = { present: 0, absent: 0 };
           }
@@ -78,6 +86,7 @@ export default function StaffPayrollEngine() {
       }
 
       const formatted = (staffData || []).map((s) => {
+        // Compute total paid from staff_payments table
         const totalPaid = (s.staff_payments || []).reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
         const att = attendanceMap[s.id] || { present: 0, absent: 0 };
 
@@ -101,8 +110,9 @@ export default function StaffPayrollEngine() {
           name: s.full_name,
           user: s.username || 'N/A',
           password: s.password || '',
-          mobile: s.mobile || '',
+          mobile: s.mobile || s.mobile_number || '',
           salary: s.monthly_salary || 0,
+          designation: s.designation || 'Staff',
           presentAbsent: `${att.present}P / ${att.absent}A`,
           presentCount: att.present || 0,
           absentCount: att.absent || 0,
@@ -167,6 +177,7 @@ export default function StaffPayrollEngine() {
           .update({
             full_name: staffName,
             mobile: mobile,
+            mobile_number: mobile,
             monthly_salary: Number(salary),
             username: username || staffName.toLowerCase().slice(0, 4),
             password: password || '123456',
@@ -184,10 +195,12 @@ export default function StaffPayrollEngine() {
             {
               full_name: staffName,
               mobile: mobile,
+              mobile_number: mobile,
               monthly_salary: Number(salary),
               username: username || staffName.toLowerCase().slice(0, 4),
               password: password || '123456',
-              permissions: permissions
+              permissions: permissions,
+              status: 'Active'
             }
           ])
           .select()
@@ -274,11 +287,22 @@ export default function StaffPayrollEngine() {
     }
 
     try {
+      const today = new Date();
+      const currentMonth = today.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+      // Insert record matching all columns of staff_payments table
       const { error } = await supabase.from('staff_payments').insert([
         {
           staff_id: payModalStaff.id,
+          staff_name: payModalStaff.name,
+          designation: payModalStaff.designation || 'Staff',
           amount: Number(payAmountInput),
-          payment_mode: 'Cash',
+          salary_paid: Number(payAmountInput),
+          salary_due: Math.max(0, payModalStaff.dueSalary - Number(payAmountInput)),
+          payment_date: payDateInput || new Date().toISOString().split('T')[0],
+          payment_mode: payModeInput,
+          payment_month: currentMonth,
+          contact_number: payModalStaff.mobile,
           remarks: 'Salary Payment',
           session: '2026-2027'
         }
@@ -656,7 +680,7 @@ export default function StaffPayrollEngine() {
         </div>
       </div>
 
-      {/* SUMMARY MODAL POPUP (Table Format & Dark Headings - BLUE HEAVEN KIDS ACADEMY) */}
+      {/* SUMMARY MODAL POPUP */}
       {summaryModalStaff && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white text-slate-900 border-2 border-slate-400 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
@@ -761,9 +785,11 @@ export default function StaffPayrollEngine() {
                       ) : (
                         summaryModalStaff.payments.map((p, i) => (
                           <tr key={i} className="hover:bg-slate-50">
-                            <td className="px-4 py-2.5 border-r border-slate-300 font-bold">{new Date(p.created_at).toLocaleDateString()}</td>
+                            <td className="px-4 py-2.5 border-r border-slate-300 font-bold">
+                              {p.payment_date ? new Date(p.payment_date).toLocaleDateString() : new Date(p.created_at).toLocaleDateString()}
+                            </td>
                             <td className="px-4 py-2.5 border-r border-slate-300 font-semibold">{p.payment_mode || 'Cash'}</td>
-                            <td className="px-4 py-2.5 text-emerald-800 font-extrabold border-r border-slate-300">₹{p.amount}</td>
+                            <td className="px-4 py-2.5 text-emerald-800 font-extrabold border-r border-slate-300">₹{p.amount || p.salary_paid}</td>
                             <td className="px-4 py-2.5 text-emerald-800 font-bold">Success</td>
                           </tr>
                         ))
@@ -853,6 +879,8 @@ export default function StaffPayrollEngine() {
                 <div>
                   <label className="block text-[12px] font-bold text-slate-800 mb-1">Payment Mode</label>
                   <select
+                    value={payModeInput}
+                    onChange={(e) => setPayModeInput(e.target.value)}
                     className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
                   >
                     <option value="Cash">Cash</option>
