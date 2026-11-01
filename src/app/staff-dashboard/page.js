@@ -3,17 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-// ---- Design tokens (standard palette) ----
-// Navy    #1B3A6B  |  Steel Blue #2F6690  |  Gold #C6952C
-// Canvas  #F5F7FA  |  Surface #FFFFFF     |  Hairline #E2E7EE
-// Ink     #1A2332  |  Slate #5C6B7A
-// Success #2E7D4F  |  Danger  #B3432B     |  Warning-tone #8A6512
-// Logo, sidebar active-item multi-color border, ERP title gradient,
-// school name gradient and button colors follow the school dashboard (unchanged).
+import AttendanceView from '@/components/staff-dashboard/AttendanceView';
+import ClassSchedule from '@/components/staff-dashboard/ClassSchedule';
+import NoticesCard from '@/components/staff-dashboard/NoticesCard';
+import TimetableView from '@/components/staff-dashboard/TimetableView';
 
 const card = { background: '#FFFFFF', border: '1px solid #E2E7EE' };
 
-// Transparent Background Logo Component (unchanged)
 const TransparentSchoolLogo = ({ src = '/school-logo.png' }) => {
   const [cleanLogoSrc, setCleanLogoSrc] = useState(src);
 
@@ -74,6 +70,7 @@ export default function StaffDashboard() {
     'My Dashboard',
     'Mark Attendance',
     'My Timetable',
+    'Class Schedule',
     'Homework & Assignments',
     'Marks Entry',
     'Leave Requests',
@@ -83,7 +80,6 @@ export default function StaffDashboard() {
     'My Profile',
   ];
 
-  // Sample data (replace with API data)
   const staff = { name: 'Mrs. Sunita Sharma', role: 'Class Teacher – Fourth' };
 
   const stats = [
@@ -240,13 +236,12 @@ export default function StaffDashboard() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search student (Name, SR, M..."
+                  placeholder="Search student (Name, SR..."
                   className="text-xs sm:text-sm font-semibold pl-9 pr-3.5 py-2 rounded-md w-56 outline-none shadow-sm"
                   style={{ background: '#F5F7FA', color: '#1A2332', border: '1px solid #E2E7EE' }}
                 />
               </div>
 
-              {/* Button color unchanged */}
               <button
                 onClick={() => router.push('/')}
                 className="bg-[#EF4444] hover:bg-[#dc2626] text-white text-xs sm:text-sm px-4 py-2 rounded-md font-bold transition shadow-md hover:scale-[1.02] active:scale-95"
@@ -329,80 +324,15 @@ export default function StaffDashboard() {
               </div>
             )}
 
-            {activeTab === 'Mark Attendance' && (
-              <div className="rounded-lg shadow-sm" style={card}>
-                <div className="px-5 py-3.5 flex items-center justify-between gap-3 flex-wrap" style={{ borderBottom: '1px solid #E2E7EE' }}>
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-sm font-bold uppercase tracking-wider" style={{ color: '#1B3A6B' }}>Mark Attendance</h3>
-                    <select
-                      value={attClass}
-                      onChange={(e) => setAttClass(e.target.value)}
-                      className="text-xs sm:text-sm font-bold rounded-md px-3 py-2 outline-none cursor-pointer"
-                      style={{ background: '#F5F7FA', color: '#2F6690', border: '1px solid #E2E7EE' }}
-                    >
-                      {myClasses.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-bold">
-                    <span className="px-2 py-1 rounded-sm" style={{ background: '#EAF4EE', color: '#2E7D4F' }}>Present: {presentCount}</span>
-                    <span className="px-2 py-1 rounded-sm" style={{ background: '#F8E9E5', color: '#B3432B' }}>Absent: {absentCount}</span>
-                  </div>
-                </div>
+            {activeTab === 'Mark Attendance' && <AttendanceView students={students} attClass={attClass} setAttClass={setAttClass} myClasses={myClasses} attendance={attendance} setAttendance={setAttendance} />}
 
-                <ul>
-                  {students.map((s, i) => (
-                    <li
-                      key={s.id}
-                      className="px-5 py-3 flex items-center justify-between"
-                      style={{ borderTop: i ? '1px solid #E2E7EE' : 'none', background: i % 2 ? '#FAFBFC' : 'transparent' }}
-                    >
-                      <div>
-                        <div className="text-sm font-bold" style={{ color: '#1A2332' }}>{s.name}</div>
-                        <div className="text-xs font-semibold" style={{ color: '#5C6B7A' }}>SR No. {s.sr}</div>
-                      </div>
-                      {/* Button colors match existing dashboard buttons */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => setAttendance({ ...attendance, [s.id]: 'P' })}
-                          className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition ${
-                            attendance[s.id] === 'P' ? 'bg-[#0D9488] text-white shadow-md' : 'bg-[#F5F7FA] text-slate-600 hover:bg-[#E2E7EE]'
-                          }`}
-                        >
-                          Present
-                        </button>
-                        <button
-                          onClick={() => setAttendance({ ...attendance, [s.id]: 'A' })}
-                          className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition ${
-                            attendance[s.id] === 'A' ? 'bg-[#EF4444] text-white shadow-md' : 'bg-[#F5F7FA] text-slate-600 hover:bg-[#E2E7EE]'
-                          }`}
-                        >
-                          Absent
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+            {activeTab === 'My Timetable' && <TimetableView timetable={timetable} />}
 
-                <div className="px-5 py-4 flex items-center gap-3" style={{ borderTop: '1px solid #E2E7EE' }}>
-                  <button
-                    onClick={() => markAll('P')}
-                    className="bg-[#0D9488] hover:bg-[#0f766e] text-white text-xs sm:text-sm px-3.5 py-2 rounded-md font-bold transition shadow-md"
-                  >
-                    Mark All Present
-                  </button>
-                  <button
-                    onClick={() => alert(`Attendance saved for Class ${attClass}`)}
-                    className="bg-[#0284C7] hover:bg-[#0369a1] text-white text-xs sm:text-sm px-3.5 py-2 rounded-md font-bold transition shadow-md"
-                  >
-                    💾 Save Attendance
-                  </button>
-                </div>
-              </div>
-            )}
+            {activeTab === 'Class Schedule' && <ClassSchedule />}
 
-            {activeTab !== 'My Dashboard' && activeTab !== 'Mark Attendance' && (
+            {activeTab === 'Notices' && <NoticesCard notices={notices} />}
+
+            {activeTab !== 'My Dashboard' && activeTab !== 'Mark Attendance' && activeTab !== 'My Timetable' && activeTab !== 'Class Schedule' && activeTab !== 'Notices' && (
               <div
                 className="flex items-center justify-center h-64 rounded-2xl shadow-sm font-bold uppercase tracking-widest text-sm"
                 style={{ ...card, color: '#5C6B7A' }}
