@@ -154,7 +154,7 @@ export default function StaffDashboard() {
 
       <div className="flex flex-1 min-h-0">
 
-        {/* Left Sidebar */}
+        {/* Left Sidebar with auto-scroll for all items */}
         <aside
           className="w-72 flex flex-col justify-between shrink-0 p-3 bg-white border-r border-[#E2E7EE] h-full"
         >
@@ -175,7 +175,7 @@ export default function StaffDashboard() {
                 <button
                   key={item}
                   onClick={() => setActiveTab(item)}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs sm:text-sm transition-all duration-200 font-bold cursor-pointer ${
+                  className={`w-full text-left px-3.5 py-2 rounded-lg text-xs sm:text-sm transition-all duration-200 font-bold cursor-pointer ${
                     activeTab === item
                       ? 'text-slate-950 font-black shadow-md translate-x-1'
                       : 'font-semibold hover:bg-[#F5F7FA]'
