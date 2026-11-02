@@ -154,13 +154,13 @@ export default function StaffDashboard() {
 
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
-        {/* Left Sidebar with Smooth Vertical Scrollbar */}
+        {/* Left Sidebar with Dedicated Independent Scrollbar */}
         <aside
           className="w-72 flex flex-col shrink-0 p-3 bg-white border-r border-[#E2E7EE] h-full overflow-hidden"
         >
           <div className="flex flex-col h-full min-h-0">
             
-            {/* School Title & Logo Header */}
+            {/* Header / Logo */}
             <div className="mb-2 pb-2 text-center flex flex-col items-center shrink-0 border-b border-[#E2E7EE]">
               <h2 className="text-[13px] sm:text-[14px] font-black uppercase whitespace-nowrap overflow-hidden tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] w-full text-center drop-shadow-md py-0.5">
                 BLUE HEAVEN KIDS ACADEMY
@@ -171,35 +171,37 @@ export default function StaffDashboard() {
               <TransparentSchoolLogo src="/school-logo.png" />
             </div>
 
-            {/* Scrollable Navigation Area */}
-            <nav className="space-y-1 overflow-y-auto flex-1 pr-1 border-b border-[#E2E7EE] pb-2">
-              {menuItems.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setActiveTab(item)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm transition-all duration-200 font-bold cursor-pointer ${
-                    activeTab === item
-                      ? 'text-slate-950 font-black shadow-sm translate-x-1'
-                      : 'font-semibold hover:bg-[#F5F7FA]'
-                  }`}
-                  style={
-                    activeTab === item
-                      ? {
-                          backgroundColor: '#FFFFFF',
-                          borderTop: '2px solid #FF6B8B',
-                          borderRight: '2px solid #00C9A7',
-                          borderBottom: '2px solid #FFB800',
-                          borderLeft: '4px solid #9D4EDD',
-                        }
-                      : { color: '#5C6B7A' }
-                  }
-                >
-                  {item}
-                </button>
-              ))}
-            </nav>
+            {/* Independent Scrollable Sidebar Menu Container */}
+            <div className="flex-1 min-h-0 overflow-y-auto pr-1 border-b border-[#E2E7EE] pb-2">
+              <nav className="space-y-1">
+                {menuItems.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => setActiveTab(item)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm transition-all duration-200 font-bold cursor-pointer ${
+                      activeTab === item
+                        ? 'text-slate-950 font-black shadow-sm translate-x-1'
+                        : 'font-semibold hover:bg-[#F5F7FA]'
+                    }`}
+                    style={
+                      activeTab === item
+                        ? {
+                            backgroundColor: '#FFFFFF',
+                            borderTop: '2px solid #FF6B8B',
+                            borderRight: '2px solid #00C9A7',
+                            borderBottom: '2px solid #FFB800',
+                            borderLeft: '4px solid #9D4EDD',
+                          }
+                        : { color: '#5C6B7A' }
+                    }
+                  >
+                    {item}
+                  </button>
+                ))}
+              </nav>
+            </div>
 
-            {/* Staff Identity Footer */}
+            {/* Staff Identity */}
             <div className="pt-2 flex items-center gap-3 shrink-0">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: '#1B3A6B' }}>
                 {staff.name.split(' ')[1].charAt(0)}
@@ -254,7 +256,7 @@ export default function StaffDashboard() {
             </div>
           </header>
 
-          {/* Dynamic Workspace Container */}
+          {/* Dynamic Workspace Area */}
           <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
 
             {activeTab === 'My Dashboard' && (
