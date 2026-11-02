@@ -15,6 +15,11 @@ export const metadata = {
   title: "MySchoolDashboard ERP System",
   description: "Blue Heaven Kids Academy Staff Portal",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icons/icon-192x192.png",
+    shortcut: "/icons/icon-192x192.png",
+    apple: "/icons/icon-192x192.png",
+  },
   openGraph: {
     title: "MySchoolDashboard ERP System",
     description: "Blue Heaven Kids Academy Staff Portal",
