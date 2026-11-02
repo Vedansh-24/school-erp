@@ -4,9 +4,10 @@ const nextConfig = withPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development', // Development mode mein disable rakh sakte hain
+  disable: process.env.NODE_ENV === 'development',
 })({
-  // Aapki purani nextConfig settings yahan hongi agar koi hain
+  // Yeh line add karni hai:
+  turbopack: {},
 });
 
 export default nextConfig;
