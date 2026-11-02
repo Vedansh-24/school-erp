@@ -20,7 +20,7 @@ import OnlineTestPaperGenerator from '@/components/staff-dashboard/onlinetestpap
 import SmartAnalytics from '@/components/staff-dashboard/SmartAnalytics';
 import BehaviorLog from '@/components/staff-dashboard/behaviorlog';
 
-// Sahi lowercase filename ke sath import path fix kar diya gaya hai
+// Correct path and lowercase matching the actual filename staffgatepass.jsx
 import StaffGatePass from '@/components/staff-dashboard/staffgatepass';
 
 const card = { background: '#FFFFFF', border: '1px solid #E2E7EE' };
