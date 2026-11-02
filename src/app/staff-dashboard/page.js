@@ -21,7 +21,7 @@ import SmartAnalytics from '@/components/staff-dashboard/SmartAnalytics';
 import BehaviorLog from '@/components/staff-dashboard/behaviorlog';
 
 // Correct path and lowercase matching the actual filename staffgatepass.jsx
-import StaffGatePass from '@/components/staff-dashboard/Staffgatepass';
+import StaffGatePass from '@/components/staff-dashboard/staffgatepass';
 
 const card = { background: '#FFFFFF', border: '1px solid #E2E7EE' };
 
