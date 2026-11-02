@@ -17,6 +17,7 @@ import LeaveRequests from '@/components/staff-dashboard/leaverequests';
 import SalarySlips from '@/components/staff-dashboard/salaryslips';
 import NoticesView from '@/components/staff-dashboard/notices';
 import OnlineTestPaperGenerator from '@/components/staff-dashboard/onlinetestpapergenerator';
+import SmartAnalytics from '@/components/staff-dashboard/SmartAnalytics';
 
 const card = { background: '#FFFFFF', border: '1px solid #E2E7EE' };
 
@@ -75,6 +76,7 @@ export default function StaffDashboard() {
     'Marks Entry',
     'Question Paper Generator',
     'Online Test Paper Generator',
+    'Smart Analytics',
     'Leave Requests',
     'Salary Slips',
     'Parents Communication',
@@ -284,6 +286,8 @@ export default function StaffDashboard() {
 
             {activeTab === 'Online Test Paper Generator' && <OnlineTestPaperGenerator />}
 
+            {activeTab === 'Smart Analytics' && <SmartAnalytics />}
+
             {activeTab === 'Leave Requests' && <LeaveRequests />}
 
             {activeTab === 'Salary Slips' && <SalarySlips />}
@@ -302,6 +306,7 @@ export default function StaffDashboard() {
               activeTab !== 'Marks Entry' &&
               activeTab !== 'Question Paper Generator' &&
               activeTab !== 'Online Test Paper Generator' &&
+              activeTab !== 'Smart Analytics' &&
               activeTab !== 'Leave Requests' &&
               activeTab !== 'Salary Slips' &&
               activeTab !== 'Parents Communication' &&
