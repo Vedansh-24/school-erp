@@ -15,6 +15,13 @@ export const metadata = {
   title: "MySchoolDashboard ERP System",
   description: "Blue Heaven Kids Academy Staff Portal",
   manifest: "/manifest.json",
+  openGraph: {
+    title: "MySchoolDashboard ERP System",
+    description: "Blue Heaven Kids Academy Staff Portal",
+    url: "https://school-erp-eta-nine.vercel.app",
+    siteName: "MySchoolDashboard ERP System",
+    type: "website",
+  },
 };
 
 export const viewport = {
@@ -30,4 +37,4 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col font-sans">{children}</body>
     </html>
   );
-}ok
+}
