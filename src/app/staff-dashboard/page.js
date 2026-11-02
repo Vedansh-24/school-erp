@@ -52,8 +52,8 @@ const TransparentSchoolLogo = ({ src = '/school-logo.png' }) => {
   }, [src]);
 
   return (
-    <div className="my-2 flex justify-center items-center p-1.5 rounded-xl shadow-md bg-white/90 border border-slate-200">
-      <img src={cleanLogoSrc} alt="School Logo" className="w-16 h-auto max-h-20 object-contain drop-shadow-md" />
+    <div className="my-1 flex justify-center items-center p-1 rounded-xl shadow-md bg-white/90 border border-slate-200">
+      <img src={cleanLogoSrc} alt="School Logo" className="w-14 h-auto max-h-16 object-contain drop-shadow-md" />
     </div>
   );
 };
@@ -138,27 +138,29 @@ export default function StaffDashboard() {
 
       {/* Top Header */}
       <div
-        className="px-6 py-3 flex items-center justify-between shadow-sm shrink-0"
+        className="px-6 py-2.5 flex items-center justify-between shadow-sm shrink-0"
         style={{ background: '#1B3A6B', borderBottom: '3px solid #C6952C' }}
       >
         <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-[#38BDF8] via-[#00C9A7] to-[#FFB800] font-black text-xl sm:text-2xl tracking-wider drop-shadow-md">
           MySchoolDashboard ERP System
         </h1>
         <div
-          className="font-extrabold text-sm sm:text-base tracking-wider uppercase px-3 py-1 rounded-full"
+          className="font-extrabold text-xs sm:text-sm tracking-wider uppercase px-3 py-1 rounded-full"
           style={{ color: '#C6952C', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(198,149,44,0.4)' }}
         >
           👩‍🏫 Staff Portal
         </div>
       </div>
 
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
 
-        {/* Left Sidebar with auto-scroll for all items */}
+        {/* Left Sidebar with Smooth Vertical Scrollbar */}
         <aside
-          className="w-72 flex flex-col justify-between shrink-0 p-3 bg-white border-r border-[#E2E7EE] h-full"
+          className="w-72 flex flex-col shrink-0 p-3 bg-white border-r border-[#E2E7EE] h-full overflow-hidden"
         >
           <div className="flex flex-col h-full min-h-0">
+            
+            {/* School Title & Logo Header */}
             <div className="mb-2 pb-2 text-center flex flex-col items-center shrink-0 border-b border-[#E2E7EE]">
               <h2 className="text-[13px] sm:text-[14px] font-black uppercase whitespace-nowrap overflow-hidden tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] w-full text-center drop-shadow-md py-0.5">
                 BLUE HEAVEN KIDS ACADEMY
@@ -169,25 +171,25 @@ export default function StaffDashboard() {
               <TransparentSchoolLogo src="/school-logo.png" />
             </div>
 
-            {/* Scrollable Navigation Bar */}
-            <nav className="space-y-1.5 overflow-y-auto flex-1 pr-1">
+            {/* Scrollable Navigation Area */}
+            <nav className="space-y-1 overflow-y-auto flex-1 pr-1 border-b border-[#E2E7EE] pb-2">
               {menuItems.map((item) => (
                 <button
                   key={item}
                   onClick={() => setActiveTab(item)}
-                  className={`w-full text-left px-3.5 py-2 rounded-lg text-xs sm:text-sm transition-all duration-200 font-bold cursor-pointer ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm transition-all duration-200 font-bold cursor-pointer ${
                     activeTab === item
-                      ? 'text-slate-950 font-black shadow-md translate-x-1'
+                      ? 'text-slate-950 font-black shadow-sm translate-x-1'
                       : 'font-semibold hover:bg-[#F5F7FA]'
                   }`}
                   style={
                     activeTab === item
                       ? {
                           backgroundColor: '#FFFFFF',
-                          borderTop: '3px solid #FF6B8B',
-                          borderRight: '3px solid #00C9A7',
-                          borderBottom: '3px solid #FFB800',
-                          borderLeft: '5px solid #9D4EDD',
+                          borderTop: '2px solid #FF6B8B',
+                          borderRight: '2px solid #00C9A7',
+                          borderBottom: '2px solid #FFB800',
+                          borderLeft: '4px solid #9D4EDD',
                         }
                       : { color: '#5C6B7A' }
                   }
@@ -197,8 +199,8 @@ export default function StaffDashboard() {
               ))}
             </nav>
 
-            {/* Staff Identity */}
-            <div className="mt-2 pt-2.5 flex items-center gap-3 shrink-0 border-t border-[#E2E7EE]">
+            {/* Staff Identity Footer */}
+            <div className="pt-2 flex items-center gap-3 shrink-0">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: '#1B3A6B' }}>
                 {staff.name.split(' ')[1].charAt(0)}
               </div>
@@ -207,22 +209,23 @@ export default function StaffDashboard() {
                 <div className="text-[10px] font-semibold truncate" style={{ color: '#5C6B7A' }}>{staff.role}</div>
               </div>
             </div>
+
           </div>
         </aside>
 
-        {/* Main Content */}
+        {/* Main Content Area */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ background: '#F5F7FA' }}>
 
           {/* Controls Bar */}
           <header
-            className="py-3 px-6 flex items-center justify-between gap-4 flex-wrap shadow-sm shrink-0 bg-white border-b border-[#E2E7EE]"
+            className="py-2.5 px-6 flex items-center justify-between gap-4 flex-wrap shadow-sm shrink-0 bg-white border-b border-[#E2E7EE]"
           >
             <div className="flex items-center gap-2">
               <span className="text-xs sm:text-sm font-bold" style={{ color: '#1A2332' }}>Session:</span>
               <select
                 value={activeSession}
                 onChange={(e) => setActiveSession(e.target.value)}
-                className="text-xs sm:text-sm font-bold rounded-md px-3 py-1.5 outline-none cursor-pointer shadow-sm bg-[#F5F7FA] text-[#2F6690] border border-[#E2E7EE]"
+                className="text-xs sm:text-sm font-bold rounded-md px-3 py-1 outline-none cursor-pointer shadow-sm bg-[#F5F7FA] text-[#2F6690] border border-[#E2E7EE]"
               >
                 {sessionsList.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -238,20 +241,20 @@ export default function StaffDashboard() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search student (Name, SR..."
-                  className="text-xs sm:text-sm font-semibold pl-9 pr-3.5 py-1.5 rounded-md w-56 outline-none shadow-sm bg-[#F5F7FA] text-[#1A2332] border border-[#E2E7EE]"
+                  className="text-xs sm:text-sm font-semibold pl-9 pr-3 py-1 rounded-md w-56 outline-none shadow-sm bg-[#F5F7FA] text-[#1A2332] border border-[#E2E7EE]"
                 />
               </div>
 
               <button
                 onClick={() => router.push('/')}
-                className="bg-[#EF4444] hover:bg-[#dc2626] text-white text-xs sm:text-sm px-4 py-1.5 rounded-md font-bold transition shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer"
+                className="bg-[#EF4444] hover:bg-[#dc2626] text-white text-xs sm:text-sm px-4 py-1 rounded-md font-bold transition shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer"
               >
                 Logout
               </button>
             </div>
           </header>
 
-          {/* Workspace Area */}
+          {/* Dynamic Workspace Container */}
           <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
 
             {activeTab === 'My Dashboard' && (
