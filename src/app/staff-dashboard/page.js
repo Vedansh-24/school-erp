@@ -156,11 +156,11 @@ export default function StaffDashboard() {
 
         {/* Left Sidebar */}
         <aside
-          className="w-72 flex flex-col justify-between shrink-0 p-4"
+          className="w-72 flex flex-col justify-between shrink-0 p-4 h-[calc(100vh-60px)] sticky top-0"
           style={{ background: '#FFFFFF', borderRight: '1px solid #E2E7EE' }}
         >
-          <div>
-            <div className="mb-4 pb-3 text-center flex flex-col items-center" style={{ borderBottom: '1px solid #E2E7EE' }}>
+          <div className="flex flex-col h-full min-h-0">
+            <div className="mb-3 pb-3 text-center flex flex-col items-center shrink-0" style={{ borderBottom: '1px solid #E2E7EE' }}>
               <h2 className="text-[14px] sm:text-[15px] font-black uppercase whitespace-nowrap overflow-hidden tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] w-full text-center drop-shadow-md py-1">
                 BLUE HEAVEN KIDS ACADEMY
               </h2>
@@ -170,14 +170,15 @@ export default function StaffDashboard() {
               <TransparentSchoolLogo src="/school-logo.png" />
             </div>
 
-            <nav className="space-y-2">
+            {/* Scrollable Navigation Bar */}
+            <nav className="space-y-2 overflow-y-auto flex-1 pr-1.5 custom-scrollbar">
               {menuItems.map((item) => (
                 <button
                   key={item}
                   onClick={() => setActiveTab(item)}
-                  className={`w-full text-left px-4 py-3 rounded-lg text-sm sm:text-base transition-all duration-200 font-bold ${
+                  className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-all duration-200 font-bold cursor-pointer ${
                     activeTab === item
-                      ? 'text-slate-950 font-black shadow-2xl translate-x-1'
+                      ? 'text-slate-950 font-black shadow-lg translate-x-1'
                       : 'font-semibold hover:bg-[#F5F7FA]'
                   }`}
                   style={
@@ -196,16 +197,16 @@ export default function StaffDashboard() {
                 </button>
               ))}
             </nav>
-          </div>
 
-          {/* Staff Identity */}
-          <div className="mt-4 pt-3 flex items-center gap-3" style={{ borderTop: '1px solid #E2E7EE' }}>
-            <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ background: '#1B3A6B' }}>
-              {staff.name.split(' ')[1].charAt(0)}
-            </div>
-            <div className="min-w-0">
-              <div className="text-sm font-bold truncate" style={{ color: '#1A2332' }}>{staff.name}</div>
-              <div className="text-xs font-semibold truncate" style={{ color: '#5C6B7A' }}>{staff.role}</div>
+            {/* Staff Identity */}
+            <div className="mt-3 pt-3 flex items-center gap-3 shrink-0" style={{ borderTop: '1px solid #E2E7EE' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ background: '#1B3A6B' }}>
+                {staff.name.split(' ')[1].charAt(0)}
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold truncate" style={{ color: '#1A2332' }}>{staff.name}</div>
+                <div className="text-xs font-semibold truncate" style={{ color: '#5C6B7A' }}>{staff.role}</div>
+              </div>
             </div>
           </div>
         </aside>
