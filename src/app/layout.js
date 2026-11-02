@@ -11,16 +11,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// School portal metadata aur PWA manifest configuration[cite: 13]
 export const metadata = {
-  title: "MySchoolDashboard ERP System",[cite: 13]
-  description: "Blue Heaven Kids Academy Staff Portal",[cite: 13]
-  manifest: "/manifest.json",[cite: 13]
+  title: "MySchoolDashboard ERP System",
+  description: "Blue Heaven Kids Academy Staff Portal",
+  manifest: "/manifest.json",
 };
 
-// Mobile browser ke liye theme color[cite: 13]
 export const viewport = {
-  themeColor: "#1B3A6B",[cite: 13]
+  themeColor: "#1B3A6B",
 };
 
 export default function RootLayout({ children }) {
