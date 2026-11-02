@@ -52,8 +52,8 @@ const TransparentSchoolLogo = ({ src = '/school-logo.png' }) => {
   }, [src]);
 
   return (
-    <div className="my-3 flex justify-center items-center p-2 rounded-xl shadow-lg bg-white/90 border border-slate-200">
-      <img src={cleanLogoSrc} alt="School Logo" className="w-20 h-auto max-h-24 object-contain drop-shadow-md" />
+    <div className="my-2 flex justify-center items-center p-1.5 rounded-xl shadow-md bg-white/90 border border-slate-200">
+      <img src={cleanLogoSrc} alt="School Logo" className="w-16 h-auto max-h-20 object-contain drop-shadow-md" />
     </div>
   );
 };
@@ -134,11 +134,11 @@ export default function StaffDashboard() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen font-sans" style={{ background: '#F5F7FA', color: '#1A2332' }}>
+    <div className="flex flex-col h-screen overflow-hidden font-sans" style={{ background: '#F5F7FA', color: '#1A2332' }}>
 
       {/* Top Header */}
       <div
-        className="px-6 py-3.5 flex items-center justify-between shadow-sm"
+        className="px-6 py-3 flex items-center justify-between shadow-sm shrink-0"
         style={{ background: '#1B3A6B', borderBottom: '3px solid #C6952C' }}
       >
         <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-[#38BDF8] via-[#00C9A7] to-[#FFB800] font-black text-xl sm:text-2xl tracking-wider drop-shadow-md">
@@ -156,29 +156,28 @@ export default function StaffDashboard() {
 
         {/* Left Sidebar */}
         <aside
-          className="w-72 flex flex-col justify-between shrink-0 p-4 h-[calc(100vh-60px)] sticky top-0"
-          style={{ background: '#FFFFFF', borderRight: '1px solid #E2E7EE' }}
+          className="w-72 flex flex-col justify-between shrink-0 p-3 bg-white border-r border-[#E2E7EE] h-full"
         >
           <div className="flex flex-col h-full min-h-0">
-            <div className="mb-3 pb-3 text-center flex flex-col items-center shrink-0" style={{ borderBottom: '1px solid #E2E7EE' }}>
-              <h2 className="text-[14px] sm:text-[15px] font-black uppercase whitespace-nowrap overflow-hidden tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] w-full text-center drop-shadow-md py-1">
+            <div className="mb-2 pb-2 text-center flex flex-col items-center shrink-0 border-b border-[#E2E7EE]">
+              <h2 className="text-[13px] sm:text-[14px] font-black uppercase whitespace-nowrap overflow-hidden tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] w-full text-center drop-shadow-md py-0.5">
                 BLUE HEAVEN KIDS ACADEMY
               </h2>
-              <p className="text-xs font-semibold mt-1" style={{ color: '#5C6B7A' }}>
+              <p className="text-[11px] font-semibold mt-0.5" style={{ color: '#5C6B7A' }}>
                 Session: <span className="font-bold" style={{ color: '#2F6690' }}>{activeSession}</span>
               </p>
               <TransparentSchoolLogo src="/school-logo.png" />
             </div>
 
             {/* Scrollable Navigation Bar */}
-            <nav className="space-y-2 overflow-y-auto flex-1 pr-1.5 custom-scrollbar">
+            <nav className="space-y-1.5 overflow-y-auto flex-1 pr-1">
               {menuItems.map((item) => (
                 <button
                   key={item}
                   onClick={() => setActiveTab(item)}
-                  className={`w-full text-left px-4 py-2.5 rounded-lg text-sm transition-all duration-200 font-bold cursor-pointer ${
+                  className={`w-full text-left px-3.5 py-2.5 rounded-lg text-xs sm:text-sm transition-all duration-200 font-bold cursor-pointer ${
                     activeTab === item
-                      ? 'text-slate-950 font-black shadow-lg translate-x-1'
+                      ? 'text-slate-950 font-black shadow-md translate-x-1'
                       : 'font-semibold hover:bg-[#F5F7FA]'
                   }`}
                   style={
@@ -199,33 +198,31 @@ export default function StaffDashboard() {
             </nav>
 
             {/* Staff Identity */}
-            <div className="mt-3 pt-3 flex items-center gap-3 shrink-0" style={{ borderTop: '1px solid #E2E7EE' }}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0" style={{ background: '#1B3A6B' }}>
+            <div className="mt-2 pt-2.5 flex items-center gap-3 shrink-0 border-t border-[#E2E7EE]">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: '#1B3A6B' }}>
                 {staff.name.split(' ')[1].charAt(0)}
               </div>
               <div className="min-w-0">
-                <div className="text-sm font-bold truncate" style={{ color: '#1A2332' }}>{staff.name}</div>
-                <div className="text-xs font-semibold truncate" style={{ color: '#5C6B7A' }}>{staff.role}</div>
+                <div className="text-xs font-bold truncate" style={{ color: '#1A2332' }}>{staff.name}</div>
+                <div className="text-[10px] font-semibold truncate" style={{ color: '#5C6B7A' }}>{staff.role}</div>
               </div>
             </div>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col min-w-0" style={{ background: '#F5F7FA' }}>
+        <main className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ background: '#F5F7FA' }}>
 
           {/* Controls Bar */}
           <header
-            className="py-3.5 px-6 flex items-center justify-between gap-4 flex-wrap shadow-sm"
-            style={{ background: '#FFFFFF', borderBottom: '1px solid #E2E7EE' }}
+            className="py-3 px-6 flex items-center justify-between gap-4 flex-wrap shadow-sm shrink-0 bg-white border-b border-[#E2E7EE]"
           >
             <div className="flex items-center gap-2">
               <span className="text-xs sm:text-sm font-bold" style={{ color: '#1A2332' }}>Session:</span>
               <select
                 value={activeSession}
                 onChange={(e) => setActiveSession(e.target.value)}
-                className="text-xs sm:text-sm font-bold rounded-md px-3 py-2 outline-none cursor-pointer shadow-sm"
-                style={{ background: '#F5F7FA', color: '#2F6690', border: '1px solid #E2E7EE' }}
+                className="text-xs sm:text-sm font-bold rounded-md px-3 py-1.5 outline-none cursor-pointer shadow-sm bg-[#F5F7FA] text-[#2F6690] border border-[#E2E7EE]"
               >
                 {sessionsList.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -241,14 +238,13 @@ export default function StaffDashboard() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search student (Name, SR..."
-                  className="text-xs sm:text-sm font-semibold pl-9 pr-3.5 py-2 rounded-md w-56 outline-none shadow-sm"
-                  style={{ background: '#F5F7FA', color: '#1A2332', border: '1px solid #E2E7EE' }}
+                  className="text-xs sm:text-sm font-semibold pl-9 pr-3.5 py-1.5 rounded-md w-56 outline-none shadow-sm bg-[#F5F7FA] text-[#1A2332] border border-[#E2E7EE]"
                 />
               </div>
 
               <button
                 onClick={() => router.push('/')}
-                className="bg-[#EF4444] hover:bg-[#dc2626] text-white text-xs sm:text-sm px-4 py-2 rounded-md font-bold transition shadow-md hover:scale-[1.02] active:scale-95"
+                className="bg-[#EF4444] hover:bg-[#dc2626] text-white text-xs sm:text-sm px-4 py-1.5 rounded-md font-bold transition shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer"
               >
                 Logout
               </button>
