@@ -20,7 +20,7 @@ import OnlineTestPaperGenerator from '@/components/staff-dashboard/onlinetestpap
 import SmartAnalytics from '@/components/staff-dashboard/SmartAnalytics';
 import BehaviorLog from '@/components/staff-dashboard/behaviorlog';
 
-// ⚠️ Note: Apne exact file name ke anusar casing adjust karein (e.g. staffgatepass / Staffgatepass / StaffGatePass)
+// Sahi lowercase filename ke sath import path fix kar diya gaya hai
 import StaffGatePass from '@/components/staff-dashboard/staffgatepass';
 
 const card = { background: '#FFFFFF', border: '1px solid #E2E7EE' };
@@ -157,10 +157,12 @@ export default function StaffDashboard() {
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* Left Sidebar with Independent Scroller */}
-        <aside className="w-72 flex flex-col shrink-0 p-3 bg-white border-r border-[#E2E7EE] h-full overflow-hidden">
+        <aside
+          className="w-72 flex flex-col shrink-0 p-3 bg-white border-r border-[#E2E7EE] h-full overflow-hidden"
+        >
           <div className="flex flex-col h-full min-h-0">
             
-            {/* Header / Logo */}
+            {/* School Title & Logo Header */}
             <div className="mb-2 pb-2 text-center flex flex-col items-center shrink-0 border-b border-[#E2E7EE]">
               <h2 className="text-[13px] sm:text-[14px] font-black uppercase whitespace-nowrap overflow-hidden tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] w-full text-center drop-shadow-md py-0.5">
                 BLUE HEAVEN KIDS ACADEMY
@@ -171,7 +173,7 @@ export default function StaffDashboard() {
               <TransparentSchoolLogo src="/school-logo.png" />
             </div>
 
-            {/* Dedicated Scrollable Menu (Fixes Hidden Items Issue) */}
+            {/* Scrollable Navigation Area with Scroller */}
             <div className="flex-1 min-h-0 overflow-y-auto pr-1 border-b border-[#E2E7EE] pb-2">
               <nav className="space-y-1">
                 {menuItems.map((item) => (
@@ -201,7 +203,7 @@ export default function StaffDashboard() {
               </nav>
             </div>
 
-            {/* Staff Profile Footer */}
+            {/* Staff Identity Footer */}
             <div className="pt-2 flex items-center gap-3 shrink-0">
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: '#1B3A6B' }}>
                 {staff.name.split(' ')[1].charAt(0)}
@@ -215,9 +217,10 @@ export default function StaffDashboard() {
           </div>
         </aside>
 
-        {/* Main Content Workspace */}
+        {/* Main Content Area */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ background: '#F5F7FA' }}>
 
+          {/* Controls Bar */}
           <header
             className="py-2.5 px-6 flex items-center justify-between gap-4 flex-wrap shadow-sm shrink-0 bg-white border-b border-[#E2E7EE]"
           >
@@ -255,6 +258,7 @@ export default function StaffDashboard() {
             </div>
           </header>
 
+          {/* Dynamic Workspace Container */}
           <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
 
             {activeTab === 'My Dashboard' && (
