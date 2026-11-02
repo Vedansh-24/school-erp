@@ -9,6 +9,7 @@ import ClassSchedule from '@/components/staff-dashboard/ClassSchedule';
 import NoticesCard from '@/components/staff-dashboard/NoticesCard';
 import TimetableView from '@/components/staff-dashboard/mytimetable';
 import HomeworkAndAssignments from '@/components/staff-dashboard/HomeworkAndAssignments';
+import MarksEntry from '@/components/staff-dashboard/marksentry';
 import ParentsCommunication from '@/components/staff-dashboard/ParentsCommunication';
 import QuestionPaperGenerator from '@/components/staff-dashboard/QuestionPaperGenerator';
 import StaffProfile from '@/components/staff-dashboard/staffprofile';
@@ -277,6 +278,8 @@ export default function StaffDashboard() {
 
             {activeTab === 'Homework & Assignments' && <HomeworkAndAssignments />}
 
+            {activeTab === 'Marks Entry' && <MarksEntry />}
+
             {activeTab === 'Question Paper Generator' && <QuestionPaperGenerator />}
 
             {activeTab === 'Online Test Paper Generator' && <OnlineTestPaperGenerator />}
@@ -296,6 +299,7 @@ export default function StaffDashboard() {
               activeTab !== 'My Timetable' &&
               activeTab !== 'Class Schedule' &&
               activeTab !== 'Homework & Assignments' &&
+              activeTab !== 'Marks Entry' &&
               activeTab !== 'Question Paper Generator' &&
               activeTab !== 'Online Test Paper Generator' &&
               activeTab !== 'Leave Requests' &&
