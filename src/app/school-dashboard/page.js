@@ -79,7 +79,7 @@ const TransparentSchoolLogo = ({ src = '/school-logo.png' }) => {
 
   return (
     <div 
-      className="my-2 sm:my-3 flex justify-center items-center p-1.5 sm:p-2 rounded-xl shadow-md bg-white"
+      className="my-3 flex justify-center items-center p-2 rounded-xl shadow-md bg-white"
       style={{
         borderTop: '3px solid #FF6B8B',
         borderRight: '3px solid #00C9A7',
@@ -87,7 +87,7 @@ const TransparentSchoolLogo = ({ src = '/school-logo.png' }) => {
         borderLeft: '5px solid #9D4EDD',
       }}
     >
-      <img src={cleanLogoSrc} alt="School Logo" className="w-16 sm:w-20 h-auto max-h-20 sm:max-h-24 object-contain drop-shadow-md" />
+      <img src={cleanLogoSrc} alt="School Logo" className="w-20 h-auto max-h-24 object-contain drop-shadow-md" />
     </div>
   );
 };
@@ -193,19 +193,19 @@ export default function SchoolDashboard() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-[#F5F7FA] text-[#1A2332] selection:bg-cyan-500 selection:text-black overflow-x-hidden w-full">
+    <div className="flex flex-col min-h-screen font-sans bg-[#F5F7FA] text-[#1A2332] selection:bg-cyan-500 selection:text-black">
       
       {/* Top Header */}
       <header 
-        className="bg-[#FFFFFF] px-3 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between shadow-sm border-b border-slate-200 gap-2 sm:gap-4 flex-wrap"
+        className="bg-[#FFFFFF] px-6 py-3.5 flex items-center justify-between shadow-sm border-b border-slate-200 gap-4"
         style={{
           borderBottom: '3px solid transparent',
           borderImage: 'linear-gradient(to right, #FF6B8B, #9D4EDD, #00C9A7, #FFB800) 1'
         }}
       >
-        <div className="flex items-center gap-2 shrink-0 min-w-0">
-          <span className="text-xl sm:text-2xl">🏫</span>
-          <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-[#38BDF8] via-[#00C9A7] to-[#FFB800] font-black text-sm sm:text-lg md:text-xl tracking-wider drop-shadow-md truncate">
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-2xl">🏫</span>
+          <h1 className="text-transparent bg-clip-text bg-gradient-to-r from-[#38BDF8] via-[#00C9A7] to-[#FFB800] font-black text-lg sm:text-xl tracking-wider drop-shadow-md">
             MySchoolDashboard ERP System
           </h1>
         </div>
@@ -223,35 +223,35 @@ export default function SchoolDashboard() {
           <span className="text-sky-400 text-xl transform rotate-5 filter drop-shadow">⭐</span>
         </div>
 
-        <div className="text-[#2E7D4F] font-extrabold text-[10px] sm:text-xs md:text-sm tracking-wider uppercase bg-emerald-50 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-emerald-200 flex items-center gap-1.5 shrink-0 shadow-sm whitespace-nowrap">
+        <div className="text-[#2E7D4F] font-extrabold text-xs sm:text-sm tracking-wider uppercase bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 flex items-center gap-2 shrink-0 shadow-sm">
           <span>⚡</span> Enterprise Cloud SaaS Active
         </div>
       </header>
 
-      <div className="flex flex-1 min-h-0 w-full overflow-x-hidden">
+      <div className="flex flex-1 min-h-0">
         
         {/* Left Sidebar */}
         <aside 
-          className={`${isSidebarOpen ? 'w-64 sm:w-72' : 'w-16 sm:w-20'} transition-all duration-300 bg-[#1B3A6B] border-r border-[#2F6690]/40 flex flex-col justify-between shrink-0 p-2 sm:p-3 shadow-xl z-10`}
+          className={`${isSidebarOpen ? 'w-72' : 'w-20'} transition-all duration-300 bg-[#1B3A6B] border-r border-[#2F6690]/40 flex flex-col justify-between shrink-0 p-3 shadow-xl z-10`}
         >
           <div>
-            <div className="mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-blue-900/40 text-center flex flex-col items-center">
-              <div className="w-full flex items-center justify-between px-1 mb-1 sm:mb-2 min-w-0">
+            <div className="mb-4 pb-3 border-b border-blue-900/40 text-center flex flex-col items-center">
+              <div className="w-full flex items-center justify-between px-1 mb-2">
                 {isSidebarOpen && (
-                  <span className="text-[10px] sm:text-[12px] font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] truncate">
+                  <span className="text-[12px] font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] truncate">
                     BLUE HEAVEN KIDS ACADEMY
                   </span>
                 )}
                 <button 
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-                  className="p-1.5 sm:p-2 bg-[#254a85] hover:bg-[#2F6690] rounded-xl text-white transition-all duration-100 border-t border-blue-300/30 border-b-[4px] border-blue-950 shadow-[0_0_12px_rgba(47,102,144,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer ml-auto shrink-0"
+                  className="p-2 bg-[#254a85] hover:bg-[#2F6690] rounded-xl text-white transition-all duration-100 border-t border-blue-300/30 border-b-[4px] border-blue-950 shadow-[0_0_12px_rgba(47,102,144,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer ml-auto"
                 >
-                  <IconMenu size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  <IconMenu size={18} />
                 </button>
               </div>
 
               {isSidebarOpen && (
-                <p className="text-[10px] sm:text-xs font-semibold text-slate-200 mt-0.5">
+                <p className="text-xs font-semibold text-slate-200 mt-0.5">
                   Session: <span className="text-[#C6952C] font-bold">{activeSession}</span>
                 </p>
               )}
@@ -259,57 +259,57 @@ export default function SchoolDashboard() {
               {isSidebarOpen && <TransparentSchoolLogo src="/school-logo.png" />}
             </div>
 
-            <nav className="space-y-1.5 sm:space-y-2 overflow-y-auto max-h-[calc(100vh-220px)] pr-0.5 sm:pr-1">
+            <nav className="space-y-2 overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
               {menuItems.map((item) => (
                 <button
                   key={item.name}
                   onClick={() => setActiveTab(item.name)}
-                  className={`w-full flex items-center px-2 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-150 font-bold cursor-pointer border-t border-white/10 border-b-[4px] ${
+                  className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-150 font-bold cursor-pointer border-t border-white/10 border-b-[4px] ${
                     activeTab === item.name
                       ? 'bg-[#2F6690] text-white font-black border-b-[#12283a] border-l-4 border-l-[#C6952C] shadow-[0_0_15px_rgba(47,102,144,0.6)] translate-y-0.5'
                       : 'border-b-transparent hover:bg-[#2F6690]/40 text-slate-200 hover:text-white active:translate-y-1 active:border-b-[1px]'
                   }`}
                 >
                   <div 
-                    className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shadow-md shrink-0 transition-transform hover:scale-105 border-b-2 border-black/30"
+                    className="w-9 h-9 rounded-lg flex items-center justify-center shadow-md shrink-0 transition-transform hover:scale-105 border-b-2 border-black/30"
                     style={{ backgroundColor: item.boxColor }}
                   >
-                    <item.icon size={16} style={{ color: item.iconColor }} className="sm:w-[20px] sm:h-[20px] drop-shadow-sm" />
+                    <item.icon size={20} style={{ color: item.iconColor }} className="drop-shadow-sm" />
                   </div>
-                  {isSidebarOpen && <span className="ml-2.5 sm:ml-3 text-xs sm:text-sm truncate min-w-0">{item.name}</span>}
+                  {isSidebarOpen && <span className="ml-3 text-sm truncate">{item.name}</span>}
                 </button>
               ))}
             </nav>
           </div>
 
           {isSidebarOpen && (
-            <div className="p-2 sm:p-3 border-t border-[#2F6690]/40 flex items-center bg-[#1B3A6B] rounded-lg mt-2 shadow-inner min-w-0">
+            <div className="p-3 border-t border-[#2F6690]/40 flex items-center bg-[#1B3A6B] rounded-lg mt-2 shadow-inner">
               <div 
-                className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg shadow-md flex items-center justify-center shrink-0 border-b-2 border-pink-900"
+                className="w-9 h-9 rounded-lg shadow-md flex items-center justify-center shrink-0 border-b-2 border-pink-900"
                 style={{ backgroundColor: '#EC1E79' }}
               >
-                <IconUser size={16} className="text-white sm:w-[18px] sm:h-[18px]" />
+                <IconUser size={18} className="text-white" />
               </div>
-              <div className="ml-2 sm:ml-3 truncate min-w-0">
-                <p className="text-xs sm:text-sm font-black text-white truncate">School Admin</p>
-                <p className="text-[10px] sm:text-xs text-slate-300 font-bold truncate">Authorized User</p>
+              <div className="ml-3 truncate">
+                <p className="text-sm font-black text-white">School Admin</p>
+                <p className="text-xs text-slate-300 font-bold">Authorized User</p>
               </div>
             </div>
           )}
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col min-w-0 bg-[#F5F7FA] overflow-x-hidden relative">
+        <main className="flex-1 flex flex-col min-w-0 bg-[#F5F7FA]">
           
           {/* Controls Bar */}
-          <div className="py-2.5 sm:py-3.5 px-3 sm:px-6 bg-[#FFFFFF] border-b border-slate-200 flex items-center justify-between gap-2.5 sm:gap-4 flex-wrap shadow-sm">
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-xs sm:text-sm text-[#5C6B7A] font-bold whitespace-nowrap">Session:</span>
+          <div className="py-3.5 px-6 bg-[#FFFFFF] border-b border-slate-200 flex items-center justify-between gap-4 flex-wrap shadow-sm">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm text-[#5C6B7A] font-bold">Session:</span>
                 <select
                   value={activeSession}
                   onChange={(e) => setActiveSession(e.target.value)}
-                  className="bg-[#F5F7FA] text-[#2F6690] text-xs sm:text-sm font-bold border border-slate-300 rounded-md px-2 py-1 sm:px-3 sm:py-2 outline-none focus:border-[#2F6690] shadow-sm cursor-pointer"
+                  className="bg-[#F5F7FA] text-[#2F6690] text-xs sm:text-sm font-bold border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-[#2F6690] shadow-sm cursor-pointer"
                 >
                   {sessionsList.map((session) => (
                     <option key={session} value={session}>
@@ -319,12 +319,12 @@ export default function SchoolDashboard() {
                 </select>
               </div>
 
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-xs sm:text-sm text-[#5C6B7A] font-bold whitespace-nowrap">Class:</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm text-[#5C6B7A] font-bold">Class:</span>
                 <select
                   value={selectedClass}
                   onChange={(e) => setSelectedClass(e.target.value)}
-                  className="bg-[#F5F7FA] text-[#2F6690] text-xs sm:text-sm font-bold border border-slate-300 rounded-md px-2 py-1 sm:px-3 sm:py-2 outline-none focus:border-[#2F6690] shadow-sm cursor-pointer max-w-[140px] sm:max-w-[180px]"
+                  className="bg-[#F5F7FA] text-[#2F6690] text-xs sm:text-sm font-bold border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-[#2F6690] shadow-sm cursor-pointer max-w-[180px]"
                 >
                   {classList.map((cls) => (
                     <option key={cls} value={cls}>
@@ -335,17 +335,17 @@ export default function SchoolDashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap min-w-0">
-              <div className="relative flex-1 sm:flex-none min-w-[120px]">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-400 text-xs">
-                  <IconSearch size={14} className="sm:w-[16px] sm:h-[16px]" />
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">
+                  <IconSearch size={16} />
                 </span>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search student..."
-                  className="bg-[#F5F7FA] text-xs sm:text-sm font-semibold text-[#1A2332] placeholder-slate-400 pl-8 sm:pl-9 pr-2.5 sm:pr-3.5 py-1 sm:py-2 rounded-md border border-slate-300 focus:outline-none focus:border-[#2F6690] w-full sm:w-56 shadow-sm"
+                  className="bg-[#F5F7FA] text-xs sm:text-sm font-semibold text-[#1A2332] placeholder-slate-400 pl-9 pr-3.5 py-2 rounded-md border border-slate-300 focus:outline-none focus:border-[#2F6690] w-56 shadow-sm"
                 />
               </div>
 
@@ -367,14 +367,14 @@ export default function SchoolDashboard() {
                     alert('Error creating backup: ' + err.message);
                   }
                 }}
-                className="bg-gradient-to-b from-[#38BDF8] to-[#0284C7] hover:from-[#0284C7] hover:to-[#0369a1] text-white text-xs sm:text-sm px-3 sm:px-4.5 py-1.5 sm:py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1 sm:gap-1.5 border-t border-sky-200/50 border-b-[4px] sm:border-b-[5px] border-[#075985] shadow-[0_0_18px_rgba(56,189,248,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer whitespace-nowrap"
+                className="bg-gradient-to-b from-[#38BDF8] to-[#0284C7] hover:from-[#0284C7] hover:to-[#0369a1] text-white text-xs sm:text-sm px-4.5 py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1.5 border-t border-sky-200/50 border-b-[5px] border-[#075985] shadow-[0_0_18px_rgba(56,189,248,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer"
               >
-                <span>💾</span> <span>Backup</span>
+                <span>💾</span> Backup
               </button>
 
               <button 
                 onClick={() => router.push('/')} 
-                className="bg-gradient-to-b from-[#F87171] to-[#EF4444] hover:from-[#EF4444] hover:to-[#DC2626] text-white text-xs sm:text-sm px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl font-black transition-all duration-150 border-t border-red-200/50 border-b-[4px] sm:border-b-[5px] border-[#991B1B] shadow-[0_0_18px_rgba(239,68,68,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer whitespace-nowrap"
+                className="bg-gradient-to-b from-[#F87171] to-[#EF4444] hover:from-[#EF4444] hover:to-[#DC2626] text-white text-xs sm:text-sm px-5 py-2 rounded-xl font-black transition-all duration-150 border-t border-red-200/50 border-b-[5px] border-[#991B1B] shadow-[0_0_18px_rgba(239,68,68,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer"
               >
                 Logout
               </button>
@@ -382,78 +382,68 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Dynamic Workspace */}
-          <div className="p-3 sm:p-5 md:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-5">
+          <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
             {activeTab === 'Dashboard & P/L' && <DashboardAndPL />}
 
             {activeTab === 'Student Hub' && (
-              <div className="space-y-4 sm:space-y-5">
-                {/* Responsive Sub-Tab Cards Grid: Portrait (2 upar + 1 niche), Landscape/Laptop (3 columns) */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-4 bg-slate-200/90 p-2.5 sm:p-3.5 rounded-2xl border border-slate-300 w-full shadow-inner overflow-hidden">
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 bg-slate-200/90 p-3.5 rounded-2xl border border-slate-300 w-full shadow-inner">
                   
-                  {/* Card 1: Student Registration */}
                   <button
                     onClick={() => setStudentHubSubTab('Student Registration')}
-                    className={`relative font-black py-3 sm:py-4 px-3 sm:px-4 rounded-2xl flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer w-full text-white border-t border-x border-[#73ffc2]/50 ${
+                    className={`relative font-black py-4 px-4 rounded-2xl flex items-center justify-center text-center transition-all duration-150 cursor-pointer w-full text-white text-sm sm:text-base border-t border-x border-[#73ffc2]/50 ${
                       studentHubSubTab === 'Student Registration'
                         ? 'bg-gradient-to-b from-[#00f098] via-[#00c885] to-[#008f5d] border-b-[6px] border-[#004d2e] shadow-[0_0_22px_rgba(0,200,133,0.65),0_8px_15px_rgba(0,0,0,0.3)] translate-y-0 active:translate-y-1.5 active:border-b-[2px]'
                         : 'bg-gradient-to-b from-emerald-600 to-teal-800 border-b-[6px] border-emerald-950 opacity-80 hover:opacity-100 shadow-[0_0_12px_rgba(0,200,133,0.3)] active:translate-y-1.5 active:border-b-[2px]'
                     }`}
                   >
-                    <div className="flex items-center justify-center gap-2 w-full my-1">
-                      <span className="text-xl sm:text-2xl drop-shadow-md shrink-0">📋</span>
-                      <span className="font-black tracking-wide text-xs sm:text-sm lg:text-base text-left sm:text-center drop-shadow-md whitespace-normal break-words leading-snug">
-                        Student Registration
-                      </span>
+                    <div className="flex items-center justify-center gap-2.5 w-full">
+                      <span className="text-xl drop-shadow-md">📋</span>
+                      <span className="font-black tracking-wide text-center drop-shadow-md">Student Registration</span>
+                      {studentHubSubTab === 'Student Registration' && (
+                        <span className="bg-black/90 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase ml-1">
+                          <span className="text-emerald-400 font-bold">✓</span> ACTIVE
+                        </span>
+                      )}
                     </div>
-                    {studentHubSubTab === 'Student Registration' ? (
-                      <span className="bg-black/90 text-white text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase mt-1">
-                        <span className="text-emerald-400 font-bold">✓</span> ACTIVE
-                      </span>
-                    ) : <div className="h-4 sm:h-5"></div>}
                   </button>
 
-                  {/* Card 2: Students Directory */}
                   <button
                     onClick={() => setStudentHubSubTab('Students Directory')}
-                    className={`relative font-black py-3 sm:py-4 px-3 sm:px-4 rounded-2xl flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer w-full text-white border-t border-x border-[#93c5fd]/50 ${
+                    className={`relative font-black py-4 px-4 rounded-2xl flex items-center justify-center text-center transition-all duration-150 cursor-pointer w-full text-white text-sm sm:text-base border-t border-x border-[#93c5fd]/50 ${
                       studentHubSubTab === 'Students Directory'
                         ? 'bg-gradient-to-b from-[#38bdf8] via-[#0088ff] to-[#0052cc] border-b-[6px] border-[#002b80] shadow-[0_0_22px_rgba(0,136,255,0.65),0_8px_15px_rgba(0,0,0,0.3)] translate-y-0 active:translate-y-1.5 active:border-b-[2px]'
                         : 'bg-gradient-to-b from-blue-600 to-indigo-800 border-b-[6px] border-blue-950 opacity-80 hover:opacity-100 shadow-[0_0_12px_rgba(0,136,255,0.3)] active:translate-y-1.5 active:border-b-[2px]'
                     }`}
                   >
-                    <div className="flex items-center justify-center gap-2 w-full my-1">
-                      <span className="text-xl sm:text-2xl drop-shadow-md shrink-0">📇</span>
-                      <span className="font-black tracking-wide text-xs sm:text-sm lg:text-base text-left sm:text-center drop-shadow-md whitespace-normal break-words leading-snug">
-                        Students Directory
-                      </span>
+                    <div className="flex items-center justify-center gap-2.5 w-full">
+                      <span className="text-xl drop-shadow-md">📇</span>
+                      <span className="font-black tracking-wide text-center drop-shadow-md">Students Directory</span>
+                      {studentHubSubTab === 'Students Directory' && (
+                        <span className="bg-black/90 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase ml-1">
+                          <span className="text-sky-400 font-bold">✓</span> ACTIVE
+                        </span>
+                      )}
                     </div>
-                    {studentHubSubTab === 'Students Directory' ? (
-                      <span className="bg-black/90 text-white text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase mt-1">
-                        <span className="text-sky-400 font-bold">✓</span> ACTIVE
-                      </span>
-                    ) : <div className="h-4 sm:h-5"></div>}
                   </button>
 
-                  {/* Card 3: Category & Fee Matrix */}
                   <button
                     onClick={() => setStudentHubSubTab('Category & Fee Matrix')}
-                    className={`col-span-2 md:col-span-1 relative font-black py-3 sm:py-4 px-3 sm:px-4 rounded-2xl flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer w-full text-white border-t border-x border-[#f5d0fe]/50 ${
+                    className={`relative font-black py-4 px-4 rounded-2xl flex items-center justify-center text-center transition-all duration-150 cursor-pointer w-full text-white text-sm sm:text-base border-t border-x border-[#f5d0fe]/50 ${
                       studentHubSubTab === 'Category & Fee Matrix'
                         ? 'bg-gradient-to-b from-[#e879f9] via-[#c084fc] to-[#8b5cf6] border-b-[6px] border-[#5b21b6] shadow-[0_0_22px_rgba(192,132,252,0.65),0_8px_15px_rgba(0,0,0,0.3)] translate-y-0 active:translate-y-1.5 active:border-b-[2px]'
                         : 'bg-gradient-to-b from-purple-700 to-fuchsia-950 border-b-[6px] border-purple-950 opacity-80 hover:opacity-100 shadow-[0_0_12px_rgba(192,132,252,0.3)] active:translate-y-1.5 active:border-b-[2px]'
                     }`}
                   >
-                    <div className="flex items-center justify-center gap-2 w-full my-1">
-                      <span className="text-xl sm:text-2xl drop-shadow-md shrink-0">📊</span>
-                      <span className="font-black tracking-wide text-xs sm:text-sm lg:text-base text-left sm:text-center drop-shadow-md whitespace-normal break-words leading-snug">
-                        Category & Fee Matrix
-                      </span>
+                    <div className="flex items-center justify-center gap-2.5 w-full">
+                      <span className="text-xl drop-shadow-md">📊</span>
+                      <span className="font-black tracking-wide text-center drop-shadow-md">Category & Fee Matrix</span>
+                      {studentHubSubTab === 'Category & Fee Matrix' && (
+                        <span className="bg-black/90 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase ml-1">
+                          <span className="text-pink-400 font-bold">✓</span> ACTIVE
+                        </span>
+                      )}
                     </div>
-                    {studentHubSubTab === 'Category & Fee Matrix' ? (
-                      <span className="bg-black/90 text-white text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase mt-1">
-                        <span className="text-pink-400 font-bold">✓</span> ACTIVE
-                      </span>
-                    ) : <div className="h-4 sm:h-5"></div>}
                   </button>
 
                 </div>
@@ -471,12 +461,12 @@ export default function SchoolDashboard() {
 
             {activeTab === 'Certificates & Cards ▾' && (
               <div className="space-y-4">
-                <div className="flex flex-wrap gap-2 sm:gap-2.5 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex flex-wrap gap-2.5 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                   {certList.map((subTab) => (
                     <button
                       key={subTab}
                       onClick={() => setCertSubTab(subTab)}
-                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black transition-all duration-150 cursor-pointer border-t border-white/30 border-b-[4px] ${
+                      className={`px-4 py-2 rounded-xl text-xs font-black transition-all duration-150 cursor-pointer border-t border-white/30 border-b-[4px] ${
                         certSubTab === subTab
                           ? 'bg-gradient-to-b from-[#3b82f6] to-[#1d4ed8] border-b-[#1e3a8a] text-white shadow-[0_0_12px_rgba(59,130,246,0.5)]'
                           : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 active:translate-y-1 active:border-b-[1px]'
@@ -492,12 +482,12 @@ export default function SchoolDashboard() {
 
             {activeTab === 'Exams & Reports ▾' && (
               <div className="space-y-4">
-                <div className="flex flex-wrap gap-2 sm:gap-2.5 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex flex-wrap gap-2.5 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                   {Object.keys(examSubTabMap).map((subTab) => (
                     <button
                       key={subTab}
                       onClick={() => setExamSubTab(subTab)}
-                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black transition-all duration-150 cursor-pointer border-t border-white/30 border-b-[4px] ${
+                      className={`px-4 py-2 rounded-xl text-xs font-black transition-all duration-150 cursor-pointer border-t border-white/30 border-b-[4px] ${
                         examSubTab === subTab
                           ? 'bg-gradient-to-b from-[#3b82f6] to-[#1d4ed8] border-b-[#1e3a8a] text-white shadow-[0_0_12px_rgba(59,130,246,0.5)]'
                           : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 active:translate-y-1 active:border-b-[1px]'
@@ -513,12 +503,12 @@ export default function SchoolDashboard() {
 
             {activeTab === 'Parents Dashboard ▾' && (
               <div className="space-y-4">
-                <div className="flex flex-wrap gap-2 sm:gap-2.5 bg-white p-2.5 sm:p-3 rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex flex-wrap gap-2.5 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
                   {Object.keys(parentsDashboardSubTabMap).map((subTab) => (
                     <button
                       key={subTab}
                       onClick={() => setParentsDashboardSubTab(subTab)}
-                      className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-black transition-all duration-150 cursor-pointer border-t border-white/30 border-b-[4px] ${
+                      className={`px-4 py-2 rounded-xl text-xs font-black transition-all duration-150 cursor-pointer border-t border-white/30 border-b-[4px] ${
                         parentsDashboardSubTab === subTab
                           ? 'bg-gradient-to-b from-[#3b82f6] to-[#1d4ed8] border-b-[#1e3a8a] text-white shadow-[0_0_12px_rgba(59,130,246,0.5)]'
                           : 'bg-slate-100 border-slate-300 text-slate-700 hover:bg-slate-200 active:translate-y-1 active:border-b-[1px]'
@@ -533,7 +523,7 @@ export default function SchoolDashboard() {
             )}
 
             {activeTab === 'Permanent Audit Logs' && (
-              <div className="p-4 sm:p-6 bg-white rounded-xl shadow-sm border border-slate-200 font-bold text-slate-700 text-sm sm:text-base">
+              <div className="p-6 bg-white rounded-xl shadow-sm border border-slate-200 font-bold text-slate-700">
                 Permanent Audit Logs Module
               </div>
             )}
