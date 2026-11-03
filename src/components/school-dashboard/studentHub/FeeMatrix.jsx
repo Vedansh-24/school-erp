@@ -122,23 +122,23 @@ export default function FeeMatrix() {
             <table className="w-full text-center border-collapse text-[14px] whitespace-nowrap">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-800">
-                  <th className="py-3.5 px-4 text-left font-bold">Class</th>
-                  <th colSpan="2" className="border-l border-slate-200 py-2.5 font-bold">General</th>
-                  <th colSpan="2" className="border-l border-slate-200 py-2.5 font-bold">OBC</th>
-                  <th colSpan="2" className="border-l border-slate-200 py-2.5 font-bold">SC</th>
-                  <th colSpan="2" className="border-l border-slate-200 py-2.5 font-bold">ST</th>
-                  <th className="border-l border-slate-200 py-3.5 px-4 font-bold">Total Students</th>
+                  <th className="py-3.5 px-4 text-left font-bold min-w-[160px]">Class</th>
+                  <th colSpan="2" className="border-l border-slate-200 py-2.5 font-bold px-4">General</th>
+                  <th colSpan="2" className="border-l border-slate-200 py-2.5 font-bold px-4">OBC</th>
+                  <th colSpan="2" className="border-l border-slate-200 py-2.5 font-bold px-4">SC</th>
+                  <th colSpan="2" className="border-l border-slate-200 py-2.5 font-bold px-4">ST</th>
+                  <th className="border-l border-slate-200 py-3.5 px-5 font-bold min-w-[120px]">Total Students</th>
                 </tr>
                 <tr className="border-b border-slate-200 text-[12px] text-slate-400 bg-slate-50/50">
                   <th className="text-left pb-2.5"></th>
-                  <th className="border-l border-slate-200 pb-2.5 font-medium">Boy</th>
-                  <th className="pb-2.5 font-medium">Girl</th>
-                  <th className="border-l border-slate-200 pb-2.5 font-medium">Boy</th>
-                  <th className="pb-2.5 font-medium">Girl</th>
-                  <th className="border-l border-slate-200 pb-2.5 font-medium">Boy</th>
-                  <th className="pb-2.5 font-medium">Girl</th>
-                  <th className="border-l border-slate-200 pb-2.5 font-medium">Boy</th>
-                  <th className="pb-2.5 font-medium">Girl</th>
+                  <th className="border-l border-slate-200 pb-2.5 font-medium px-3">Boy</th>
+                  <th className="pb-2.5 font-medium px-3">Girl</th>
+                  <th className="border-l border-slate-200 pb-2.5 font-medium px-3">Boy</th>
+                  <th className="pb-2.5 font-medium px-3">Girl</th>
+                  <th className="border-l border-slate-200 pb-2.5 font-medium px-3">Boy</th>
+                  <th className="pb-2.5 font-medium px-3">Girl</th>
+                  <th className="border-l border-slate-200 pb-2.5 font-medium px-3">Boy</th>
+                  <th className="pb-2.5 font-medium px-3">Girl</th>
                   <th className="border-l border-slate-200 pb-2.5"></th>
                 </tr>
               </thead>
@@ -154,34 +154,48 @@ export default function FeeMatrix() {
                   const stGirl = getCount(cls, 'ST', 'Girl');
                   const rowTotal = getClassTotalStudents(cls);
 
+                  // Formatting class name to show stream name in second line if it contains brackets
+                  const formatClassName = (name) => {
+                    if (name.includes('(')) {
+                      const parts = name.split('(');
+                      return (
+                        <div className="flex flex-col">
+                          <span className="font-bold">{parts[0].trim()}</span>
+                          <span className="text-[11px] text-slate-500 font-semibold">({parts[1]}</span>
+                        </div>
+                      );
+                    }
+                    return <span className="font-bold text-slate-800">{name}</span>;
+                  };
+
                   return (
                     <tr key={cls} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3.5 px-4 text-left font-bold text-slate-800">{cls}</td>
-                      <td className="border-l border-slate-200 py-3.5 font-normal">{genBoy}</td>
-                      <td className="py-3.5 font-normal">{genGirl}</td>
-                      <td className="border-l border-slate-200 py-3.5 font-normal">{obcBoy}</td>
-                      <td className="py-3.5 font-normal">{obcGirl}</td>
-                      <td className="border-l border-slate-200 py-3.5 font-normal">{scBoy}</td>
-                      <td className="py-3.5 font-normal">{scGirl}</td>
-                      <td className="border-l border-slate-200 py-3.5 font-normal">{stBoy}</td>
-                      <td className="py-3.5 font-normal">{stGirl}</td>
-                      <td className="border-l border-slate-200 py-3.5 font-bold text-sky-600">{rowTotal}</td>
+                      <td className="py-3.5 px-4 text-left font-bold text-slate-800 min-w-[160px]">{formatClassName(cls)}</td>
+                      <td className="border-l border-slate-200 py-3.5 px-3 font-normal">{genBoy}</td>
+                      <td className="py-3.5 px-3 font-normal">{genGirl}</td>
+                      <td className="border-l border-slate-200 py-3.5 px-3 font-normal">{obcBoy}</td>
+                      <td className="py-3.5 px-3 font-normal">{obcGirl}</td>
+                      <td className="border-l border-slate-200 py-3.5 px-3 font-normal">{scBoy}</td>
+                      <td className="py-3.5 px-3 font-normal">{scGirl}</td>
+                      <td className="border-l border-slate-200 py-3.5 px-3 font-normal">{stBoy}</td>
+                      <td className="py-3.5 px-3 font-normal">{stGirl}</td>
+                      <td className="border-l border-slate-200 py-3.5 px-5 font-bold text-sky-600 min-w-[120px]">{rowTotal}</td>
                     </tr>
                   );
                 })}
               </tbody>
               <tfoot>
                 <tr className="border-t border-slate-200 font-bold bg-slate-50 text-slate-800">
-                  <td className="py-3.5 px-4 text-left">TOTAL</td>
-                  <td className="border-l border-slate-200 py-3.5">{getCategoryGenderTotal('General', 'Boy')}</td>
-                  <td className="py-3.5">{getCategoryGenderTotal('General', 'Girl')}</td>
-                  <td className="border-l border-slate-200 py-3.5">{getCategoryGenderTotal('OBC', 'Boy')}</td>
-                  <td className="py-3.5">{getCategoryGenderTotal('OBC', 'Girl')}</td>
-                  <td className="border-l border-slate-200 py-3.5">{getCategoryGenderTotal('SC', 'Boy')}</td>
-                  <td className="py-3.5">{getCategoryGenderTotal('SC', 'Girl')}</td>
-                  <td className="border-l border-slate-200 py-3.5">{getCategoryGenderTotal('ST', 'Boy')}</td>
-                  <td className="py-3.5">{getCategoryGenderTotal('ST', 'Girl')}</td>
-                  <td className="border-l border-slate-200 py-3.5 text-sky-600">{totalStudentsCount}</td>
+                  <td className="py-3.5 px-4 text-left min-w-[160px]">TOTAL</td>
+                  <td className="border-l border-slate-200 py-3.5 px-3">{getCategoryGenderTotal('General', 'Boy')}</td>
+                  <td className="py-3.5 px-3">{getCategoryGenderTotal('General', 'Girl')}</td>
+                  <td className="border-l border-slate-200 py-3.5 px-3">{getCategoryGenderTotal('OBC', 'Boy')}</td>
+                  <td className="py-3.5 px-3">{getCategoryGenderTotal('OBC', 'Girl')}</td>
+                  <td className="border-l border-slate-200 py-3.5 px-3">{getCategoryGenderTotal('SC', 'Boy')}</td>
+                  <td className="py-3.5 px-3">{getCategoryGenderTotal('SC', 'Girl')}</td>
+                  <td className="border-l border-slate-200 py-3.5 px-3">{getCategoryGenderTotal('ST', 'Boy')}</td>
+                  <td className="py-3.5 px-3">{getCategoryGenderTotal('ST', 'Girl')}</td>
+                  <td className="border-l border-slate-200 py-3.5 px-5 text-sky-600 min-w-[120px]">{totalStudentsCount}</td>
                 </tr>
               </tfoot>
             </table>
