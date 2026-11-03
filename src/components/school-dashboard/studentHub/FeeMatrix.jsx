@@ -207,68 +207,68 @@ export default function FeeMatrix() {
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-[12px] font-bold text-slate-700 mb-1">General Price per Student (₹)</label>
+              <div className="text-center">
+                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center">General Price per Student (₹)</label>
                 <input
                   type="number"
                   name="general"
                   value={prices.general}
                   onChange={handlePriceChange}
                   placeholder="0"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center"
                 />
               </div>
-              <div>
-                <label className="block text-[12px] font-bold text-slate-700 mb-1">OBC Price per Student (₹)</label>
+              <div className="text-center">
+                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center">OBC Price per Student (₹)</label>
                 <input
                   type="number"
                   name="obc"
                   value={prices.obc}
                   onChange={handlePriceChange}
                   placeholder="0"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center"
                 />
               </div>
-              <div>
-                <label className="block text-[12px] font-bold text-slate-700 mb-1">SC Price per Student (₹)</label>
+              <div className="text-center">
+                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center">SC Price per Student (₹)</label>
                 <input
                   type="number"
                   name="sc"
                   value={prices.sc}
                   onChange={handlePriceChange}
                   placeholder="0"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center"
                 />
               </div>
-              <div>
-                <label className="block text-[12px] font-bold text-slate-700 mb-1">ST Price per Student (₹)</label>
+              <div className="text-center">
+                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center">ST Price per Student (₹)</label>
                 <input
                   type="number"
                   name="st"
                   value={prices.st}
                   onChange={handlePriceChange}
                   placeholder="0"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm">
-                <p className="text-[12px] font-medium text-slate-500">General Total:</p>
-                <p className="text-[15px] font-bold text-sky-600 mt-0.5">₹{generalTotalAmount.toLocaleString()}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center">
+                <p className="text-[12px] font-medium text-slate-500 text-center">General Total:</p>
+                <p className="text-[15px] font-bold text-sky-600 mt-0.5 text-center">₹{generalTotalAmount.toLocaleString()}</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm">
-                <p className="text-[12px] font-medium text-slate-500">OBC Total:</p>
-                <p className="text-[15px] font-bold text-sky-600 mt-0.5">₹{obcTotalAmount.toLocaleString()}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center">
+                <p className="text-[12px] font-medium text-slate-500 text-center">OBC Total:</p>
+                <p className="text-[15px] font-bold text-sky-600 mt-0.5 text-center">₹{obcTotalAmount.toLocaleString()}</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm">
-                <p className="text-[12px] font-medium text-slate-500">SC Total:</p>
-                <p className="text-[15px] font-bold text-sky-600 mt-0.5">₹{scTotalAmount.toLocaleString()}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center">
+                <p className="text-[12px] font-medium text-slate-500 text-center">SC Total:</p>
+                <p className="text-[15px] font-bold text-sky-600 mt-0.5 text-center">₹{scTotalAmount.toLocaleString()}</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm">
-                <p className="text-[12px] font-medium text-slate-500">ST Total:</p>
-                <p className="text-[15px] font-bold text-sky-600 mt-0.5">₹{stTotalAmount.toLocaleString()}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center">
+                <p className="text-[12px] font-medium text-slate-500 text-center">ST Total:</p>
+                <p className="text-[15px] font-bold text-sky-600 mt-0.5 text-center">₹{stTotalAmount.toLocaleString()}</p>
               </div>
             </div>
 
