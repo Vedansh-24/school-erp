@@ -387,70 +387,67 @@ export default function SchoolDashboard() {
 
             {activeTab === 'Student Hub' && (
               <div className="space-y-4 sm:space-y-5">
-                {/* Responsive Sub-Tab Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 bg-slate-200/90 p-2.5 sm:p-3.5 rounded-2xl border border-slate-300 w-full shadow-inner overflow-hidden">
+                {/* Responsive Sub-Tab Cards Grid - Mobile/Tablet: 2 Upar + 1 Full Width Niche | Laptop: 3 Columns Side-by-Side */}
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 bg-slate-200/90 p-2.5 sm:p-3.5 rounded-2xl border border-slate-300 w-full shadow-inner overflow-hidden">
                   
+                  {/* Card 1: Student Registration (Top Left) */}
                   <button
                     onClick={() => setStudentHubSubTab('Student Registration')}
-                    className={`relative font-black py-3 sm:py-4 px-3 rounded-2xl flex items-center justify-center text-center transition-all duration-150 cursor-pointer w-full overflow-hidden text-white border-t border-x border-[#73ffc2]/50 ${
+                    className={`relative font-black py-3 sm:py-4 px-2 sm:px-4 rounded-2xl flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer w-full text-white border-t border-x border-[#73ffc2]/50 ${
                       studentHubSubTab === 'Student Registration'
                         ? 'bg-gradient-to-b from-[#00f098] via-[#00c885] to-[#008f5d] border-b-[6px] border-[#004d2e] shadow-[0_0_22px_rgba(0,200,133,0.65),0_8px_15px_rgba(0,0,0,0.3)] translate-y-0 active:translate-y-1.5 active:border-b-[2px]'
                         : 'bg-gradient-to-b from-emerald-600 to-teal-800 border-b-[6px] border-emerald-950 opacity-80 hover:opacity-100 shadow-[0_0_12px_rgba(0,200,133,0.3)] active:translate-y-1.5 active:border-b-[2px]'
                     }`}
                   >
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 w-full max-w-full min-w-0">
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-base sm:text-lg lg:text-xl drop-shadow-md">📋</span>
-                        <span className="font-black tracking-wide text-xs sm:text-sm lg:text-base text-center drop-shadow-md break-words">Student Registration</span>
-                      </div>
-                      {studentHubSubTab === 'Student Registration' && (
-                        <span className="bg-black/90 text-white text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase shrink-0 mt-1 sm:mt-0">
-                          <span className="text-emerald-400 font-bold">✓</span> ACTIVE
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-2xl sm:text-3xl drop-shadow-md mb-1">📋</span>
+                    <span className="font-black tracking-wide text-xs sm:text-sm lg:text-base text-center drop-shadow-md whitespace-normal break-words leading-snug my-1">
+                      Student Registration
+                    </span>
+                    {studentHubSubTab === 'Student Registration' ? (
+                      <span className="bg-black/90 text-white text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase mt-1">
+                        <span className="text-emerald-400 font-bold">✓</span> ACTIVE
+                      </span>
+                    ) : <div className="h-4 sm:h-5"></div>}
                   </button>
 
+                  {/* Card 2: Students Directory (Top Right) */}
                   <button
                     onClick={() => setStudentHubSubTab('Students Directory')}
-                    className={`relative font-black py-3 sm:py-4 px-3 rounded-2xl flex items-center justify-center text-center transition-all duration-150 cursor-pointer w-full overflow-hidden text-white border-t border-x border-[#93c5fd]/50 ${
+                    className={`relative font-black py-3 sm:py-4 px-2 sm:px-4 rounded-2xl flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer w-full text-white border-t border-x border-[#93c5fd]/50 ${
                       studentHubSubTab === 'Students Directory'
                         ? 'bg-gradient-to-b from-[#38bdf8] via-[#0088ff] to-[#0052cc] border-b-[6px] border-[#002b80] shadow-[0_0_22px_rgba(0,136,255,0.65),0_8px_15px_rgba(0,0,0,0.3)] translate-y-0 active:translate-y-1.5 active:border-b-[2px]'
                         : 'bg-gradient-to-b from-blue-600 to-indigo-800 border-b-[6px] border-blue-950 opacity-80 hover:opacity-100 shadow-[0_0_12px_rgba(0,136,255,0.3)] active:translate-y-1.5 active:border-b-[2px]'
                     }`}
                   >
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 w-full max-w-full min-w-0">
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-base sm:text-lg lg:text-xl drop-shadow-md">📇</span>
-                        <span className="font-black tracking-wide text-xs sm:text-sm lg:text-base text-center drop-shadow-md break-words">Students Directory</span>
-                      </div>
-                      {studentHubSubTab === 'Students Directory' && (
-                        <span className="bg-black/90 text-white text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase shrink-0 mt-1 sm:mt-0">
-                          <span className="text-sky-400 font-bold">✓</span> ACTIVE
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-2xl sm:text-3xl drop-shadow-md mb-1">📇</span>
+                    <span className="font-black tracking-wide text-xs sm:text-sm lg:text-base text-center drop-shadow-md whitespace-normal break-words leading-snug my-1">
+                      Students Directory
+                    </span>
+                    {studentHubSubTab === 'Students Directory' ? (
+                      <span className="bg-black/90 text-white text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase mt-1">
+                        <span className="text-sky-400 font-bold">✓</span> ACTIVE
+                      </span>
+                    ) : <div className="h-4 sm:h-5"></div>}
                   </button>
 
+                  {/* Card 3: Category & Fee Matrix (Bottom Centered on Mobile/Tablet, 3rd Col on Laptop) */}
                   <button
                     onClick={() => setStudentHubSubTab('Category & Fee Matrix')}
-                    className={`relative font-black py-3 sm:py-4 px-3 rounded-2xl flex items-center justify-center text-center transition-all duration-150 cursor-pointer w-full overflow-hidden text-white border-t border-x border-[#f5d0fe]/50 ${
+                    className={`col-span-2 lg:col-span-1 relative font-black py-3 sm:py-4 px-2 sm:px-4 rounded-2xl flex flex-col items-center justify-between text-center transition-all duration-150 cursor-pointer w-full text-white border-t border-x border-[#f5d0fe]/50 ${
                       studentHubSubTab === 'Category & Fee Matrix'
                         ? 'bg-gradient-to-b from-[#e879f9] via-[#c084fc] to-[#8b5cf6] border-b-[6px] border-[#5b21b6] shadow-[0_0_22px_rgba(192,132,252,0.65),0_8px_15px_rgba(0,0,0,0.3)] translate-y-0 active:translate-y-1.5 active:border-b-[2px]'
                         : 'bg-gradient-to-b from-purple-700 to-fuchsia-950 border-b-[6px] border-purple-950 opacity-80 hover:opacity-100 shadow-[0_0_12px_rgba(192,132,252,0.3)] active:translate-y-1.5 active:border-b-[2px]'
                     }`}
                   >
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 w-full max-w-full min-w-0">
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span className="text-base sm:text-lg lg:text-xl drop-shadow-md">📊</span>
-                        <span className="font-black tracking-wide text-xs sm:text-sm lg:text-base text-center drop-shadow-md break-words">Category & Fee Matrix</span>
-                      </div>
-                      {studentHubSubTab === 'Category & Fee Matrix' && (
-                        <span className="bg-black/90 text-white text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase shrink-0 mt-1 sm:mt-0">
-                          <span className="text-pink-400 font-bold">✓</span> ACTIVE
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-2xl sm:text-3xl drop-shadow-md mb-1">📊</span>
+                    <span className="font-black tracking-wide text-xs sm:text-sm lg:text-base text-center drop-shadow-md whitespace-normal break-words leading-snug my-1">
+                      Category & Fee Matrix
+                    </span>
+                    {studentHubSubTab === 'Category & Fee Matrix' ? (
+                      <span className="bg-black/90 text-white text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 shadow-inner tracking-wider uppercase mt-1">
+                        <span className="text-pink-400 font-bold">✓</span> ACTIVE
+                      </span>
+                    ) : <div className="h-4 sm:h-5"></div>}
                   </button>
 
                 </div>
