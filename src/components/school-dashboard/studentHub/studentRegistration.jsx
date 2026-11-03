@@ -189,7 +189,7 @@ const CustomDatePicker = ({ value, onChange, label, required = false }) => {
                       className={`p-1 rounded font-medium transition cursor-pointer text-xs ${
                         isSelected
                           ? 'bg-[#0284C7] text-white font-bold'
-                          : 'hover:bg-slate-100 text-slate-800'
+                          : 'hover:bg-slate-100 text-[#1A2332]'
                       }`}
                     >
                       {day}
@@ -790,14 +790,14 @@ export default function StudentRegistration() {
           </div>
 
           <div>
+            <CustomDatePicker label="Admission Date" value={formData.dateOfAdmission} onChange={(dateStr) => handleDateChange('dateOfAdmission', dateStr)} />
+          </div>
+          <div>
             <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Admission Type</label>
             <select name="admissionType" value={formData.admissionType} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="New Admission (नया प्रवेश)">New Admission (नया प्रवेश)</option>
               <option value="Promoted">Promoted</option>
             </select>
-          </div>
-          <div>
-            <CustomDatePicker label="Admission Date" value={formData.dateOfAdmission} onChange={(dateStr) => handleDateChange('dateOfAdmission', dateStr)} />
           </div>
 
           <div>
