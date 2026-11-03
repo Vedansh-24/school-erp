@@ -94,19 +94,19 @@ export default function FeeMatrix() {
   const grandTotalAmount = generalTotalAmount + obcTotalAmount + scTotalAmount + stTotalAmount;
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm space-y-6 text-slate-800 font-sans flex flex-col h-full">
+    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl p-4 sm:p-6 md:p-8 shadow-sm space-y-6 text-slate-800 font-sans flex flex-col h-full overflow-x-hidden">
       <div className="p-4 bg-white border border-slate-200 rounded-xl flex flex-wrap items-center justify-between gap-4 shadow-sm">
         <div>
-          <h2 className="text-[18px] font-bold text-slate-800">
+          <h2 className="text-[16px] sm:text-[18px] font-bold text-slate-800">
             Class-wise Category Breakdown & Manual Price Calculator
           </h2>
-          <p className="text-[13px] text-slate-500 mt-1">
+          <p className="text-[12px] sm:text-[13px] text-slate-500 mt-1">
             Har class ke samne General, OBC, SC, ST ke Boys aur Girls ki sankhya dikhegi. Niche diye gaye per-student price daalne par category-wise aur Grand Total calculate hoga.
           </p>
         </div>
         <button
           onClick={fetchStudentsData}
-          className="bg-gradient-to-b from-white to-slate-100 hover:from-slate-50 hover:to-slate-200 border border-slate-300 text-slate-700 text-[14px] px-4 py-2.5 rounded-lg font-bold shadow-[0_2px_0_#cbd5e1] active:shadow-[0_0_0_#cbd5e1] active:translate-y-[2px] transition cursor-pointer flex items-center gap-1.5"
+          className="w-full sm:w-auto bg-gradient-to-b from-white to-slate-100 hover:from-slate-50 hover:to-slate-200 border border-slate-300 text-slate-700 text-[14px] px-4 py-2.5 rounded-lg font-bold shadow-[0_2px_0_#cbd5e1] active:shadow-[0_0_0_#cbd5e1] active:translate-y-[2px] transition cursor-pointer flex items-center justify-center gap-1.5"
         >
           🔄 Refresh Matrix
         </button>
@@ -118,7 +118,7 @@ export default function FeeMatrix() {
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="overflow-x-auto bg-white border border-slate-200 rounded-xl p-4 shadow-sm w-full">
             <table className="w-full text-center border-collapse text-[14px] whitespace-nowrap">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-slate-800">
@@ -187,7 +187,7 @@ export default function FeeMatrix() {
             </table>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-4 shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 space-y-4 shadow-sm">
             <h3 className="text-[14px] font-bold uppercase tracking-wider flex items-center gap-2 text-slate-800">
               <span>💰</span> Manual Price Multiplier & Category-wise Total Calculation
             </h3>
@@ -258,11 +258,11 @@ export default function FeeMatrix() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between pt-4 border-t border-slate-200 text-[14px]">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-slate-200 text-[14px]">
               <span className="text-slate-600 font-medium">
                 Total Students Count: <strong className="text-slate-800 font-bold">{totalStudentsCount}</strong>
               </span>
-              <span className="text-[16px] font-bold text-emerald-600">
+              <span className="text-[15px] sm:text-[16px] font-bold text-emerald-600">
                 Grand Total Amount: ₹{grandTotalAmount.toLocaleString()}
               </span>
             </div>
