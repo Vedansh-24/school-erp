@@ -271,11 +271,11 @@ export default function StudentsDirectory() {
   });
 
   return (
-    <div className="w-full bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-xl shadow-slate-200/50 space-y-6 text-slate-800 font-sans flex flex-col h-full">
-      <div className="p-4 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl flex flex-wrap gap-4 items-center justify-between shadow-sm">
-        <div className="flex flex-wrap gap-3 items-center w-full md:w-auto">
-          <div className="flex items-center bg-slate-50/80 border border-slate-200 rounded-xl px-3.5 py-2.5 focus-within:border-indigo-500 focus-within:bg-white transition-all w-full md:w-72 shadow-inner">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="w-full bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 border border-slate-200/80 rounded-3xl p-4 sm:p-6 md:p-8 shadow-xl shadow-slate-200/50 space-y-6 text-slate-800 font-sans flex flex-col h-full overflow-x-hidden">
+      <div className="p-4 bg-white/80 backdrop-blur-md border border-slate-200/80 rounded-2xl flex flex-wrap gap-3 items-center justify-between shadow-sm">
+        <div className="flex flex-wrap gap-2.5 items-center w-full lg:w-auto">
+          <div className="flex items-center bg-slate-50/80 border border-slate-200 rounded-xl px-3.5 py-2.5 focus-within:border-indigo-500 focus-within:bg-white transition-all w-full lg:w-72 shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input 
@@ -288,7 +288,7 @@ export default function StudentsDirectory() {
           </div>
 
           <select 
-            className="bg-slate-50/80 border border-slate-200 text-[14px] text-slate-800 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 focus:bg-white transition-all appearance-none cursor-pointer shadow-inner font-semibold"
+            className="bg-slate-50/80 border border-slate-200 text-[14px] text-slate-800 rounded-xl px-4 py-2.5 outline-none focus:border-indigo-500 focus:bg-white transition-all appearance-none cursor-pointer shadow-inner font-semibold w-full sm:w-auto"
             value={selectedClass}
             onChange={(e) => setSelectedClass(e.target.value)}
           >
@@ -300,7 +300,7 @@ export default function StudentsDirectory() {
 
           <button 
             onClick={() => { setSearchTerm(''); setSelectedClass(''); fetchStudents(); }}
-            className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-4 py-2.5 text-[14px] font-semibold shadow-sm hover:shadow transition-all cursor-pointer flex items-center gap-1.5"
+            className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-4 py-2.5 text-[14px] font-semibold shadow-sm hover:shadow transition-all cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto"
           >
             Refresh
           </button>
@@ -308,7 +308,7 @@ export default function StudentsDirectory() {
 
         <button 
           onClick={handleOpenAddModal}
-          className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold px-5 py-2.5 rounded-xl text-[14px] shadow-md shadow-indigo-500/20 hover:shadow-lg transition-all cursor-pointer flex items-center gap-2"
+          className="w-full lg:w-auto bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-semibold px-5 py-2.5 rounded-xl text-[14px] shadow-md shadow-indigo-500/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
         >
           <span className="text-base font-bold">+</span> Add Student
         </button>
@@ -417,10 +417,10 @@ export default function StudentsDirectory() {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-4xl p-6 md:p-8 shadow-2xl text-slate-800 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-4xl p-4 sm:p-6 md:p-8 shadow-2xl text-slate-800 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b border-slate-100 pb-4 mb-6">
-              <h3 className="text-[20px] font-bold text-slate-900 tracking-wide">
+              <h3 className="text-[18px] sm:text-[20px] font-bold text-slate-900 tracking-wide">
                 {editingId ? 'Edit Student Details' : 'Student Registration Form'}
               </h3>
               <div className="flex items-center gap-3">
@@ -429,7 +429,7 @@ export default function StudentsDirectory() {
             </div>
 
             <form onSubmit={handleSaveStudent} className="space-y-5">
-              <div className="bg-slate-50/70 border border-slate-200/80 p-4 rounded-2xl shadow-inner flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="bg-slate-50/70 border border-slate-200/80 p-4 rounded-2xl shadow-inner flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-slate-200 bg-white flex items-center justify-center shadow-sm shrink-0">
                     {formData.photo ? (
@@ -444,18 +444,18 @@ export default function StudentsDirectory() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <label className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[13px] px-4 py-2.5 rounded-xl font-semibold text-center cursor-pointer shadow-sm transition">
+                <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-center sm:justify-start">
+                  <label className="flex-1 sm:flex-none bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[13px] px-4 py-2.5 rounded-xl font-semibold text-center cursor-pointer shadow-sm transition">
                     📁 Upload Photo
                     <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                   </label>
-                  <button type="button" onClick={startCamera} className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[13px] px-4 py-2.5 rounded-xl font-semibold shadow-sm transition cursor-pointer">📷 Live Camera</button>
+                  <button type="button" onClick={startCamera} className="flex-1 sm:flex-none bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[13px] px-4 py-2.5 rounded-xl font-semibold shadow-sm transition cursor-pointer">📷 Live Camera</button>
                 </div>
               </div>
 
               {isCameraActive && (
                 <div className="flex flex-col items-center bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-inner">
-                  <video ref={videoRef} autoPlay playsInline className="w-48 h-36 rounded-xl border border-slate-200 object-cover mb-3 shadow-sm" />
+                  <video ref={videoRef} autoPlay playsInline className="w-full max-w-[280px] h-48 rounded-xl border border-slate-200 object-cover mb-3 shadow-sm" />
                   <div className="flex gap-3">
                     <button type="button" onClick={capturePhoto} className="bg-emerald-600 hover:bg-emerald-500 text-white text-[13px] px-4 py-2 rounded-xl font-semibold shadow-sm transition cursor-pointer">Capture</button>
                     <button type="button" onClick={stopCamera} className="bg-rose-600 hover:bg-rose-500 text-white text-[13px] px-4 py-2 rounded-xl font-semibold shadow-sm transition cursor-pointer">Cancel</button>
@@ -464,7 +464,7 @@ export default function StudentsDirectory() {
               )}
               <canvas ref={canvasRef} className="hidden" />
 
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1">Student Full Name *</label>
                   <input type="text" required placeholder="Full Name" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-2.5 text-[14px] text-slate-800 focus:bg-white focus:border-indigo-500 outline-none shadow-inner font-medium" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
@@ -505,7 +505,7 @@ export default function StudentsDirectory() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1">Medium</label>
                   <select className="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-2.5 text-[14px] text-slate-800 focus:bg-white focus:border-indigo-500 outline-none shadow-inner font-semibold cursor-pointer" value={formData.medium} onChange={(e) => setFormData({...formData, medium: e.target.value})}>
@@ -526,7 +526,7 @@ export default function StudentsDirectory() {
 
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1">Gender</label>
-                  <select className="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-2.5 text-[14px] text-slate-800 focus:bg-white focus:border-indigo-500 outline-none shadow-inner font-semibold cursor-pointer" value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})}>
+                  <select className="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-2.5 text-[14px] text-slate-800 focus:bg-white focus:border-indigo-500 outline-none shadow-sm font-semibold cursor-pointer" value={formData.gender} onChange={(e) => setFormData({...formData, gender: e.target.value})}>
                     <option value="Boy (छात्र)">Boy (छात्र)</option>
                     <option value="Girl (छात्रा)">Girl (छात्रा)</option>
                   </select>
@@ -538,7 +538,7 @@ export default function StudentsDirectory() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1">RTE Student (आर.टी.ई)</label>
                   <select className="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-2.5 text-[14px] text-slate-800 focus:bg-white focus:border-indigo-500 outline-none shadow-inner font-semibold cursor-pointer" value={formData.rte} onChange={(e) => setFormData({...formData, rte: e.target.value})}>
@@ -549,14 +549,14 @@ export default function StudentsDirectory() {
 
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1">Admission Type</label>
-                  <select className="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-2.5 text-[14px] text-slate-800 focus:bg-white focus:border-indigo-500 outline-none shadow-inner font-semibold cursor-pointer" value={formData.admissionType} onChange={(e) => setFormData({...formData, admissionType: e.target.value})}>
+                  <select className="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-2.5 text-[14px] text-slate-800 focus:bg-white focus:border-indigo-500 outline-none shadow-sm font-semibold cursor-pointer" value={formData.admissionType} onChange={(e) => setFormData({...formData, admissionType: e.target.value})}>
                     <option value="New Admission (नया प्रवेश)">New Admission (नया प्रवेश)</option>
                     <option value="Old Admission (पुराना प्रवेश)">Old Admission (पुराना प्रवेश)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-bold text-slate-700 mb-1">Admission Date</label>
+                  <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1">Admission Date</label>
                   <input type="text" placeholder="DD/MM/YYYY" className="w-full bg-slate-50/50 border border-slate-200 rounded-xl p-2.5 text-[14px] text-slate-800 focus:bg-white focus:border-indigo-500 outline-none shadow-inner font-medium" value={formData.admissionDate} onChange={(e) => setFormData({...formData, admissionDate: e.target.value})} />
                 </div>
 
@@ -567,7 +567,7 @@ export default function StudentsDirectory() {
               </div>
 
               <div className="pt-2 flex justify-start">
-                <button type="submit" disabled={loading} className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white px-7 py-3 rounded-xl text-[14px] font-semibold shadow-md shadow-indigo-500/20 hover:shadow-lg transition cursor-pointer disabled:opacity-50">
+                <button type="submit" disabled={loading} className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white px-7 py-3 rounded-xl text-[14px] font-semibold shadow-md shadow-indigo-500/20 hover:shadow-lg transition cursor-pointer disabled:opacity-50">
                   {loading ? 'Saving...' : editingId ? 'Update Student Details' : 'Save Student Registration'}
                 </button>
               </div>
