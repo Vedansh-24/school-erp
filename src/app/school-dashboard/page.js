@@ -369,7 +369,7 @@ export default function SchoolDashboard() {
                 }}
                 className="bg-gradient-to-b from-[#38BDF8] to-[#0284C7] hover:from-[#0284C7] hover:to-[#0369a1] text-white text-xs sm:text-sm px-3 sm:px-4.5 py-1.5 sm:py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1 sm:gap-1.5 border-t border-sky-200/50 border-b-[4px] sm:border-b-[5px] border-[#075985] shadow-[0_0_18px_rgba(56,189,248,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer whitespace-nowrap"
               >
-                <span>💾</span> <span className="hidden xs:inline">Backup</span>
+                <span>💾</span> <span>Backup</span>
               </button>
 
               <button 
