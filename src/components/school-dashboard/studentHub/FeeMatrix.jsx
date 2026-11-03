@@ -206,69 +206,95 @@ export default function FeeMatrix() {
               <span>💰</span> Manual Price Multiplier & Category-wise Total Calculation
             </h3>
 
+            {/* Price Inputs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center">General Price per Student (₹)</label>
+              <div className="text-center flex flex-col items-center">
+                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center h-[52px] sm:h-auto flex flex-col justify-center">
+                  <span className="sm:hidden font-bold">General<br/>per Student<br/>(₹)</span>
+                  <span className="hidden sm:inline">General Price per Student (₹)</span>
+                </label>
                 <input
                   type="number"
                   name="general"
                   value={prices.general}
                   onChange={handlePriceChange}
                   placeholder="0"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center mt-1"
                 />
               </div>
-              <div className="text-center">
-                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center">OBC Price per Student (₹)</label>
+              <div className="text-center flex flex-col items-center">
+                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center h-[52px] sm:h-auto flex flex-col justify-center">
+                  <span className="sm:hidden font-bold">OBC<br/>per Student<br/>(₹)</span>
+                  <span className="hidden sm:inline">OBC Price per Student (₹)</span>
+                </label>
                 <input
                   type="number"
                   name="obc"
                   value={prices.obc}
                   onChange={handlePriceChange}
                   placeholder="0"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center mt-1"
                 />
               </div>
-              <div className="text-center">
-                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center">SC Price per Student (₹)</label>
+              <div className="text-center flex flex-col items-center">
+                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center h-[52px] sm:h-auto flex flex-col justify-center">
+                  <span className="sm:hidden font-bold">SC<br/>per Student<br/>(₹)</span>
+                  <span className="hidden sm:inline">SC Price per Student (₹)</span>
+                </label>
                 <input
                   type="number"
                   name="sc"
                   value={prices.sc}
                   onChange={handlePriceChange}
                   placeholder="0"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center mt-1"
                 />
               </div>
-              <div className="text-center">
-                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center">ST Price per Student (₹)</label>
+              <div className="text-center flex flex-col items-center">
+                <label className="block text-[12px] font-bold text-slate-700 mb-1 text-center h-[52px] sm:h-auto flex flex-col justify-center">
+                  <span className="sm:hidden font-bold">ST<br/>per Student<br/>(₹)</span>
+                  <span className="hidden sm:inline">ST Price per Student (₹)</span>
+                </label>
                 <input
                   type="number"
                   name="st"
                   value={prices.st}
                   onChange={handlePriceChange}
                   placeholder="0"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-normal text-center mt-1"
                 />
               </div>
             </div>
 
+            {/* Total Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center">
-                <p className="text-[12px] font-medium text-slate-500 text-center">General Total:</p>
-                <p className="text-[15px] font-bold text-sky-600 mt-0.5 text-center">₹{generalTotalAmount.toLocaleString()}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center flex flex-col items-center justify-center">
+                <p className="text-[12px] font-medium text-slate-500 text-center h-[36px] sm:h-auto flex flex-col justify-center">
+                  <span className="sm:hidden font-medium">General<br/>Total:</span>
+                  <span className="hidden sm:inline">General Total:</span>
+                </p>
+                <p className="text-[15px] font-bold text-sky-600 mt-1 text-center">₹{generalTotalAmount.toLocaleString()}</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center">
-                <p className="text-[12px] font-medium text-slate-500 text-center">OBC Total:</p>
-                <p className="text-[15px] font-bold text-sky-600 mt-0.5 text-center">₹{obcTotalAmount.toLocaleString()}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center flex flex-col items-center justify-center">
+                <p className="text-[12px] font-medium text-slate-500 text-center h-[36px] sm:h-auto flex flex-col justify-center">
+                  <span className="sm:hidden font-medium">OBC<br/>Total:</span>
+                  <span className="hidden sm:inline">OBC Total:</span>
+                </p>
+                <p className="text-[15px] font-bold text-sky-600 mt-1 text-center">₹{obcTotalAmount.toLocaleString()}</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center">
-                <p className="text-[12px] font-medium text-slate-500 text-center">SC Total:</p>
-                <p className="text-[15px] font-bold text-sky-600 mt-0.5 text-center">₹{scTotalAmount.toLocaleString()}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center flex flex-col items-center justify-center">
+                <p className="text-[12px] font-medium text-slate-500 text-center h-[36px] sm:h-auto flex flex-col justify-center">
+                  <span className="sm:hidden font-medium">SC<br/>Total:</span>
+                  <span className="hidden sm:inline">SC Total:</span>
+                </p>
+                <p className="text-[15px] font-bold text-sky-600 mt-1 text-center">₹{scTotalAmount.toLocaleString()}</p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center">
-                <p className="text-[12px] font-medium text-slate-500 text-center">ST Total:</p>
-                <p className="text-[15px] font-bold text-sky-600 mt-0.5 text-center">₹{stTotalAmount.toLocaleString()}</p>
+              <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 shadow-sm text-center flex flex-col items-center justify-center">
+                <p className="text-[12px] font-medium text-slate-500 text-center h-[36px] sm:h-auto flex flex-col justify-center">
+                  <span className="sm:hidden font-medium">ST<br/>Total:</span>
+                  <span className="hidden sm:inline">ST Total:</span>
+                </p>
+                <p className="text-[15px] font-bold text-sky-600 mt-1 text-center">₹{stTotalAmount.toLocaleString()}</p>
               </div>
             </div>
 
