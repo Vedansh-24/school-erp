@@ -67,7 +67,7 @@ const CustomDatePicker = ({ value, onChange, label, required = false }) => {
 
   return (
     <div className="relative w-full" ref={containerRef}>
-      <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5 whitespace-nowrap">
+      <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5 truncate">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <div className="relative">
@@ -83,14 +83,14 @@ const CustomDatePicker = ({ value, onChange, label, required = false }) => {
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm sm:text-base cursor-pointer"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs sm:text-base cursor-pointer"
         >
           📅
         </button>
       </div>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 left-0 sm:left-auto right-0 sm:right-auto bg-white border border-slate-300 rounded-lg shadow-xl p-3 w-full max-w-[280px] sm:w-72 text-xs select-none">
+        <div className="absolute z-50 mt-1 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 bg-white border border-slate-300 rounded-lg shadow-2xl p-2.5 sm:p-3 w-[calc(100vw-40px)] max-w-[280px] sm:w-72 text-xs select-none">
           <div className="flex items-center justify-between bg-slate-100 p-2 rounded-md mb-2">
             <button
               type="button"
@@ -186,7 +186,7 @@ const CustomDatePicker = ({ value, onChange, label, required = false }) => {
                       type="button"
                       key={day}
                       onClick={() => handleSelectDay(day)}
-                      className={`p-1.5 rounded font-medium transition cursor-pointer ${
+                      className={`p-1 rounded font-medium transition cursor-pointer text-xs ${
                         isSelected
                           ? 'bg-[#0284C7] text-white font-bold'
                           : 'hover:bg-slate-100 text-slate-800'
@@ -202,7 +202,7 @@ const CustomDatePicker = ({ value, onChange, label, required = false }) => {
                 <button
                   type="button"
                   onClick={handleTodayClick}
-                  className="text-[#0284C7] font-bold hover:underline cursor-pointer"
+                  className="text-[#0284C7] font-bold hover:underline cursor-pointer text-xs"
                 >
                   Today: {fullMonths[new Date().getMonth()].slice(0, 3)} {new Date().getDate()}, {new Date().getFullYear()}
                 </button>
@@ -547,20 +547,20 @@ export default function StudentRegistration() {
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 md:p-8 shadow-sm space-y-5 sm:space-y-6 text-[#1A2332] font-sans w-full max-w-full overflow-x-hidden">
+    <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-6 md:p-8 shadow-sm space-y-4 sm:space-y-6 text-[#1A2332] font-sans w-full max-w-full overflow-x-hidden">
       
       {/* Header */}
-      <div className="pb-4 border-b border-slate-200 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+      <div className="pb-4 border-b border-slate-200 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
         <div>
           <h2 className="text-base sm:text-lg md:text-xl font-black text-[#1A2332] tracking-wide">
             Student Registration Form
           </h2>
-          <p className="text-xs text-slate-500 font-medium mt-1">
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
             Kripya छात्र की सभी आवश्यक जानकारी दर्ज करें। (<span className="text-red-500 font-bold">*</span> वाले फ़ील्ड्स अनिवार्य हैं)
           </p>
         </div>
         
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full lg:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
           <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-lg border border-slate-300 w-full sm:w-auto">
             <input
               type="text"
@@ -610,20 +610,20 @@ export default function StudentRegistration() {
       </div>
 
       {successMsg && (
-        <div className="p-3.5 sm:p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs sm:text-sm font-bold shadow-sm">
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs sm:text-sm font-bold shadow-sm">
           {successMsg}
         </div>
       )}
       {errorMsg && (
-        <div className="p-3.5 sm:p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs sm:text-sm font-bold shadow-sm">
+        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs sm:text-sm font-bold shadow-sm">
           {errorMsg}
         </div>
       )}
 
-      <form onSubmit={handleFormSubmit} className="space-y-5 sm:space-y-6">
+      <form onSubmit={handleFormSubmit} className="space-y-4 sm:space-y-6">
         
         {/* Photo Section */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
           <input
             type="file"
             ref={fileInputRef}
@@ -640,7 +640,7 @@ export default function StudentRegistration() {
             )}
           </div>
 
-          <div className="space-y-1.5 sm:space-y-2">
+          <div className="space-y-1 sm:space-y-2">
             <h4 className="text-xs sm:text-sm font-bold text-slate-800">Student Passport Photo</h4>
             <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
               Upload image from gallery or capture live photo using camera.
@@ -687,64 +687,64 @@ export default function StudentRegistration() {
           </div>
         )}
 
-        {/* Form Inputs Grid - Adaptive for Mobile (1 col), Tablet (2-3 col) & Laptop (6 col) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">
+        {/* Form Inputs Grid - Strictly 2 Columns Layout for all screen sizes */}
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">
               Student Name <span className="text-red-500">*</span>
             </label>
             <input type="text" name="studentName" required value={formData.studentName} onChange={handleInputChange} placeholder="Full Name" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">
               Class <span className="text-red-500">*</span>
             </label>
             <select name="studyingInClass" required value={formData.studyingInClass} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               {classesList.map((cls) => (<option key={cls} value={cls}>{cls}</option>))}
             </select>
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">
               SR. No. <span className="text-red-500">*</span>
             </label>
             <input type="text" name="srNo" required value={formData.srNo} onChange={handleInputChange} placeholder="SR Number" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">
               Mother Name <span className="text-red-500">*</span>
             </label>
             <input type="text" name="motherName" required value={formData.motherName} onChange={handleInputChange} placeholder="Mother Name" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Father Name</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Father Name</label>
             <input type="text" name="fatherName" value={formData.fatherName} onChange={handleInputChange} placeholder="Father Name" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">
               WhatsApp / Mobile <span className="text-red-500">*</span>
             </label>
             <input type="text" name="mobileNumber" required value={formData.mobileNumber} onChange={handleInputChange} placeholder="Mobile Number" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Email Address</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Email Address</label>
             <input type="email" name="email" value={formData.email} onChange={handleInputChange} placeholder="student@email.com" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-          <div className="sm:col-span-2 lg:col-span-2">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Residential Address (स्थाई पता)</label>
-            <input type="text" name="habitationOrLocality" value={formData.habitationOrLocality} onChange={handleInputChange} placeholder="Enter House No., Street, Address" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
-          </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Medium <span className="text-red-500">*</span></label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Medium <span className="text-red-500">*</span></label>
             <select name="mediumOfInstruction" required value={formData.mediumOfInstruction} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="Hindi">Hindi</option>
               <option value="English">English</option>
             </select>
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Category <span className="text-red-500">*</span></label>
+
+          <div className="col-span-2">
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Residential Address (स्थाई पता)</label>
+            <input type="text" name="habitationOrLocality" value={formData.habitationOrLocality} onChange={handleInputChange} placeholder="Enter House No., Street, Address" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
+          </div>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Category <span className="text-red-500">*</span></label>
             <select name="socialCategory" required value={formData.socialCategory} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="General (सामान्य)">General (सामान्य)</option>
               <option value="OBC (अन्य पिछड़ा वर्ग)">OBC (अन्य पिछड़ा वर्ग)</option>
@@ -754,22 +754,20 @@ export default function StudentRegistration() {
               <option value="EWS (ईडब्ल्यूएस)">EWS (ईडब्ल्यूएस)</option>
             </select>
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Gender <span className="text-red-500">*</span></label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Gender <span className="text-red-500">*</span></label>
             <select name="gender" required value={formData.gender} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="Boy (छात्र)">Boy (छात्र)</option>
               <option value="Girl (छात्रा)">Girl (छात्रा)</option>
               <option value="Other">Other</option>
             </select>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
-          <div className="lg:col-span-1">
+          <div>
             <CustomDatePicker label="DOB (जन्म तिथि)" required={true} value={formData.dob} onChange={(dateStr) => handleDateChange('dob', dateStr)} />
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Religion</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Religion</label>
             <select name="religion" value={formData.religion} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="Hindu">Hindu</option>
               <option value="Muslim">Muslim</option>
@@ -778,58 +776,60 @@ export default function StudentRegistration() {
               <option value="Other">Other</option>
             </select>
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Aadhaar No</label>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Aadhaar No</label>
             <input type="text" name="aadhaarNo" value={formData.aadhaarNo} onChange={handleInputChange} placeholder="Aadhaar Number" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">RTE Status</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">RTE Status</label>
             <select name="rteStatus" value={formData.rteStatus} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="Not Applicable">Not Applicable</option>
               <option value="Yes">Yes</option>
             </select>
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Admission Type</label>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Admission Type</label>
             <select name="admissionType" value={formData.admissionType} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="New Admission (नया प्रवेश)">New Admission (नया प्रवेश)</option>
               <option value="Promoted">Promoted</option>
             </select>
           </div>
-          <div className="lg:col-span-1">
+          <div>
             <CustomDatePicker label="Admission Date" value={formData.dateOfAdmission} onChange={(dateStr) => handleDateChange('dateOfAdmission', dateStr)} />
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Annual Fees</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Annual Fees</label>
             <input type="number" name="annualFees" value={formData.annualFees} onChange={handleInputChange} placeholder="₹ Amount" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">BPL Status</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">BPL Status</label>
             <select name="bplStatus" value={formData.bplStatus} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="No">No</option>
               <option value="Yes">Yes</option>
             </select>
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Minority Status</label>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Minority Status</label>
             <select name="minorityStatus" value={formData.minorityStatus} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="No">No</option>
               <option value="Yes">Yes</option>
             </select>
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Previous Class</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Previous Class</label>
             <input type="text" name="previousClass" value={formData.previousClass} onChange={handleInputChange} placeholder="e.g. PP.2" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Previous %</label>
+
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Previous %</label>
             <input type="text" name="previousPercentage" value={formData.previousPercentage} onChange={handleInputChange} placeholder="e.g. 85%" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">CWSN Type</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">CWSN Type</label>
             <select name="cwsnType" value={formData.cwsnType} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="Not Applicable">Not Applicable</option>
               <option value="Blindness">Blindness</option>
@@ -837,25 +837,24 @@ export default function StudentRegistration() {
               <option value="Other">Other</option>
             </select>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Transport Facility</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Transport Facility</label>
             <select name="transportFacility" value={formData.transportFacility} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="No">No</option>
               <option value="Yes">Yes</option>
             </select>
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Hostel Facility</label>
+          <div>
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Hostel Facility</label>
             <select name="hostelFacility" value={formData.hostelFacility} onChange={handleInputChange} className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-semibold">
               <option value="No">No</option>
               <option value="Yes">Yes</option>
             </select>
           </div>
-          <div className="lg:col-span-1">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1.5">Session</label>
+
+          <div className="col-span-2">
+            <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Session</label>
             <input type="text" name="session" value={formData.session} onChange={handleInputChange} placeholder="e.g. 2026-27" className="w-full bg-[#F5F7FA] border border-slate-300 rounded-lg p-2.5 sm:p-3 text-xs sm:text-sm text-[#1A2332] outline-none shadow-sm font-medium" />
           </div>
         </div>
