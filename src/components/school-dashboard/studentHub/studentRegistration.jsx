@@ -189,7 +189,7 @@ const CustomDatePicker = ({ value, onChange, label, required = false }) => {
                       className={`p-1 rounded font-medium transition cursor-pointer text-xs ${
                         isSelected
                           ? 'bg-[#0284C7] text-white font-bold'
-                          : 'hover:bg-slate-100 text-[#1A2332]'
+                          : 'hover:bg-slate-100 text-slate-800'
                       }`}
                     >
                       {day}
@@ -622,8 +622,8 @@ export default function StudentRegistration() {
 
       <form onSubmit={handleFormSubmit} className="space-y-4 sm:space-y-6">
         
-        {/* Photo Section */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
+        {/* Photo Section: Stacked layout on mobile/tablet, Side-by-side (as-it-is) on Laptop */}
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row lg:flex-row items-center sm:items-center lg:items-center text-center sm:text-left lg:text-left gap-3 sm:gap-6">
           <input
             type="file"
             ref={fileInputRef}
@@ -632,7 +632,7 @@ export default function StudentRegistration() {
             className="hidden"
           />
 
-          <div className="w-20 h-24 sm:w-24 sm:h-28 border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-slate-400 text-xs text-center bg-white shadow-sm overflow-hidden relative shrink-0">
+          <div className="w-24 h-28 sm:w-24 sm:h-28 border border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center text-slate-400 text-xs text-center bg-white shadow-sm overflow-hidden relative shrink-0">
             {photoPreview ? (
               <img src={photoPreview} alt="Student Photo" className="w-full h-full object-cover" />
             ) : (
@@ -640,25 +640,25 @@ export default function StudentRegistration() {
             )}
           </div>
 
-          <div className="space-y-1 sm:space-y-2">
+          <div className="space-y-1 sm:space-y-2 flex-1">
             <h4 className="text-xs sm:text-sm font-bold text-slate-800">Student Passport Photo</h4>
             <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
-              Upload image from gallery or capture live photo using camera.
+              Upload image from gallery or capture live photo using mobile camera.
             </p>
-            <div className="flex flex-wrap items-center gap-2 pt-1">
+            <div className="flex flex-row items-center justify-center sm:justify-start gap-2 pt-1 w-full">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs sm:text-sm px-3 py-1.5 sm:py-2 rounded-lg font-bold transition shadow-sm cursor-pointer"
+                className="flex-1 sm:flex-none bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs sm:text-sm px-3 py-1.5 sm:py-2 rounded-lg font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
               >
-                📁 Upload Photo
+                <span>📁</span> Upload Photo
               </button>
               <button
                 type="button"
                 onClick={startCamera}
-                className="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs sm:text-sm px-3 py-1.5 sm:py-2 rounded-lg font-bold transition shadow-sm cursor-pointer"
+                className="flex-1 sm:flex-none bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs sm:text-sm px-3 py-1.5 sm:py-2 rounded-lg font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
               >
-                📷 Live Camera
+                <span>📷</span> Live Camera
               </button>
             </div>
           </div>
