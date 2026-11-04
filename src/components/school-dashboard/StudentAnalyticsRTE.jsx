@@ -362,7 +362,7 @@ export default function StudentAnalyticsRTE() {
         }
       `}</style>
 
-      {/* Header with Calendar Picker Controls */}
+      {/* Header Section: Heading on top, Select Date & Refresh Data below for mobile, laptop as-it-is */}
       <div className="no-print flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-4">
         <div>
           <h2 className="text-[20px] font-bold text-sky-800 tracking-wide">
@@ -564,9 +564,8 @@ export default function StudentAnalyticsRTE() {
             id="official-print-report"
             className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4 print:border-none print:p-0 print:shadow-none"
           >
-            {/* Desktop layout: md:flex md:items-center md:justify-between; Mobile: flex flex-col gap-3 */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 print:border-black gap-3">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-3 items-center pb-3 border-b border-slate-200 print:border-black gap-3">
+              <div className="md:col-span-2">
                 <h3 className="text-[15px] sm:text-[16px] font-bold text-slate-900 tracking-wide print:text-black">
                   सत्यापन के दिन 25% निःशुल्क एवं 75% सशुल्क शिक्षा प्राप्त कर रहे कक्षावार बालकों की वास्तविक उपस्थिति विवरण
                 </h3>
@@ -575,10 +574,10 @@ export default function StudentAnalyticsRTE() {
                 </p>
               </div>
 
-              <div>
+              <div className="text-left md:text-right">
                 <button
                   onClick={() => window.print()}
-                  className="no-print bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-[14px] border-b-4 border-sky-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer inline-flex items-center justify-center gap-2 w-full md:w-auto"
+                  className="no-print bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-[14px] border-b-4 border-sky-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer inline-flex items-center justify-center gap-2"
                 >
                   🖨️ Print Official Report
                 </button>
@@ -656,8 +655,7 @@ export default function StudentAnalyticsRTE() {
 
           {/* TABLE 3: CLASS-WISE EXACT AGE CALCULATOR */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            {/* Desktop layout: sm:flex sm:items-center sm:justify-between; Mobile: flex flex-col gap-3 */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200 gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
               <div>
                 <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
                   Class-wise Student Exact Age Calculator Matrix
@@ -667,15 +665,13 @@ export default function StudentAnalyticsRTE() {
                 </p>
               </div>
 
-              <div>
-                <input
-                  type="text"
-                  placeholder="Search student or SR..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full sm:w-72"
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="Search student or SR..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full sm:w-72"
+              />
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
