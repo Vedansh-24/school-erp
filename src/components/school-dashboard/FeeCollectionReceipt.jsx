@@ -788,31 +788,31 @@ Thank you!
                       <td className="p-3.5 font-extrabold text-emerald-600 text-[15px]">₹{tx.total_paid}</td>
                       
                       <td className="p-3.5">
-                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-center gap-2">
                           <button 
                             onClick={() => handleOpenReceiptModal(tx)} 
-                            className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-extrabold px-3 py-1.5 rounded-xl text-[12px] shadow-[0_2px_0_#115e59] active:translate-y-[2px] active:shadow-none hover:brightness-110 cursor-pointer whitespace-nowrap flex items-center gap-1 transition-all"
+                            className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-extrabold px-3 py-1.5 rounded-xl text-[12px] shadow-[0_2px_0_#115e59] active:translate-y-[2px] active:shadow-none hover:brightness-110 cursor-pointer whitespace-nowrap flex items-center justify-center gap-1 transition-all"
                           >
                             🖨️ Print
                           </button>
 
                           <button 
                             onClick={() => handleWhatsAppShare(tx)} 
-                            className="bg-gradient-to-r from-emerald-500 to-green-600 text-white font-extrabold px-3 py-1.5 rounded-xl text-[12px] shadow-[0_2px_0_#15803d] active:translate-y-[2px] active:shadow-none hover:brightness-110 cursor-pointer whitespace-nowrap flex items-center gap-1 transition-all"
+                            className="bg-gradient-to-r from-emerald-500 to-green-600 text-white font-extrabold px-3 py-1.5 rounded-xl text-[12px] shadow-[0_2px_0_#15803d] active:translate-y-[2px] active:shadow-none hover:brightness-110 cursor-pointer whitespace-nowrap flex items-center justify-center gap-1 transition-all"
                           >
                             📲 WhatsApp
                           </button>
 
                           <button 
                             onClick={() => handleEdit(tx)} 
-                            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-extrabold px-3 py-1.5 rounded-xl text-[12px] shadow-[0_2px_0_#3730a3] active:translate-y-[2px] active:shadow-none hover:brightness-110 cursor-pointer whitespace-nowrap transition-all"
+                            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-extrabold px-3 py-1.5 rounded-xl text-[12px] shadow-[0_2px_0_#3730a3] active:translate-y-[2px] active:shadow-none hover:brightness-110 cursor-pointer whitespace-nowrap flex items-center justify-center transition-all"
                           >
                             ✏️ Edit
                           </button>
 
                           <button 
                             onClick={() => handleDelete(tx.id)} 
-                            className="bg-gradient-to-r from-rose-500 to-red-600 text-white font-extrabold px-3 py-1.5 rounded-xl text-[12px] shadow-[0_2px_0_#991b1b] active:translate-y-[2px] active:shadow-none hover:brightness-110 cursor-pointer whitespace-nowrap transition-all"
+                            className="bg-gradient-to-r from-rose-500 to-red-600 text-white font-extrabold px-3 py-1.5 rounded-xl text-[12px] shadow-[0_2px_0_#991b1b] active:translate-y-[2px] active:shadow-none hover:brightness-110 cursor-pointer whitespace-nowrap flex items-center justify-center transition-all"
                           >
                             🗑️ Delete
                           </button>
