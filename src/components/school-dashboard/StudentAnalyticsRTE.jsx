@@ -362,30 +362,30 @@ export default function StudentAnalyticsRTE() {
         }
       `}</style>
 
-      {/* Header with Calendar Picker Controls */}
-      <div className="no-print flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-4">
+      {/* Header Section: Heading on top, Select Date & Refresh Data below */}
+      <div className="no-print flex flex-col pb-4 border-b border-slate-200 gap-4">
         <div>
-          <h2 className="text-[20px] font-bold text-sky-800 tracking-wide">
+          <h2 className="text-[18px] sm:text-[20px] font-bold text-sky-800 tracking-wide">
             Student Analytics, RTE Directory & Session Promotion
           </h2>
-          <p className="text-[13px] text-slate-500 mt-1 font-medium">
+          <p className="text-[12px] sm:text-[13px] text-slate-500 mt-1 font-medium">
             Supabase Live Data Integration | Real Daily Attendance & Verification Matrix
           </p>
         </div>
 
-        {/* Date Selector with Calendar */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
-          <div className="flex flex-wrap items-center gap-2.5 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm">
-            <span className="text-[13px] font-bold text-slate-700">🗓️ Select Date:</span>
+        {/* Date Selector & Refresh Button Row */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex items-center gap-2.5 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm flex-1">
+            <span className="text-[13px] font-bold text-slate-700 whitespace-nowrap">🗓️ Select Date:</span>
             <input
               type="date"
               value={targetDate}
               onChange={(e) => setTargetDate(e.target.value)}
-              className="bg-slate-50 text-slate-800 text-[14px] px-3 py-1 rounded-lg border border-slate-300 outline-none focus:border-sky-500 font-medium cursor-pointer"
+              className="bg-slate-50 text-slate-800 text-[14px] px-3 py-1 rounded-lg border border-slate-300 outline-none focus:border-sky-500 font-medium cursor-pointer w-full"
             />
             <button
               onClick={() => setTargetDate(getTodayDate())}
-              className="text-[11px] bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-2 py-1 rounded-md transition"
+              className="text-[11px] bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-2.5 py-1.5 rounded-md transition whitespace-nowrap"
               title="Reset to today date"
             >
               Today
@@ -394,7 +394,7 @@ export default function StudentAnalyticsRTE() {
 
           <button
             onClick={fetchStudentsAndAttendance}
-            className="bg-gradient-to-b from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 border-b-4 border-slate-400 text-slate-700 font-bold px-4 py-2 rounded-xl text-[13px] active:border-b-0 active:translate-y-1 transition-all shadow-sm cursor-pointer"
+            className="bg-gradient-to-b from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 border-b-4 border-slate-400 text-slate-700 font-bold px-5 py-2.5 rounded-xl text-[13px] active:border-b-0 active:translate-y-1 transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2"
           >
             🔄 Refresh Data
           </button>
@@ -437,8 +437,8 @@ export default function StudentAnalyticsRTE() {
             </div>
 
             <div className="space-y-4">
-              {/* Row 1: From Session, To Session */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Row 1: From Session & To Session */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1.5">From Session:</label>
                   <select
@@ -464,8 +464,8 @@ export default function StudentAnalyticsRTE() {
                 </div>
               </div>
 
-              {/* Row 2: Select Class, Promote Class Student Button */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+              {/* Row 2: Select Class & Promote Button */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Select Class:</label>
                   <select
@@ -494,7 +494,7 @@ export default function StudentAnalyticsRTE() {
 
           {/* TABLE 1: CLASS-WISE RTE & ADMISSION STATISTICS */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 items-center pb-3 border-b border-slate-200 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 items-center pb-3 border-b border-slate-200 gap-2">
               <h3 className="text-[15px] font-bold text-slate-800 tracking-wide md:col-span-2">
                 Class-wise RTE & Admission Statistics Matrix
               </h3>
@@ -564,7 +564,7 @@ export default function StudentAnalyticsRTE() {
             id="official-print-report"
             className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4 print:border-none print:p-0 print:shadow-none"
           >
-            {/* Desktop layout: md:flex md:items-center md:justify-between; Mobile: flex flex-col gap-3 */}
+            {/* Desktop: md:flex md:items-center md:justify-between; Mobile: flex flex-col gap-3 */}
             <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 print:border-black gap-3">
               <div>
                 <h3 className="text-[15px] sm:text-[16px] font-bold text-slate-900 tracking-wide print:text-black">
@@ -656,8 +656,8 @@ export default function StudentAnalyticsRTE() {
 
           {/* TABLE 3: CLASS-WISE EXACT AGE CALCULATOR */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            {/* Desktop layout: sm:flex sm:items-center sm:justify-between; Mobile: flex flex-col gap-3 */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-200 gap-3">
+            {/* Desktop: md:flex md:items-center md:justify-between; Mobile: flex flex-col gap-3 */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-3">
               <div>
                 <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
                   Class-wise Student Exact Age Calculator Matrix
@@ -673,7 +673,7 @@ export default function StudentAnalyticsRTE() {
                   placeholder="Search student or SR..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full sm:w-72"
+                  className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full md:w-72"
                 />
               </div>
             </div>
