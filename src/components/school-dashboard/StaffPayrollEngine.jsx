@@ -344,12 +344,12 @@ export default function StaffPayrollEngine() {
   };
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-xl p-6 md:p-8 shadow-sm space-y-6 text-slate-900 font-sans flex flex-col h-full relative">
+    <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-xl p-4 md:p-8 shadow-sm space-y-6 text-slate-900 font-sans flex flex-col h-full relative">
       
       {/* Top Section: Staff Registration & Portal Access Controls */}
-      <div className={`bg-white border rounded-xl p-6 shadow-sm space-y-5 transition-all ${editingStaffId ? 'border-amber-600 ring-2 ring-amber-500/30 bg-amber-50/20' : 'border-slate-300'}`}>
+      <div className={`bg-white border rounded-xl p-5 md:p-6 shadow-sm space-y-5 transition-all ${editingStaffId ? 'border-amber-600 ring-2 ring-amber-500/30 bg-amber-50/20' : 'border-slate-300'}`}>
         
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-[16px] font-bold text-sky-800 tracking-wide flex items-center gap-2">
             {editingStaffId ? (
               <span className="bg-amber-600 text-white text-[11px] px-2.5 py-0.5 rounded-md uppercase tracking-wider animate-pulse">
@@ -363,7 +363,7 @@ export default function StaffPayrollEngine() {
             <button
               type="button"
               onClick={handleCancelEdit}
-              className="text-[12px] bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold px-3 py-1 rounded-lg transition"
+              className="text-[12px] bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold px-3 py-1 rounded-lg transition self-start sm:self-auto"
             >
               Cancel Edit
             </button>
@@ -432,7 +432,7 @@ export default function StaffPayrollEngine() {
             <h3 className="text-[13px] font-bold text-sky-800 tracking-wide">
               🔑 Module Access Permissions & Homework Allotment
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
               {[
                 { key: 'studentReg', label: 'Allow Student Registration' },
                 { key: 'attendance', label: 'Allow Attendance' },
@@ -578,11 +578,11 @@ export default function StaffPayrollEngine() {
             </div>
           </div>
 
-          <div className="pt-2 flex items-center gap-3">
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
               type="submit"
               disabled={loading}
-              className={`font-bold text-[13px] px-6 py-2.5 rounded-xl transition-all cursor-pointer disabled:opacity-50 text-white ${
+              className={`w-full sm:w-auto font-bold text-[13px] px-6 py-2.5 rounded-xl transition-all cursor-pointer disabled:opacity-50 text-white text-center ${
                 editingStaffId 
                   ? 'bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-[0_4px_0_#b45309] active:shadow-[0_1px_0_#b45309]' 
                   : 'bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1]'
@@ -591,14 +591,14 @@ export default function StaffPayrollEngine() {
               {loading ? 'Saving...' : editingStaffId ? 'Update Staff Record' : 'Save Staff'}
             </button>
             {editingStaffId && (
-              <span className="text-[12px] text-amber-800 font-bold">Editing Staff ID: {editingStaffId}</span>
+              <span className="text-[12px] text-amber-800 font-bold text-center sm:text-left">Editing Staff ID: {editingStaffId}</span>
             )}
           </div>
         </form>
       </div>
 
       {/* Bottom Section: Staff Summary & Session-wise Month View */}
-      <div className="bg-white border border-slate-300 rounded-xl p-6 shadow-sm space-y-4">
+      <div className="bg-white border border-slate-300 rounded-xl p-5 md:p-6 shadow-sm space-y-4">
         <h2 className="text-[16px] font-bold text-sky-800 tracking-wide">
           Staff Summary & Session-wise Month View
         </h2>
@@ -653,20 +653,20 @@ export default function StaffPayrollEngine() {
                       <td className="px-4 py-3.5 font-bold text-rose-700 border-r border-slate-200">₹{staff.dueSalary}</td>
                       <td className="px-4 py-3.5 font-bold text-emerald-700 border-r border-slate-200">₹{staff.totalPaid}</td>
                       <td className="px-4 py-3.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button onClick={() => handleEdit(staff)} className={`text-[13px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer text-white ${editingStaffId === staff.id ? 'bg-amber-700 shadow-[0_3px_0_#b45309]' : 'bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 shadow-[0_3px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[2px]'}`}>
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                          <button onClick={() => handleEdit(staff)} className={`text-[13px] font-bold px-3 py-1.5 rounded-lg transition-all cursor-pointer text-white text-center ${editingStaffId === staff.id ? 'bg-amber-700 shadow-[0_3px_0_#b45309]' : 'bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 shadow-[0_3px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[2px]'}`}>
                             {editingStaffId === staff.id ? 'Editing...' : 'Edit'}
                           </button>
-                          <button onClick={() => handleDelete(staff.id)} className="bg-gradient-to-b from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg shadow-[0_3px_0_#9f1239] active:shadow-[0_1px_0_#9f1239] active:translate-y-[2px] transition-all cursor-pointer">
+                          <button onClick={() => handleDelete(staff.id)} className="bg-gradient-to-b from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg shadow-[0_3px_0_#9f1239] active:shadow-[0_1px_0_#9f1239] active:translate-y-[2px] transition-all cursor-pointer text-center">
                             Delete
                           </button>
-                          <button onClick={() => handleSummary(staff)} className="bg-gradient-to-b from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-[13px] px-3 py-1.5 rounded-lg shadow-[0_3px_0_#d97706] active:shadow-[0_1px_0_#d97706] active:translate-y-[2px] transition-all cursor-pointer">
+                          <button onClick={() => handleSummary(staff)} className="bg-gradient-to-b from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-[13px] px-3 py-1.5 rounded-lg shadow-[0_3px_0_#d97706] active:shadow-[0_1px_0_#d97706] active:translate-y-[2px] transition-all cursor-pointer text-center">
                             Summary
                           </button>
-                          <button onClick={() => handleOpenPay(staff)} className="bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg shadow-[0_3px_0_#047857] active:shadow-[0_1px_0_#047857] active:translate-y-[2px] transition-all cursor-pointer">
+                          <button onClick={() => handleOpenPay(staff)} className="bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg shadow-[0_3px_0_#047857] active:shadow-[0_1px_0_#047857] active:translate-y-[2px] transition-all cursor-pointer text-center">
                             Pay
                           </button>
-                          <button onClick={() => handleWhatsApp(staff)} className="bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg shadow-[0_3px_0_#047857] active:shadow-[0_1px_0_#047857] active:translate-y-[2px] transition-all cursor-pointer">
+                          <button onClick={() => handleWhatsApp(staff)} className="bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white text-[13px] font-bold px-3 py-1.5 rounded-lg shadow-[0_3px_0_#047857] active:shadow-[0_1px_0_#047857] active:translate-y-[2px] transition-all cursor-pointer text-center">
                             WhatsApp
                           </button>
                         </div>
@@ -682,17 +682,17 @@ export default function StaffPayrollEngine() {
 
       {/* SUMMARY MODAL POPUP */}
       {summaryModalStaff && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white text-slate-900 border-2 border-slate-400 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white text-slate-900 border-2 border-slate-400 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto max-h-[95vh]">
             
-            <div className="p-6 overflow-y-auto space-y-6 font-sans">
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-6 font-sans">
               
               {/* Header */}
               <div className="text-center space-y-1 border-b-2 border-slate-300 pb-4">
-                <h1 className="text-[22px] font-extrabold tracking-wider text-sky-800">
+                <h1 className="text-[20px] sm:text-[22px] font-extrabold tracking-wider text-sky-800">
                   BLUE HEAVEN KIDS ACADEMY
                 </h1>
-                <h2 className="text-[14px] font-bold text-slate-900">
+                <h2 className="text-[13px] sm:text-[14px] font-bold text-slate-900">
                   STAFF APRIL TO MARCH MONTH-WISE SALARY STATEMENT
                 </h2>
                 <p className="text-[12px] text-slate-600 font-semibold">Academic Session: 2026-2027</p>
@@ -700,22 +700,24 @@ export default function StaffPayrollEngine() {
 
               {/* Staff Info Table */}
               <div className="border-2 border-slate-400 rounded-xl overflow-hidden bg-white shadow-sm">
-                <table className="w-full text-left border-collapse text-[13px]">
-                  <thead>
-                    <tr className="bg-slate-800 text-white font-bold border-b-2 border-slate-400">
-                      <th className="px-4 py-2.5 border-r border-slate-600">Staff Name</th>
-                      <th className="px-4 py-2.5 border-r border-slate-600">Mobile Number</th>
-                      <th className="px-4 py-2.5">Monthly Fixed Base Salary</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="bg-slate-50 font-bold text-slate-900">
-                      <td className="px-4 py-3 border-r border-slate-300">{summaryModalStaff.name}</td>
-                      <td className="px-4 py-3 border-r border-slate-300 font-mono">{summaryModalStaff.mobile || 'N/A'}</td>
-                      <td className="px-4 py-3 text-sky-800">₹{summaryModalStaff.salary}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-[13px] whitespace-nowrap">
+                    <thead>
+                      <tr className="bg-slate-800 text-white font-bold border-b-2 border-slate-400">
+                        <th className="px-4 py-2.5 border-r border-slate-600">Staff Name</th>
+                        <th className="px-4 py-2.5 border-r border-slate-600">Mobile Number</th>
+                        <th className="px-4 py-2.5">Monthly Fixed Base Salary</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="bg-slate-50 font-bold text-slate-900">
+                        <td className="px-4 py-3 border-r border-slate-300">{summaryModalStaff.name}</td>
+                        <td className="px-4 py-3 border-r border-slate-300 font-mono">{summaryModalStaff.mobile || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sky-800">₹{summaryModalStaff.salary}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* Month-wise Accrual Table */}
@@ -724,39 +726,41 @@ export default function StaffPayrollEngine() {
                   <span>📅</span> Month-wise Salary Accrual (April to March)
                 </h3>
                 <div className="border-2 border-slate-400 rounded-xl overflow-hidden bg-white shadow-sm">
-                  <table className="w-full text-left border-collapse text-[12px]">
-                    <thead>
-                      <tr className="bg-slate-800 text-white border-b-2 border-slate-400 font-bold">
-                        <th className="px-4 py-3 border-r border-slate-600">Month</th>
-                        <th className="px-4 py-3 border-r border-slate-600">Opening C/F</th>
-                        <th className="px-4 py-3 border-r border-slate-600">Earned Salary (+)</th>
-                        <th className="px-4 py-3">Closing Balance</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y-2 divide-slate-300 text-slate-900 font-medium">
-                      {[
-                        { month: 'April 2026', p: 0, a: 0, amt: 0 },
-                        { month: 'May 2026', p: 0, a: 0, amt: 0 },
-                        { month: 'June 2026', p: 0, a: 0, amt: 0 },
-                        { month: 'July 2026', p: 0, a: 0, amt: 0 },
-                        { month: 'August 2026', p: summaryModalStaff.presentCount, a: summaryModalStaff.absentCount, amt: Math.round(summaryModalStaff.presentCount * (summaryModalStaff.salary / 30)) },
-                        { month: 'September 2026', p: 0, a: 0, amt: 0 },
-                        { month: 'October 2026', p: 0, a: 0, amt: 0 },
-                        { month: 'November 2026', p: 0, a: 0, amt: 0 },
-                        { month: 'December 2026', p: 0, a: 0, amt: 0 },
-                        { month: 'January 2027', p: 0, a: 0, amt: 0 },
-                        { month: 'February 2027', p: 0, a: 0, amt: 0 },
-                        { month: 'March 2027', p: 0, a: 0, amt: 0 },
-                      ].map((row, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50">
-                          <td className="px-4 py-2.5 font-bold text-slate-900 border-r border-slate-300">{row.month}</td>
-                          <td className="px-4 py-2.5 border-r border-slate-300 font-semibold">₹0</td>
-                          <td className="px-4 py-2.5 text-emerald-800 font-bold border-r border-slate-300">+₹{row.amt} (P:{row.p}, A:{row.a})</td>
-                          <td className="px-4 py-2.5 font-extrabold text-slate-900">{row.amt > 0 ? `₹${row.amt}` : '₹0'}</td>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-[12px] whitespace-nowrap">
+                      <thead>
+                        <tr className="bg-slate-800 text-white border-b-2 border-slate-400 font-bold">
+                          <th className="px-4 py-3 border-r border-slate-600">Month</th>
+                          <th className="px-4 py-3 border-r border-slate-600">Opening C/F</th>
+                          <th className="px-4 py-3 border-r border-slate-600">Earned Salary (+)</th>
+                          <th className="px-4 py-3">Closing Balance</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y-2 divide-slate-300 text-slate-900 font-medium">
+                        {[
+                          { month: 'April 2026', p: 0, a: 0, amt: 0 },
+                          { month: 'May 2026', p: 0, a: 0, amt: 0 },
+                          { month: 'June 2026', p: 0, a: 0, amt: 0 },
+                          { month: 'July 2026', p: 0, a: 0, amt: 0 },
+                          { month: 'August 2026', p: summaryModalStaff.presentCount, a: summaryModalStaff.absentCount, amt: Math.round(summaryModalStaff.presentCount * (summaryModalStaff.salary / 30)) },
+                          { month: 'September 2026', p: 0, a: 0, amt: 0 },
+                          { month: 'October 2026', p: 0, a: 0, amt: 0 },
+                          { month: 'November 2026', p: 0, a: 0, amt: 0 },
+                          { month: 'December 2026', p: 0, a: 0, amt: 0 },
+                          { month: 'January 2027', p: 0, a: 0, amt: 0 },
+                          { month: 'February 2027', p: 0, a: 0, amt: 0 },
+                          { month: 'March 2027', p: 0, a: 0, amt: 0 },
+                        ].map((row, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50">
+                            <td className="px-4 py-2.5 font-bold text-slate-900 border-r border-slate-300">{row.month}</td>
+                            <td className="px-4 py-2.5 border-r border-slate-300 font-semibold">₹0</td>
+                            <td className="px-4 py-2.5 text-emerald-800 font-bold border-r border-slate-300">+₹{row.amt} (P:{row.p}, A:{row.a})</td>
+                            <td className="px-4 py-2.5 font-extrabold text-slate-900">{row.amt > 0 ? `₹${row.amt}` : '₹0'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
@@ -766,72 +770,76 @@ export default function StaffPayrollEngine() {
                   <span>💸</span> Date-wise Salary Disbursal Transactions History
                 </h3>
                 <div className="border-2 border-slate-400 rounded-xl overflow-hidden bg-white shadow-sm">
-                  <table className="w-full text-left border-collapse text-[12px]">
-                    <thead>
-                      <tr className="bg-slate-800 text-white border-b-2 border-slate-400 font-bold">
-                        <th className="px-4 py-3 border-r border-slate-600">Date</th>
-                        <th className="px-4 py-3 border-r border-slate-600">Payment Mode</th>
-                        <th className="px-4 py-3 border-r border-slate-600">Paid Amount (₹)</th>
-                        <th className="px-4 py-3">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y-2 divide-slate-300 text-slate-900 font-medium">
-                      {summaryModalStaff.payments.length === 0 ? (
-                        <tr>
-                          <td colSpan="4" className="text-center py-4 text-slate-500 italic">
-                            No salary disbursements recorded yet.
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-[12px] whitespace-nowrap">
+                      <thead>
+                        <tr className="bg-slate-800 text-white border-b-2 border-slate-400 font-bold">
+                          <th className="px-4 py-3 border-r border-slate-600">Date</th>
+                          <th className="px-4 py-3 border-r border-slate-600">Payment Mode</th>
+                          <th className="px-4 py-3 border-r border-slate-600">Paid Amount (₹)</th>
+                          <th className="px-4 py-3">Status</th>
                         </tr>
-                      ) : (
-                        summaryModalStaff.payments.map((p, i) => (
-                          <tr key={i} className="hover:bg-slate-50">
-                            <td className="px-4 py-2.5 border-r border-slate-300 font-bold">
-                              {p.payment_date ? new Date(p.payment_date).toLocaleDateString() : new Date(p.created_at).toLocaleDateString()}
+                      </thead>
+                      <tbody className="divide-y-2 divide-slate-300 text-slate-900 font-medium">
+                        {summaryModalStaff.payments.length === 0 ? (
+                          <tr>
+                            <td colSpan="4" className="text-center py-4 text-slate-500 italic">
+                              No salary disbursements recorded yet.
                             </td>
-                            <td className="px-4 py-2.5 border-r border-slate-300 font-semibold">{p.payment_mode || 'Cash'}</td>
-                            <td className="px-4 py-2.5 text-emerald-800 font-extrabold border-r border-slate-300">₹{p.amount || p.salary_paid}</td>
-                            <td className="px-4 py-2.5 text-emerald-800 font-bold">Success</td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                        ) : (
+                          summaryModalStaff.payments.map((p, i) => (
+                            <tr key={i} className="hover:bg-slate-50">
+                              <td className="px-4 py-2.5 border-r border-slate-300 font-bold">
+                                {p.payment_date ? new Date(p.payment_date).toLocaleDateString() : new Date(p.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-2.5 border-r border-slate-300 font-semibold">{p.payment_mode || 'Cash'}</td>
+                              <td className="px-4 py-2.5 text-emerald-800 font-extrabold border-r border-slate-300">₹{p.amount || p.salary_paid}</td>
+                              <td className="px-4 py-2.5 text-emerald-800 font-bold">Success</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
 
               {/* Totals Summary Table */}
               <div className="border-2 border-slate-400 rounded-xl overflow-hidden bg-slate-100 shadow-sm">
-                <table className="w-full text-left border-collapse text-[13px] font-bold">
-                  <thead>
-                    <tr className="bg-slate-800 text-white border-b-2 border-slate-400">
-                      <th className="px-4 py-3 border-r border-slate-600">Total Earned (Year)</th>
-                      <th className="px-4 py-3 border-r border-slate-600">Total Paid (Year)</th>
-                      <th className="px-4 py-3">Net Balance Due (C/F)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="text-slate-900 text-[14px]">
-                      <td className="px-4 py-3.5 text-emerald-800 border-r border-slate-300">₹{Math.round(summaryModalStaff.presentCount * (summaryModalStaff.salary / 30))}</td>
-                      <td className="px-4 py-3.5 text-sky-800 border-r border-slate-300">₹{summaryModalStaff.totalPaid}</td>
-                      <td className="px-4 py-3.5 text-rose-700 font-extrabold">₹{summaryModalStaff.dueSalary}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-[13px] font-bold whitespace-nowrap">
+                    <thead>
+                      <tr className="bg-slate-800 text-white border-b-2 border-slate-400">
+                        <th className="px-4 py-3 border-r border-slate-600">Total Earned (Year)</th>
+                        <th className="px-4 py-3 border-r border-slate-600">Total Paid (Year)</th>
+                        <th className="px-4 py-3">Net Balance Due (C/F)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="text-slate-900 text-[14px]">
+                        <td className="px-4 py-3.5 text-emerald-800 border-r border-slate-300">₹{Math.round(summaryModalStaff.presentCount * (summaryModalStaff.salary / 30))}</td>
+                        <td className="px-4 py-3.5 text-sky-800 border-r border-slate-300">₹{summaryModalStaff.totalPaid}</td>
+                        <td className="px-4 py-3.5 text-rose-700 font-extrabold">₹{summaryModalStaff.dueSalary}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
             </div>
 
             {/* Modal Bottom Actions */}
-            <div className="bg-slate-200 border-t-2 border-slate-400 px-6 py-4 flex items-center justify-between">
+            <div className="bg-slate-200 border-t-2 border-slate-400 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
               <button
                 onClick={() => window.print()}
-                className="bg-slate-300 hover:bg-slate-400 text-slate-900 text-[13px] font-bold px-4 py-2 rounded-xl transition flex items-center gap-2 cursor-pointer border border-slate-400 shadow-sm"
+                className="w-full sm:w-auto bg-slate-350 hover:bg-slate-400 text-slate-900 text-[13px] font-bold px-4 py-2 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer border border-slate-400 shadow-sm"
               >
                 <span>🖨️</span> Print Statement
               </button>
               <button
                 onClick={() => setSummaryModalStaff(null)}
-                className="bg-rose-700 hover:bg-rose-800 text-white text-[13px] font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-sm"
+                className="w-full sm:w-auto bg-rose-700 hover:bg-rose-800 text-white text-[13px] font-bold px-6 py-2 rounded-xl transition cursor-pointer shadow-sm text-center"
               >
                 Close
               </button>
@@ -843,10 +851,10 @@ export default function StaffPayrollEngine() {
 
       {/* PAY MODAL POPUP */}
       {payModalStaff && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white text-slate-900 border-2 border-slate-400 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white text-slate-900 border-2 border-slate-400 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto">
             
-            <div className="p-6 space-y-5">
+            <div className="p-4 sm:p-6 space-y-5">
               
               <div className="space-y-1">
                 <h2 className="text-[16px] font-bold text-sky-800 flex items-center gap-2">
@@ -903,16 +911,16 @@ export default function StaffPayrollEngine() {
             </div>
 
             {/* Modal Buttons */}
-            <div className="bg-slate-200 border-t-2 border-slate-400 px-6 py-4 flex items-center justify-end gap-3">
+            <div className="bg-slate-200 border-t-2 border-slate-400 px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-end gap-3">
               <button
                 onClick={() => setPayModalStaff(null)}
-                className="bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold text-[13px] px-5 py-2 rounded-xl transition cursor-pointer border border-slate-400"
+                className="w-full sm:w-auto bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold text-[13px] px-5 py-2 rounded-xl transition cursor-pointer border border-slate-400 text-center"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmPay}
-                className="bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-[13px] px-5 py-2 rounded-xl shadow-[0_3px_0_#047857] active:shadow-[0_1px_0_#047857] active:translate-y-[2px] transition-all cursor-pointer"
+                className="w-full sm:w-auto bg-gradient-to-b from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-bold text-[13px] px-5 py-2 rounded-xl shadow-[0_3px_0_#047857] active:shadow-[0_1px_0_#047857] active:translate-y-[2px] transition-all cursor-pointer text-center"
               >
                 Confirm & Save Payment
               </button>
