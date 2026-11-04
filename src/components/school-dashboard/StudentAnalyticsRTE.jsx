@@ -363,19 +363,19 @@ export default function StudentAnalyticsRTE() {
       `}</style>
 
       {/* 1. TOP HEADER SECTION */}
-      {/* Mobile: Stacked Title & Controls | Laptop: md:flex-row, md:items-center, justify-between */}
-      <div className="no-print flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-4">
+      {/* Mobile/Landscape Stacked | Desktop: lg:flex-row, lg:items-center, justify-between */}
+      <div className="no-print flex flex-col lg:flex-row lg:items-center justify-between pb-3 border-b border-slate-200 gap-4">
         <div>
-          <h2 className="text-[20px] font-bold text-sky-800 tracking-wide">
+          <h2 className="text-[18px] sm:text-[20px] font-bold text-sky-800 tracking-wide">
             Student Analytics, RTE Directory & Session Promotion
           </h2>
-          <p className="text-[13px] text-slate-500 mt-1 font-medium">
+          <p className="text-[12px] sm:text-[13px] text-slate-500 mt-1 font-medium">
             Supabase Live Data Integration | Real Daily Attendance & Verification Matrix
           </p>
         </div>
 
-        {/* Date Selector & Refresh Controls: Stacked on Mobile, Side-by-Side on Desktop */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        {/* Date Selector & Refresh Controls: Stacked on Mobile/Tablet/Landscape, Side-by-Side on Large Desktop */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
           <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2.5 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm">
             <span className="text-[13px] font-bold text-slate-700">🗓️ Select Date:</span>
             <div className="flex items-center gap-2">
