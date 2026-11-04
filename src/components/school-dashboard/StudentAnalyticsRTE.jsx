@@ -362,30 +362,30 @@ export default function StudentAnalyticsRTE() {
         }
       `}</style>
 
-      {/* Header Section: Heading on top, Select Date & Refresh Data below */}
-      <div className="no-print flex flex-col pb-4 border-b border-slate-200 gap-4">
+      {/* Header with Calendar Picker Controls */}
+      <div className="no-print flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-4">
         <div>
-          <h2 className="text-[18px] sm:text-[20px] font-bold text-sky-800 tracking-wide">
+          <h2 className="text-[20px] font-bold text-sky-800 tracking-wide">
             Student Analytics, RTE Directory & Session Promotion
           </h2>
-          <p className="text-[12px] sm:text-[13px] text-slate-500 mt-1 font-medium">
+          <p className="text-[13px] text-slate-500 mt-1 font-medium">
             Supabase Live Data Integration | Real Daily Attendance & Verification Matrix
           </p>
         </div>
 
-        {/* Date Selector & Refresh Button Row */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex items-center gap-2.5 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm flex-1">
-            <span className="text-[13px] font-bold text-slate-700 whitespace-nowrap">🗓️ Select Date:</span>
+        {/* Date Selector with Calendar */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm">
+            <span className="text-[13px] font-bold text-slate-700">🗓️ Select Date:</span>
             <input
               type="date"
               value={targetDate}
               onChange={(e) => setTargetDate(e.target.value)}
-              className="bg-slate-50 text-slate-800 text-[14px] px-3 py-1 rounded-lg border border-slate-300 outline-none focus:border-sky-500 font-medium cursor-pointer w-full"
+              className="bg-slate-50 text-slate-800 text-[14px] px-3 py-1 rounded-lg border border-slate-300 outline-none focus:border-sky-500 font-medium cursor-pointer"
             />
             <button
               onClick={() => setTargetDate(getTodayDate())}
-              className="text-[11px] bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-2.5 py-1.5 rounded-md transition whitespace-nowrap"
+              className="text-[11px] bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-2 py-1 rounded-md transition"
               title="Reset to today date"
             >
               Today
@@ -394,7 +394,7 @@ export default function StudentAnalyticsRTE() {
 
           <button
             onClick={fetchStudentsAndAttendance}
-            className="bg-gradient-to-b from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 border-b-4 border-slate-400 text-slate-700 font-bold px-5 py-2.5 rounded-xl text-[13px] active:border-b-0 active:translate-y-1 transition-all shadow-sm cursor-pointer flex items-center justify-center gap-2"
+            className="bg-gradient-to-b from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 border-b-4 border-slate-400 text-slate-700 font-bold px-4 py-2 rounded-xl text-[13px] active:border-b-0 active:translate-y-1 transition-all shadow-sm cursor-pointer"
           >
             🔄 Refresh Data
           </button>
@@ -436,73 +436,65 @@ export default function StudentAnalyticsRTE() {
               </h3>
             </div>
 
-            <div className="space-y-4">
-              {/* Row 1: From Session & To Session */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[13px] font-bold text-slate-700 mb-1.5">From Session:</label>
-                  <select
-                    value={fromSession}
-                    onChange={(e) => setFromSession(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-medium cursor-pointer"
-                  >
-                    <option value="2025-26">2025-26</option>
-                    <option value="2026-27">2026-27</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[13px] font-bold text-slate-700 mb-1.5">To Session:</label>
-                  <select
-                    value={toSession}
-                    onChange={(e) => setToSession(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-medium cursor-pointer"
-                  >
-                    <option value="2026-27">2026-27</option>
-                    <option value="2027-28">2027-28</option>
-                  </select>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div>
+                <label className="block text-[13px] font-bold text-slate-700 mb-1.5">From Session:</label>
+                <select
+                  value={fromSession}
+                  onChange={(e) => setFromSession(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-medium cursor-pointer"
+                >
+                  <option value="2025-26">2025-26</option>
+                  <option value="2026-27">2026-27</option>
+                </select>
               </div>
 
-              {/* Row 2: Select Class & Promote Button */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
-                <div>
-                  <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Select Class:</label>
-                  <select
-                    value={selectedPromoteClass}
-                    onChange={(e) => setSelectedPromoteClass(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-medium cursor-pointer"
-                  >
-                    {classList.map((cls) => (
-                      <option key={cls} value={cls}>{cls}</option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className="block text-[13px] font-bold text-slate-700 mb-1.5">To Session:</label>
+                <select
+                  value={toSession}
+                  onChange={(e) => setToSession(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-medium cursor-pointer"
+                >
+                  <option value="2026-27">2026-27</option>
+                  <option value="2027-28">2027-28</option>
+                </select>
+              </div>
 
-                <div>
-                  <button
-                    disabled={promoting}
-                    onClick={handleBulkPromotion}
-                    className="w-full bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-xl px-5 py-2.5 text-[14px] border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
-                  >
-                    <span>📌</span> {promoting ? 'Promoting...' : 'Promote Class Students'}
-                  </button>
-                </div>
+              <div>
+                <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Select Class:</label>
+                <select
+                  value={selectedPromoteClass}
+                  onChange={(e) => setSelectedPromoteClass(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-medium cursor-pointer"
+                >
+                  {classList.map((cls) => (
+                    <option key={cls} value={cls}>{cls}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <button
+                  disabled={promoting}
+                  onClick={handleBulkPromotion}
+                  className="w-full bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-xl px-5 py-2.5 text-[14px] border-b-4 border-emerald-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <span>📌</span> {promoting ? 'Promoting...' : 'Promote Class Students'}
+                </button>
               </div>
             </div>
           </div>
 
           {/* TABLE 1: CLASS-WISE RTE & ADMISSION STATISTICS */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 items-center pb-3 border-b border-slate-200 gap-2">
-              <h3 className="text-[15px] font-bold text-slate-800 tracking-wide md:col-span-2">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
                 Class-wise RTE & Admission Statistics Matrix
               </h3>
-              <div className="text-left md:text-right">
-                <span className="text-[12px] bg-slate-100 px-3 py-1 rounded-md font-bold text-slate-600 inline-block">
-                  Date: {targetDate}
-                </span>
-              </div>
+              <span className="text-[12px] bg-slate-100 px-3 py-1 rounded-md font-bold text-slate-600">
+                Date: {targetDate}
+              </span>
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
@@ -564,10 +556,9 @@ export default function StudentAnalyticsRTE() {
             id="official-print-report"
             className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4 print:border-none print:p-0 print:shadow-none"
           >
-            {/* Desktop: md:flex md:items-center md:justify-between; Mobile: flex flex-col gap-3 */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 print:border-black gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 print:border-black">
               <div>
-                <h3 className="text-[15px] sm:text-[16px] font-bold text-slate-900 tracking-wide print:text-black">
+                <h3 className="text-[16px] font-bold text-slate-900 tracking-wide print:text-black">
                   सत्यापन के दिन 25% निःशुल्क एवं 75% सशुल्क शिक्षा प्राप्त कर रहे कक्षावार बालकों की वास्तविक उपस्थिति विवरण
                 </h3>
                 <p className="text-[13px] text-slate-600 mt-1 font-medium print:text-slate-800">
@@ -575,14 +566,12 @@ export default function StudentAnalyticsRTE() {
                 </p>
               </div>
 
-              <div>
-                <button
-                  onClick={() => window.print()}
-                  className="no-print bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-[14px] border-b-4 border-sky-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer inline-flex items-center justify-center gap-2 w-full md:w-auto"
-                >
-                  🖨️ Print Official Report
-                </button>
-              </div>
+              <button
+                onClick={() => window.print()}
+                className="no-print bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-[14px] border-b-4 border-sky-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer shrink-0 flex items-center justify-center gap-2"
+              >
+                🖨️ Print Official Report
+              </button>
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm print:border-black print:rounded-none">
@@ -656,8 +645,7 @@ export default function StudentAnalyticsRTE() {
 
           {/* TABLE 3: CLASS-WISE EXACT AGE CALCULATOR */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            {/* Desktop: md:flex md:items-center md:justify-between; Mobile: flex flex-col gap-3 */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
               <div>
                 <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
                   Class-wise Student Exact Age Calculator Matrix
@@ -667,15 +655,13 @@ export default function StudentAnalyticsRTE() {
                 </p>
               </div>
 
-              <div>
-                <input
-                  type="text"
-                  placeholder="Search student or SR..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full md:w-72"
-                />
-              </div>
+              <input
+                type="text"
+                placeholder="Search student or SR..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full sm:w-72"
+              />
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
