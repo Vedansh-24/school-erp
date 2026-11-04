@@ -363,7 +363,7 @@ export default function StudentAnalyticsRTE() {
       `}</style>
 
       {/* Header with Calendar Picker Controls */}
-      <div className="no-print grid grid-cols-1 md:flex md:items-center justify-between pb-3 border-b border-slate-200 gap-4">
+      <div className="no-print flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-4">
         <div>
           <h2 className="text-[20px] font-bold text-sky-800 tracking-wide">
             Student Analytics, RTE Directory & Session Promotion
@@ -374,7 +374,7 @@ export default function StudentAnalyticsRTE() {
         </div>
 
         {/* Date Selector with Calendar */}
-        <div className="grid grid-cols-1 md:flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-wrap items-center gap-2.5 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm">
             <span className="text-[13px] font-bold text-slate-700">🗓️ Select Date:</span>
             <input
@@ -427,7 +427,7 @@ export default function StudentAnalyticsRTE() {
             </div>
           </div>
 
-          {/* Bulk Class Promotion Manager (Mobile 3-column / grid row layout matched with image) */}
+          {/* Bulk Class Promotion Manager */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
               <span className="text-sky-600 text-lg">🔄</span>
@@ -436,7 +436,7 @@ export default function StudentAnalyticsRTE() {
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 mb-1.5">From Session:</label>
                 <select
@@ -474,7 +474,7 @@ export default function StudentAnalyticsRTE() {
                 </select>
               </div>
 
-              <div className="flex items-end">
+              <div>
                 <button
                   disabled={promoting}
                   onClick={handleBulkPromotion}
@@ -488,11 +488,11 @@ export default function StudentAnalyticsRTE() {
 
           {/* TABLE 1: CLASS-WISE RTE & ADMISSION STATISTICS */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            <div className="grid grid-cols-1 md:flex md:items-center justify-between pb-3 border-b border-slate-200 gap-3">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
                 Class-wise RTE & Admission Statistics Matrix
               </h3>
-              <span className="text-[12px] bg-slate-100 px-3 py-1 rounded-md font-bold text-slate-600 inline-block">
+              <span className="text-[12px] bg-slate-100 px-3 py-1 rounded-md font-bold text-slate-600">
                 Date: {targetDate}
               </span>
             </div>
@@ -556,7 +556,8 @@ export default function StudentAnalyticsRTE() {
             id="official-print-report"
             className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4 print:border-none print:p-0 print:shadow-none"
           >
-            <div className="grid grid-cols-1 md:flex md:items-center justify-between pb-3 border-b border-slate-200 print:border-black gap-3">
+            {/* Mobile: flex-col (heading upar, button niche), Laptop: lg:flex-row (side-by-side original) */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3 border-b border-slate-200 print:border-black gap-3">
               <div>
                 <h3 className="text-[16px] font-bold text-slate-900 tracking-wide print:text-black">
                   सत्यापन के दिन 25% निःशुल्क एवं 75% सशुल्क शिक्षा प्राप्त कर रहे कक्षावार बालकों की वास्तविक उपस्थिति विवरण
@@ -568,7 +569,7 @@ export default function StudentAnalyticsRTE() {
 
               <button
                 onClick={() => window.print()}
-                className="no-print bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-[14px] border-b-4 border-sky-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer shrink-0 flex items-center justify-center gap-2 w-full md:w-auto"
+                className="no-print bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-[14px] border-b-4 border-sky-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer shrink-0 flex items-center justify-center gap-2"
               >
                 🖨️ Print Official Report
               </button>
@@ -645,7 +646,8 @@ export default function StudentAnalyticsRTE() {
 
           {/* TABLE 3: CLASS-WISE EXACT AGE CALCULATOR */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            <div className="grid grid-cols-1 md:flex md:items-center justify-between pb-3 border-b border-slate-200 gap-3">
+            {/* Mobile: flex-col (heading upar, search input niche), Laptop: lg:flex-row (side-by-side original) */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3 border-b border-slate-200 gap-3">
               <div>
                 <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
                   Class-wise Student Exact Age Calculator Matrix
@@ -660,7 +662,7 @@ export default function StudentAnalyticsRTE() {
                 placeholder="Search student or SR..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full md:w-72"
+                className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full lg:w-72"
               />
             </div>
 
