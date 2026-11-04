@@ -344,10 +344,10 @@ export default function StaffPayrollEngine() {
   };
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-xl p-4 md:p-8 shadow-sm space-y-6 text-slate-900 font-sans flex flex-col h-full relative">
+    <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-xl p-3 sm:p-5 lg:p-8 shadow-sm space-y-6 text-slate-900 font-sans flex flex-col h-full relative">
       
       {/* Top Section: Staff Registration & Portal Access Controls */}
-      <div className={`bg-white border rounded-xl p-5 md:p-6 shadow-sm space-y-5 transition-all ${editingStaffId ? 'border-amber-600 ring-2 ring-amber-500/30 bg-amber-50/20' : 'border-slate-300'}`}>
+      <div className={`bg-white border rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm space-y-5 transition-all ${editingStaffId ? 'border-amber-600 ring-2 ring-amber-500/30 bg-amber-50/20' : 'border-slate-300'}`}>
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-[16px] font-bold text-sky-800 tracking-wide flex items-center gap-2">
@@ -457,10 +457,10 @@ export default function StaffPayrollEngine() {
           </div>
 
           <div className="space-y-4 pt-2">
-            <div className="bg-slate-100 p-4 border border-slate-300 rounded-xl space-y-3">
-              {/* Mobile: 2 columns in 1 row, Button in next row | Laptop (md+): 12 columns table style */}
-              <div className="flex flex-col md:grid md:grid-cols-12 gap-3 items-end">
-                <div className="w-full md:col-span-4 lg:col-span-4">
+            <div className="bg-slate-100 p-3 sm:p-4 border border-slate-300 rounded-xl space-y-3">
+              {/* Mobile: 2 columns in 1 row, Button in next row | Laptop: 12 columns grid */}
+              <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
+                <div className="col-span-1 md:col-span-4 lg:col-span-4">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
                     Select Class
                   </label>
@@ -492,7 +492,7 @@ export default function StaffPayrollEngine() {
                   </select>
                 </div>
 
-                <div className="w-full md:col-span-4 lg:col-span-4">
+                <div className="col-span-1 md:col-span-4 lg:col-span-4">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
                     Allotted Subject
                   </label>
@@ -518,7 +518,7 @@ export default function StaffPayrollEngine() {
               </div>
 
               {/* Mobile next row for Add button */}
-              <div className="block md:hidden w-full pt-1">
+              <div className="block md:hidden pt-1">
                 <button
                   type="button"
                   onClick={handleAddMapping}
@@ -532,9 +532,9 @@ export default function StaffPayrollEngine() {
             <div className="space-y-3 pt-1">
               {mappings.map((item) => (
                 <div key={item.id} className="bg-slate-50 p-3 border border-slate-200 rounded-xl space-y-3 md:bg-transparent md:p-0 md:border-0 md:space-y-0">
-                  {/* Mobile: 2 columns in 1 row, Delete button in next row | Laptop (md+): 12 columns table style */}
-                  <div className="flex flex-col md:grid md:grid-cols-12 gap-3 items-end">
-                    <div className="w-full md:col-span-5">
+                  {/* Mobile: 2 columns in 1 row, Delete button in next row | Laptop: 12 columns grid */}
+                  <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
+                    <div className="col-span-1 md:col-span-5">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1">
                         Allowed Classes
                       </label>
@@ -566,7 +566,7 @@ export default function StaffPayrollEngine() {
                       </select>
                     </div>
 
-                    <div className="w-full md:col-span-5">
+                    <div className="col-span-1 md:col-span-5">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1">
                         Allowed Subjects
                       </label>
@@ -592,7 +592,7 @@ export default function StaffPayrollEngine() {
                   </div>
 
                   {/* Mobile next row for Delete button */}
-                  <div className="block md:hidden w-full pt-1">
+                  <div className="block md:hidden pt-1">
                     <button
                       type="button"
                       onClick={() => handleRemoveMapping(item.id)}
@@ -606,7 +606,6 @@ export default function StaffPayrollEngine() {
             </div>
           </div>
 
-          {/* Save Staff button alignment */}
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
               type="submit"
@@ -627,7 +626,7 @@ export default function StaffPayrollEngine() {
       </div>
 
       {/* Bottom Section: Staff Summary & Session-wise Month View */}
-      <div className="bg-white border border-slate-300 rounded-xl p-5 md:p-6 shadow-sm space-y-4">
+      <div className="bg-white border border-slate-300 rounded-xl p-4 sm:p-5 lg:p-6 shadow-sm space-y-4">
         <h2 className="text-[16px] font-bold text-sky-800 tracking-wide">
           Staff Summary & Session-wise Month View
         </h2>
