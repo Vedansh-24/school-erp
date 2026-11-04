@@ -458,8 +458,9 @@ export default function StaffPayrollEngine() {
 
           <div className="space-y-4 pt-2">
             <div className="bg-slate-100 p-4 border border-slate-300 rounded-xl space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                <div className="md:col-span-4 lg:col-span-4">
+              {/* Select Class and Allotted Subject in one row on mobile (grid-cols-2), button in the next row */}
+              <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
+                <div className="col-span-1 md:col-span-4 lg:col-span-4">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
                     Select Class
                   </label>
@@ -491,7 +492,7 @@ export default function StaffPayrollEngine() {
                   </select>
                 </div>
 
-                <div className="md:col-span-4 lg:col-span-4">
+                <div className="col-span-1 md:col-span-4 lg:col-span-4">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
                     Allotted Subject
                   </label>
@@ -504,7 +505,8 @@ export default function StaffPayrollEngine() {
                   />
                 </div>
 
-                <div className="md:col-span-4 lg:col-span-4">
+                <div className="hidden md:block md:col-span-4 lg:col-span-4">
+                  <label className="block text-[11px] font-bold text-slate-800 mb-1 opacity-0">Action</label>
                   <button
                     type="button"
                     onClick={handleAddMapping}
@@ -514,57 +516,83 @@ export default function StaffPayrollEngine() {
                   </button>
                 </div>
               </div>
+
+              {/* Mobile next row for Add button */}
+              <div className="block md:hidden pt-1">
+                <button
+                  type="button"
+                  onClick={handleAddMapping}
+                  className="w-full bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white text-[12px] font-bold py-2.5 px-3 rounded-xl shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[3px] transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap"
+                >
+                  + Add Classes & Subject Mapping
+                </button>
+              </div>
             </div>
 
             <div className="space-y-3 pt-1">
               {mappings.map((item) => (
-                <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                  <div className="md:col-span-5">
-                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                      Allowed Classes
-                    </label>
-                    <select
-                      value={item.class}
-                      onChange={(e) => handleUpdateMappingField(item.id, 'class', e.target.value)}
-                      className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
-                    >
-                      <option value="" className="text-slate-400">-- Choose Class --</option>
-                      <option value="PP.3+">PP.3+</option>
-                      <option value="PP.4+">PP.4+</option>
-                      <option value="PP.5+">PP.5+</option>
-                      <option value="First">First</option>
-                      <option value="Second">Second</option>
-                      <option value="Third">Third</option>
-                      <option value="Fourth">Fourth</option>
-                      <option value="Fifth">Fifth</option>
-                      <option value="Sixth">Sixth</option>
-                      <option value="Seventh">Seventh</option>
-                      <option value="Eighth">Eighth</option>
-                      <option value="Ninth">Ninth</option>
-                      <option value="Tenth">Tenth</option>
-                      <option value="Eleventh(Arts)">Eleventh(Arts)</option>
-                      <option value="Eleventh(Commerce)">Eleventh(Commerce)</option>
-                      <option value="Eleventh(Science)">Eleventh(Science)</option>
-                      <option value="Twelth(Arts)">Twelth(Arts)</option>
-                      <option value="Twelth (Commerce)">Twelth (Commerce)</option>
-                      <option value="Twelth (Science)">Twelth (Science)</option>
-                    </select>
+                <div key={item.id} className="bg-slate-50 p-3 border border-slate-200 rounded-xl space-y-3 md:bg-transparent md:p-0 md:border-0 md:space-y-0">
+                  {/* Allowed Classes and Allowed Subjects in one row on mobile (grid-cols-2), Delete button in the next row */}
+                  <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
+                    <div className="col-span-1 md:col-span-5">
+                      <label className="block text-[11px] font-bold text-slate-800 mb-1">
+                        Allowed Classes
+                      </label>
+                      <select
+                        value={item.class}
+                        onChange={(e) => handleUpdateMappingField(item.id, 'class', e.target.value)}
+                        className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
+                      >
+                        <option value="" className="text-slate-400">-- Choose Class --</option>
+                        <option value="PP.3+">PP.3+</option>
+                        <option value="PP.4+">PP.4+</option>
+                        <option value="PP.5+">PP.5+</option>
+                        <option value="First">First</option>
+                        <option value="Second">Second</option>
+                        <option value="Third">Third</option>
+                        <option value="Fourth">Fourth</option>
+                        <option value="Fifth">Fifth</option>
+                        <option value="Sixth">Sixth</option>
+                        <option value="Seventh">Seventh</option>
+                        <option value="Eighth">Eighth</option>
+                        <option value="Ninth">Ninth</option>
+                        <option value="Tenth">Tenth</option>
+                        <option value="Eleventh(Arts)">Eleventh(Arts)</option>
+                        <option value="Eleventh(Commerce)">Eleventh(Commerce)</option>
+                        <option value="Eleventh(Science)">Eleventh(Science)</option>
+                        <option value="Twelth(Arts)">Twelth(Arts)</option>
+                        <option value="Twelth (Commerce)">Twelth (Commerce)</option>
+                        <option value="Twelth (Science)">Twelth (Science)</option>
+                      </select>
+                    </div>
+
+                    <div className="col-span-1 md:col-span-5">
+                      <label className="block text-[11px] font-bold text-slate-800 mb-1">
+                        Allowed Subjects
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Mathematics, Hindi, Science"
+                        value={item.subject}
+                        onChange={(e) => handleUpdateMappingField(item.id, 'subject', e.target.value)}
+                        className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
+                      />
+                    </div>
+
+                    <div className="hidden md:block md:col-span-2">
+                      <label className="block text-[11px] font-bold text-slate-800 mb-1 opacity-0">Action</label>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveMapping(item.id)}
+                        className="w-full bg-gradient-to-b from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-[13px] font-bold py-2.5 rounded-xl shadow-[0_3px_0_#9f1239] active:shadow-[0_1px_0_#9f1239] active:translate-y-[2px] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <span>🗑</span> Delete
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="md:col-span-5">
-                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                      Allowed Subjects
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Mathematics, Hindi, Science"
-                      value={item.subject}
-                      onChange={(e) => handleUpdateMappingField(item.id, 'subject', e.target.value)}
-                      className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
+                  {/* Mobile next row for Delete button */}
+                  <div className="block md:hidden pt-1">
                     <button
                       type="button"
                       onClick={() => handleRemoveMapping(item.id)}
