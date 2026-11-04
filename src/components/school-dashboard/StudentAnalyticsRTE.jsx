@@ -556,8 +556,8 @@ export default function StudentAnalyticsRTE() {
             id="official-print-report"
             className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4 print:border-none print:p-0 print:shadow-none"
           >
-            {/* Mobile par flex-col (heading upar, button niche), laptop par md:flex-row (side-by-side original) */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200 print:border-black">
+            {/* Mobile: flex-col (heading upar, button niche), Laptop: lg:flex-row (side-by-side original) */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3 border-b border-slate-200 print:border-black gap-3">
               <div>
                 <h3 className="text-[16px] font-bold text-slate-900 tracking-wide print:text-black">
                   सत्यापन के दिन 25% निःशुल्क एवं 75% सशुल्क शिक्षा प्राप्त कर रहे कक्षावार बालकों की वास्तविक उपस्थिति विवरण
@@ -646,8 +646,8 @@ export default function StudentAnalyticsRTE() {
 
           {/* TABLE 3: CLASS-WISE EXACT AGE CALCULATOR */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            {/* Mobile par flex-col (heading upar, search input niche), laptop par sm:flex-row (side-by-side original) */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            {/* Mobile: flex-col (heading upar, search input niche), Laptop: lg:flex-row (side-by-side original) */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3 border-b border-slate-200 gap-3">
               <div>
                 <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
                   Class-wise Student Exact Age Calculator Matrix
@@ -662,7 +662,7 @@ export default function StudentAnalyticsRTE() {
                 placeholder="Search student or SR..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full sm:w-72"
+                className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full lg:w-72"
               />
             </div>
 
