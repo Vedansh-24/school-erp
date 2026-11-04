@@ -458,7 +458,7 @@ export default function StaffPayrollEngine() {
 
           <div className="space-y-4 pt-2">
             <div className="bg-slate-100 p-4 border border-slate-300 rounded-xl space-y-3">
-              {/* Select Class and Allotted Subject in one row on mobile (grid-cols-2), button in the next row */}
+              {/* Mobile: 2 columns grid, Laptop (md+): 12 columns grid */}
               <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
                 <div className="col-span-1 md:col-span-4 lg:col-span-4">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
@@ -532,7 +532,7 @@ export default function StaffPayrollEngine() {
             <div className="space-y-3 pt-1">
               {mappings.map((item) => (
                 <div key={item.id} className="bg-slate-50 p-3 border border-slate-200 rounded-xl space-y-3 md:bg-transparent md:p-0 md:border-0 md:space-y-0">
-                  {/* Allowed Classes and Allowed Subjects in one row on mobile (grid-cols-2), Delete button in the next row */}
+                  {/* Mobile: 2 columns grid, Laptop (md+): 12 columns grid */}
                   <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
                     <div className="col-span-1 md:col-span-5">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1">
@@ -606,6 +606,7 @@ export default function StaffPayrollEngine() {
             </div>
           </div>
 
+          {/* Save Staff and Delete button alignment */}
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
               type="submit"
@@ -915,7 +916,7 @@ export default function StaffPayrollEngine() {
                 <div>
                   <label className="block text-[12px] font-bold text-slate-800 mb-1">Payment Mode</label>
                   <select
-                    value={payModeInput}
+                    value={payModeId} // Note: payModeInput
                     onChange={(e) => setPayModeInput(e.target.value)}
                     className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
                   >
