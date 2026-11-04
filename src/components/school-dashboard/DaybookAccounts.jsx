@@ -244,16 +244,16 @@ export default function DaybookAccounts() {
   });
 
   return (
-    <div className="space-y-6 pb-12 font-sans text-slate-800">
+    <div className="space-y-6 pb-12 font-sans text-slate-800 w-full">
       
       {/* Top Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-lg shadow-slate-100">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-lg shadow-slate-100">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
-            <span className="p-2 bg-blue-50 text-blue-600 rounded-xl shadow-inner border border-blue-100"><FiDollarSign size={24} /></span>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+            <span className="p-2 bg-blue-50 text-blue-600 rounded-xl shadow-inner border border-blue-100"><FiDollarSign size={22} /></span>
             Daybook & Monthly Accounts (रोकड़ व बैंक खाता)
           </h1>
-          <p className="text-sm text-slate-500 mt-1">Real-time dynamic financial transaction ledger integrated with Supabase.</p>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Real-time dynamic financial transaction ledger integrated with Supabase.</p>
         </div>
 
         {/* View Mode & Month Selectors */}
@@ -392,16 +392,16 @@ export default function DaybookAccounts() {
       <div className="flex items-center justify-between flex-wrap gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
         <h3 className="text-sm font-black text-slate-700 uppercase tracking-wider">Full Transactions Log - [{selectedMonth}]</h3>
         
-        <div className="flex items-center gap-3">
-          <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl border border-slate-300 shadow-[0_4px_0_0_#cbd5e1] hover:shadow-[0_2px_0_0_#cbd5e1] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none transition-all duration-150 cursor-pointer">
+        <div className="flex items-center gap-3 flex-wrap w-full sm:w-auto">
+          <button onClick={() => window.print()} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl border border-slate-300 shadow-[0_4px_0_0_#cbd5e1] hover:shadow-[0_2px_0_0_#cbd5e1] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none transition-all duration-150 cursor-pointer">
             <FiPrinter size={16} /> Print Report
           </button>
           
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl border border-slate-300 shadow-[0_4px_0_0_#cbd5e1] hover:shadow-[0_2px_0_0_#cbd5e1] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none transition-all duration-150 cursor-pointer">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-white text-slate-700 font-semibold text-sm rounded-xl border border-slate-300 shadow-[0_4px_0_0_#cbd5e1] hover:shadow-[0_2px_0_0_#cbd5e1] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none transition-all duration-150 cursor-pointer">
             <FiDownload size={16} /> Export Excel
           </button>
 
-          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 text-white font-bold text-sm rounded-xl border border-blue-600 shadow-[0_4px_0_0_#1e40af] hover:shadow-[0_2px_0_0_#1e40af] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none transition-all duration-150 cursor-pointer">
+          <button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-b from-blue-500 to-blue-600 text-white font-bold text-sm rounded-xl border border-blue-600 shadow-[0_4px_0_0_#1e40af] hover:shadow-[0_2px_0_0_#1e40af] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-none transition-all duration-150 cursor-pointer">
             <FiPlusCircle size={18} /> Add New Entry
           </button>
         </div>
@@ -416,7 +416,7 @@ export default function DaybookAccounts() {
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all duration-150 cursor-pointer ${
+              className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold rounded-xl transition-all duration-150 cursor-pointer text-center ${
                 filterType === type 
                   ? 'bg-slate-900 text-white shadow-[0_3px_0_0_#0f172a] translate-y-[-1px]' 
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-[0_2px_0_0_#cbd5e1] active:translate-y-[2px] active:shadow-none'
@@ -445,7 +445,7 @@ export default function DaybookAccounts() {
       {/* Data Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50/70 border-b border-slate-200 text-slate-400 uppercase text-[11px] font-black tracking-wider">
                 <th className="py-3.5 px-6">Date</th>
@@ -504,21 +504,21 @@ export default function DaybookAccounts() {
 
       {/* ADD NEW TRANSACTION MODAL POPUP */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white text-slate-900 border border-slate-300 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-6 space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white text-slate-900 border border-slate-300 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto">
+            <div className="p-4 sm:p-6 space-y-4">
               <h2 className="text-lg font-bold text-slate-900 border-b pb-2 flex items-center gap-2">
                 <FiPlusCircle className="text-blue-600" /> Add Daybook Transaction Entry
               </h2>
 
               <form onSubmit={handleAddTransaction} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Transaction Type</label>
                     <select
                       value={transType}
                       onChange={(e) => setTransType(e.target.value)}
-                      className="w-full bg-white text-slate-900 text-xs px-3 py-2 rounded-lg border border-slate-300 font-bold"
+                      className="w-full bg-white text-slate-900 text-xs px-3 py-2 rounded-lg border border-slate-300 font-bold cursor-pointer"
                     >
                       <option value="Credit">Credit (Income / Inflow)</option>
                       <option value="Debit">Debit (Expense / Outflow)</option>
@@ -531,7 +531,7 @@ export default function DaybookAccounts() {
                       type="date"
                       value={transDate}
                       onChange={(e) => setTransDate(e.target.value)}
-                      className="w-full bg-white text-slate-900 text-xs px-3 py-2 rounded-lg border border-slate-300 font-bold"
+                      className="w-full bg-white text-slate-900 text-xs px-3 py-2 rounded-lg border border-slate-300 font-bold cursor-pointer"
                     />
                   </div>
                 </div>
@@ -547,7 +547,7 @@ export default function DaybookAccounts() {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Category</label>
                     <input
@@ -564,7 +564,7 @@ export default function DaybookAccounts() {
                     <select
                       value={transMode}
                       onChange={(e) => setTransMode(e.target.value)}
-                      className="w-full bg-white text-slate-900 text-xs px-3 py-2 rounded-lg border border-slate-300 font-bold"
+                      className="w-full bg-white text-slate-900 text-xs px-3 py-2 rounded-lg border border-slate-300 font-bold cursor-pointer"
                     >
                       <option value="Cash">Cash</option>
                       <option value="Bank Transfer">Bank Transfer</option>
@@ -584,18 +584,18 @@ export default function DaybookAccounts() {
                   </div>
                 </div>
 
-                <div className="pt-3 flex items-center justify-end gap-2 border-t">
+                <div className="pt-3 flex items-center justify-end gap-2 border-t flex-wrap">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-300 transition"
+                    className="w-full sm:w-auto px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-300 transition cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
-                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-md disabled:opacity-50"
+                    className="w-full sm:w-auto px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow-md disabled:opacity-50 cursor-pointer"
                   >
                     {saving ? 'Saving...' : 'Save Record'}
                   </button>
