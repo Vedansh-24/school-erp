@@ -184,10 +184,10 @@ export default function ExpensesLog() {
   };
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm space-y-6 text-slate-800 font-sans flex flex-col h-full">
+    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl p-4 md:p-8 shadow-sm space-y-6 text-slate-800 font-sans flex flex-col h-full">
       
       {/* Top Section: Add School Expense / Miscellaneous Cost */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-5">
         <h2 className="text-[16px] font-bold text-sky-700 tracking-wide">
           {editingId ? 'Edit School Expense Record' : 'Add School Expense / Miscellaneous Cost'}
         </h2>
@@ -261,11 +261,11 @@ export default function ExpensesLog() {
 
           </div>
 
-          <div className="pt-2 flex items-center gap-3">
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {/* 3D Elevated Save/Update Button */}
             <button
               type="submit"
-              className={`font-bold text-[13px] px-6 py-2.5 rounded-xl transition-all cursor-pointer text-white ${
+              className={`w-full sm:w-auto font-bold text-[13px] px-6 py-2.5 rounded-xl transition-all cursor-pointer text-white text-center ${
                 editingId
                   ? 'bg-gradient-to-b from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-[0_4px_0_#047857] active:shadow-[0_1px_0_#047857] active:translate-y-[3px]'
                   : 'bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[3px]'
@@ -279,7 +279,7 @@ export default function ExpensesLog() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-[13px] px-5 py-2.5 rounded-xl transition-all cursor-pointer"
+                className="w-full sm:w-auto bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-[13px] px-5 py-2.5 rounded-xl transition-all cursor-pointer text-center"
               >
                 Cancel Edit
               </button>
@@ -289,7 +289,7 @@ export default function ExpensesLog() {
       </div>
 
       {/* Bottom Section: School Expenses Log History Table */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm space-y-4">
         <h2 className="text-[16px] font-bold text-sky-700 tracking-wide">
           School Expenses Log History
         </h2>
@@ -328,18 +328,18 @@ export default function ExpensesLog() {
                       <td className="px-4 py-3.5 text-slate-600">{item.mode}</td>
                       <td className="px-4 py-3.5 font-bold text-emerald-600">₹{item.amount}</td>
                       <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                           {/* 3D Edit Button */}
                           <button
                             onClick={() => handleEdit(item)}
-                            className="bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-[13px] font-bold px-3.5 py-1.5 rounded-lg shadow-[0_3px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[2px] transition-all cursor-pointer"
+                            className="bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-[13px] font-bold px-3.5 py-1.5 rounded-lg shadow-[0_3px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[2px] transition-all cursor-pointer text-center"
                           >
                             Edit
                           </button>
                           {/* 3D Delete Button */}
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="bg-gradient-to-b from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white text-[13px] font-bold px-3.5 py-1.5 rounded-lg shadow-[0_3px_0_#9f1239] active:shadow-[0_1px_0_#9f1239] active:translate-y-[2px] transition-all cursor-pointer"
+                            className="bg-gradient-to-b from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white text-[13px] font-bold px-3.5 py-1.5 rounded-lg shadow-[0_3px_0_#9f1239] active:shadow-[0_1px_0_#9f1239] active:translate-y-[2px] transition-all cursor-pointer text-center"
                           >
                             Delete
                           </button>
