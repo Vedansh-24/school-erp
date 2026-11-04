@@ -347,7 +347,7 @@ export default function StudentAnalyticsRTE() {
   }, [students, searchQuery, classList]);
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl p-4 md:p-8 shadow-sm space-y-6 text-slate-800 font-sans flex flex-col min-h-screen">
+    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl p-4 lg:p-8 shadow-sm space-y-6 text-slate-800 font-sans flex flex-col min-h-screen">
       
       {/* Dynamic Print CSS */}
       <style jsx global>{`
@@ -363,7 +363,7 @@ export default function StudentAnalyticsRTE() {
       `}</style>
 
       {/* 1. TOP HEADER SECTION */}
-      {/* Mobile/Landscape Stacked | Desktop: lg:flex-row, lg:items-center, justify-between */}
+      {/* Stacked on Mobile & Landscape | Desktop: lg:flex-row, lg:items-center */}
       <div className="no-print flex flex-col lg:flex-row lg:items-center justify-between pb-3 border-b border-slate-200 gap-4">
         <div>
           <h2 className="text-[18px] sm:text-[20px] font-bold text-sky-800 tracking-wide">
@@ -374,7 +374,7 @@ export default function StudentAnalyticsRTE() {
           </p>
         </div>
 
-        {/* Date Selector & Refresh Controls: Stacked on Mobile/Tablet/Landscape, Side-by-Side on Large Desktop */}
+        {/* Date Selector & Refresh Controls */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
           <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2.5 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm">
             <span className="text-[13px] font-bold text-slate-700">🗓️ Select Date:</span>
@@ -431,8 +431,7 @@ export default function StudentAnalyticsRTE() {
           </div>
 
           {/* 2. BULK CLASS PROMOTION SECTION */}
-          {/* Mobile: 2 Rows Layout (Row 1: From & To Session | Row 2: Select Class & Promote Button) */}
-          {/* Laptop: 4 Columns Grid (Unchanged) */}
+          {/* Mobile/Tablet/Landscape: 2 Rows Layout | Large Desktop (lg:): 4 Columns Grid */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
               <span className="text-sky-600 text-lg">🔄</span>
@@ -441,9 +440,9 @@ export default function StudentAnalyticsRTE() {
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-              {/* Row 1 for Mobile / Col 1 & 2 for Laptop */}
-              <div className="grid grid-cols-2 md:contents gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
+              {/* Row 1 for Mobile/Landscape / Col 1 & 2 for Laptop */}
+              <div className="grid grid-cols-2 lg:contents gap-4">
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1.5">From Session:</label>
                   <select
@@ -469,8 +468,8 @@ export default function StudentAnalyticsRTE() {
                 </div>
               </div>
 
-              {/* Row 2 for Mobile / Col 3 & 4 for Laptop */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:contents gap-4 items-end">
+              {/* Row 2 for Mobile/Landscape / Col 3 & 4 for Laptop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:contents gap-4 items-end">
                 <div>
                   <label className="block text-[13px] font-bold text-slate-700 mb-1.5">Select Class:</label>
                   <select
@@ -498,13 +497,13 @@ export default function StudentAnalyticsRTE() {
           </div>
 
           {/* 3. TABLE 1: CLASS-WISE RTE & ADMISSION STATISTICS MATRIX */}
-          {/* Mobile: Vertically Stacked Header | Laptop: Side-by-side */}
+          {/* Mobile/Tablet/Landscape: Vertically Stacked Header | Large Desktop (lg:): Side-by-side */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-2">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between pb-3 border-b border-slate-200 gap-2">
               <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
                 Class-wise RTE & Admission Statistics Matrix
               </h3>
-              <span className="text-[12px] bg-slate-100 px-3 py-1 rounded-md font-bold text-slate-600 self-start md:self-auto">
+              <span className="text-[12px] bg-slate-100 px-3 py-1 rounded-md font-bold text-slate-600 self-start lg:self-auto">
                 Date: {targetDate}
               </span>
             </div>
@@ -564,13 +563,13 @@ export default function StudentAnalyticsRTE() {
           </div>
 
           {/* 4. OFFICIAL VERIFICATION REPORT SECTION */}
-          {/* Mobile: Title & Date on top, Print button stacked properly below */}
-          {/* Laptop: Side-by-side intact */}
+          {/* Mobile/Tablet/Landscape: Title & Date on top, Print button stacked properly below */}
+          {/* Large Desktop (lg:): Side-by-side intact */}
           <div
             id="official-print-report"
             className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4 print:border-none print:p-0 print:shadow-none"
           >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-200 print:border-black">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-200 print:border-black">
               <div>
                 <h3 className="text-[16px] font-bold text-slate-900 tracking-wide print:text-black">
                   सत्यापन के दिन 25% निःशुल्क एवं 75% सशुल्क शिक्षा प्राप्त कर रहे कक्षावार बालकों की वास्तविक उपस्थिति विवरण
@@ -582,7 +581,7 @@ export default function StudentAnalyticsRTE() {
 
               <button
                 onClick={() => window.print()}
-                className="no-print bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-[14px] border-b-4 border-sky-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer shrink-0 flex items-center justify-center gap-2 w-full md:w-auto"
+                className="no-print bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold px-5 py-2.5 rounded-xl text-[14px] border-b-4 border-sky-800 active:border-b-0 active:translate-y-1 transition-all shadow-md cursor-pointer shrink-0 flex items-center justify-center gap-2 w-full lg:w-auto"
               >
                 🖨️ Print Official Report
               </button>
@@ -658,10 +657,10 @@ export default function StudentAnalyticsRTE() {
           </div>
 
           {/* 5. EXACT AGE CALCULATOR SECTION */}
-          {/* Mobile: Title & Target Date on top, Search input box stacked below */}
-          {/* Laptop: Original side-by-side layout intact */}
+          {/* Mobile/Tablet/Landscape: Title & Target Date on top, Search input box stacked below */}
+          {/* Large Desktop (lg:): Original side-by-side layout intact */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-200">
               <div>
                 <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
                   Class-wise Student Exact Age Calculator Matrix
@@ -676,7 +675,7 @@ export default function StudentAnalyticsRTE() {
                 placeholder="Search student or SR..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full md:w-72"
+                className="bg-slate-50 border border-slate-300 text-slate-800 text-[14px] px-4 py-2 rounded-lg outline-none focus:border-sky-500 shadow-sm font-medium w-full lg:w-72"
               />
             </div>
 
