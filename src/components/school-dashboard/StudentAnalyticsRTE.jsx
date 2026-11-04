@@ -363,6 +363,7 @@ export default function StudentAnalyticsRTE() {
       `}</style>
 
       {/* 1. TOP HEADER SECTION */}
+      {/* Mobile: Stacked Title & Controls | Laptop: md:flex-row, md:items-center, justify-between */}
       <div className="no-print flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-4">
         <div>
           <h2 className="text-[20px] font-bold text-sky-800 tracking-wide">
@@ -373,7 +374,7 @@ export default function StudentAnalyticsRTE() {
           </p>
         </div>
 
-        {/* Date Selector & Refresh Controls Stacked on Mobile, Side-by-Side on Desktop */}
+        {/* Date Selector & Refresh Controls: Stacked on Mobile, Side-by-Side on Desktop */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="flex flex-wrap items-center justify-between sm:justify-start gap-2.5 bg-white border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm">
             <span className="text-[13px] font-bold text-slate-700">🗓️ Select Date:</span>
@@ -430,8 +431,8 @@ export default function StudentAnalyticsRTE() {
           </div>
 
           {/* 2. BULK CLASS PROMOTION SECTION */}
-          {/* Mobile: 2 Rows Layout (Row 1: From & To Session, Row 2: Select Class & Promote Button) */}
-          {/* Laptop: 4 Columns Grid (Original as-it-is) */}
+          {/* Mobile: 2 Rows Layout (Row 1: From & To Session | Row 2: Select Class & Promote Button) */}
+          {/* Laptop: 4 Columns Grid (Unchanged) */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
               <span className="text-sky-600 text-lg">🔄</span>
@@ -497,6 +498,7 @@ export default function StudentAnalyticsRTE() {
           </div>
 
           {/* 3. TABLE 1: CLASS-WISE RTE & ADMISSION STATISTICS MATRIX */}
+          {/* Mobile: Vertically Stacked Header | Laptop: Side-by-side */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between pb-3 border-b border-slate-200 gap-2">
               <h3 className="text-[15px] font-bold text-slate-800 tracking-wide">
@@ -562,8 +564,8 @@ export default function StudentAnalyticsRTE() {
           </div>
 
           {/* 4. OFFICIAL VERIFICATION REPORT SECTION */}
-          {/* Mobile: Title & Subtitle on top, Print button stacked properly below */}
-          {/* Laptop: Original Side-by-Side intact */}
+          {/* Mobile: Title & Date on top, Print button stacked properly below */}
+          {/* Laptop: Side-by-side intact */}
           <div
             id="official-print-report"
             className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4 print:border-none print:p-0 print:shadow-none"
@@ -657,7 +659,7 @@ export default function StudentAnalyticsRTE() {
 
           {/* 5. EXACT AGE CALCULATOR SECTION */}
           {/* Mobile: Title & Target Date on top, Search input box stacked below */}
-          {/* Laptop: Original layout intact */}
+          {/* Laptop: Original side-by-side layout intact */}
           <div className="no-print bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-200">
               <div>
