@@ -292,7 +292,6 @@ export default function FeeCollectionReceipt() {
       ? String(currentStudent.sr_no) 
       : (!isValidUUID(selectedStudentId) ? String(selectedStudentId) : null);
 
-    // Explicitly mapping all 19 columns of fee_collections table
     const txData = {
       receipt_no: manualReceiptNo || Math.floor(1000 + Math.random() * 9000).toString(),
       student_id: studentUuid,
@@ -307,8 +306,8 @@ export default function FeeCollectionReceipt() {
       installment_2_amount: i2,
       installment_3_amount: i3,
       installment_4_amount: i4,
-      fee_paid: mainFee,           // Stores fee amount (tuition / installment) for the row
-      penalty_paid: pAmount,       // Stores penalty amount for the row
+      fee_paid: mainFee,
+      penalty_paid: pAmount,
       total_paid: totalPaidVal,
       session: currentStudent?.session || '2026-2027'
     };
@@ -352,7 +351,6 @@ export default function FeeCollectionReceipt() {
     setReceiptDate(tx.receipt_date);
     setPaymentMode(tx.payment_mode || 'Cash');
     
-    // Primary extraction from fee_paid or fallback to sum of fee fields
     const existingMainFee = tx.fee_paid ?? (
                             (tx.tuition_fee_amount || 0) + 
                             (tx.installment_1_amount || 0) + 
@@ -433,7 +431,7 @@ Thank you!
   };
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl p-4 md:p-8 shadow-md space-y-6 text-slate-800 font-sans flex flex-col h-full">
+    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-2xl p-4 lg:p-8 shadow-md space-y-6 text-slate-800 font-sans flex flex-col h-full">
       
       {/* CSS for printing ONLY the Receipt Modal */}
       <style jsx global>{`
@@ -466,7 +464,7 @@ Thank you!
 
       {/* Fee Deposit Form Section */}
       <div className="no-print bg-white border border-slate-200 rounded-2xl p-5 md:p-8 shadow-sm space-y-5">
-        <h3 className="text-[15px] font-extrabold text-slate-800 tracking-wide flex items-center justify-between">
+        <h3 className="text-[15px] font-extrabold text-slate-800 tracking-wide flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <span>{editingId ? '✏️ Edit Fee Receipt Entry' : '➕ New Fee / Instalment Collection Entry'}</span>
           {editingId && (
             <button 
@@ -478,7 +476,7 @@ Thank you!
                 setPenaltyAmount('15');
                 setSelectedStudentId(''); 
               }}
-              className="text-[13px] bg-slate-200 hover:bg-slate-300 active:translate-y-0.5 text-slate-700 px-4 py-1 rounded-xl cursor-pointer font-bold shadow-sm transition-all"
+              className="text-[13px] bg-slate-200 hover:bg-slate-300 active:translate-y-0.5 text-slate-700 px-4 py-1 rounded-xl cursor-pointer font-bold shadow-sm transition-all self-start lg:self-auto"
             >
               Cancel Edit
             </button>
@@ -487,11 +485,11 @@ Thank you!
 
         {/* Plan & Month Selection Box */}
         <div className="bg-gradient-to-br from-slate-50 to-sky-50/40 border border-slate-200 rounded-2xl p-5 space-y-5">
-          <label className="block text-[14px] font-extrabold text-sky-900 text-center md:text-left">
+          <label className="block text-[14px] font-extrabold text-sky-900 text-center lg:text-left">
             📊 Allocation Month / Fee Plan Selection:
           </label>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
             <div 
               onClick={() => handleFeePlanChange('monthly')}
@@ -529,7 +527,7 @@ Thank you!
 
           {feePlanType === 'three' && (
             <div className="flex flex-wrap gap-3 pt-2 pb-1 items-center justify-center">
-              <span className="text-[13px] font-extrabold text-indigo-900 w-full text-center md:w-auto">Select Instalment Period:</span>
+              <span className="text-[13px] font-extrabold text-indigo-900 w-full text-center lg:w-auto">Select Instalment Period:</span>
               <button type="button" onClick={() => handleInstalmentGroupSelect('inst1')} className={`px-4 py-1.5 rounded-xl text-[12px] font-bold transition-all cursor-pointer active:translate-y-0.5 ${activeInstalmentGroup === 'inst1' ? 'bg-indigo-900 text-white shadow-inner' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>1st Inst (Apr-Jul)</button>
               <button type="button" onClick={() => handleInstalmentGroupSelect('inst2')} className={`px-4 py-1.5 rounded-xl text-[12px] font-bold transition-all cursor-pointer active:translate-y-0.5 ${activeInstalmentGroup === 'inst2' ? 'bg-indigo-900 text-white shadow-inner' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>2nd Inst (Aug-Nov)</button>
               <button type="button" onClick={() => handleInstalmentGroupSelect('inst3')} className={`px-4 py-1.5 rounded-xl text-[12px] font-bold transition-all cursor-pointer active:translate-y-0.5 ${activeInstalmentGroup === 'inst3' ? 'bg-indigo-900 text-white shadow-inner' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>3rd Inst (Dec-Mar)</button>
@@ -538,7 +536,7 @@ Thank you!
 
           {feePlanType === 'four' && (
             <div className="flex flex-wrap gap-3 pt-2 pb-1 items-center justify-center">
-              <span className="text-[13px] font-extrabold text-emerald-900 w-full text-center md:w-auto">Select Instalment Period:</span>
+              <span className="text-[13px] font-extrabold text-emerald-900 w-full text-center lg:w-auto">Select Instalment Period:</span>
               <button type="button" onClick={() => handleInstalmentGroupSelect('inst1')} className={`px-4 py-1.5 rounded-xl text-[12px] font-bold transition-all cursor-pointer active:translate-y-0.5 ${activeInstalmentGroup === 'inst1' ? 'bg-emerald-900 text-white shadow-inner' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}>1st Inst (Apr-Jun)</button>
               <button type="button" onClick={() => handleInstalmentGroupSelect('inst2')} className={`px-4 py-1.5 rounded-xl text-[12px] font-bold transition-all cursor-pointer active:translate-y-0.5 ${activeInstalmentGroup === 'inst2' ? 'bg-emerald-900 text-white shadow-inner' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}>2nd Inst (Jul-Sep)</button>
               <button type="button" onClick={() => handleInstalmentGroupSelect('inst3')} className={`px-4 py-1.5 rounded-xl text-[12px] font-bold transition-all cursor-pointer active:translate-y-0.5 ${activeInstalmentGroup === 'inst3' ? 'bg-emerald-900 text-white shadow-inner' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}>3rd Inst (Oct-Dec)</button>
@@ -547,10 +545,10 @@ Thank you!
           )}
 
           <div className="pt-2">
-            <p className="text-[13px] font-extrabold text-slate-700 mb-2.5 text-center md:text-left">
+            <p className="text-[13px] font-extrabold text-slate-700 mb-2.5 text-center lg:text-left">
               {feePlanType === 'monthly' ? 'Click on the exact month you want to collect fee for:' : feePlanType === 'yearly' ? 'All months selected for Annual/Yearly Plan:' : 'Auto-selected months based on chosen instalment:'}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {Object.keys(selectedMonths).map((mKey) => (
                 <label key={mKey} onClick={() => handleMonthCheckboxToggle(mKey)} className={`flex items-center space-x-2.5 bg-white border-2 px-3 py-2 rounded-xl text-[13px] font-bold shadow-sm transition ${feePlanType === 'monthly' ? 'cursor-pointer hover:border-sky-500 hover:bg-sky-50/50' : 'cursor-default opacity-90 border-slate-200'}`}>
                   <input 
@@ -567,7 +565,7 @@ Thank you!
           </div>
         </div>
 
-        <form onSubmit={handleSaveReceipt} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 items-end pt-2">
+        <form onSubmit={handleSaveReceipt} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-end pt-2">
           
           <div>
             <label className="block text-[13px] font-extrabold text-slate-700 mb-1.5">Select Class *</label>
@@ -676,7 +674,7 @@ Thank you!
             />
           </div>
 
-          <div className="col-span-1 sm:col-span-2 md:col-span-1">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-1">
             <label className="block text-[13px] font-extrabold text-emerald-800 mb-1.5">Total Payable (₹)</label>
             <input 
               type="number" 
@@ -686,10 +684,10 @@ Thank you!
             />
           </div>
 
-          <div className="sm:col-span-2 md:col-span-2 lg:col-span-3 pt-3 flex justify-end">
+          <div className="sm:col-span-2 lg:col-span-3 pt-3 flex justify-end">
             <button 
               type="submit"
-              className="w-full md:w-auto bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-extrabold rounded-2xl px-10 py-3 text-[15px] shadow-[0_4px_0_#065f46] active:translate-y-[3px] active:shadow-none transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="w-full lg:w-auto bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-extrabold rounded-2xl px-10 py-3 text-[15px] shadow-[0_4px_0_#065f46] active:translate-y-[3px] active:shadow-none transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <span className="text-lg">💾</span> {editingId ? 'Update Receipt' : 'Save & Generate Receipt'}
             </button>
@@ -700,7 +698,7 @@ Thank you!
 
       {/* Transactions List Table Section */}
       <div className="no-print bg-white border border-slate-200 rounded-2xl p-5 md:p-8 shadow-sm space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <h3 className="text-[16px] font-extrabold text-slate-800 tracking-wide">
             Fee Collection Transactions List
           </h3>
@@ -869,7 +867,7 @@ Thank you!
                   <div>Date: <span className="font-black">{formatDate(selectedReceiptTx.receipt_date)}</span></div>
                 </div>
 
-                <div className="bg-slate-50 border-2 border-slate-800 rounded-xl p-4 text-[14px] grid grid-cols-2 gap-y-2 font-bold text-slate-900">
+                <div className="bg-slate-50 border-2 border-slate-800 rounded-xl p-4 text-[14px] grid grid-cols-1 sm:grid-cols-2 gap-y-2 font-bold text-slate-900">
                   <div>
                     Student Name: <span className="uppercase font-black text-slate-950">{name}</span>
                   </div>
@@ -882,7 +880,7 @@ Thank you!
                   <div>
                     SR. No: <span className="font-black text-slate-950">{sr}</span>
                   </div>
-                  <div className="col-span-2 pt-1 border-t border-slate-300 mt-1">
+                  <div className="col-span-1 sm:col-span-2 pt-1 border-t border-slate-300 mt-1">
                     Payment Mode: <span className="font-black text-slate-950">{selectedReceiptTx.payment_mode}</span>
                   </div>
                 </div>
