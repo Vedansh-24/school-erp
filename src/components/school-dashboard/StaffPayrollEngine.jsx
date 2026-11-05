@@ -454,9 +454,9 @@ export default function StaffPayrollEngine() {
 
           <div className="space-y-4 pt-2">
             <div className="bg-slate-100 p-4 border border-slate-300 rounded-xl space-y-3">
-              {/* Laptop view (md+) */}
-              <div className="hidden md:grid md:grid-cols-12 gap-3 items-end">
-                <div className="md:col-span-4">
+              {/* Select Class & Allotted Subject: grid grid-cols-2 for mobile, lg:contents / md:grid-cols-12 for laptop */}
+              <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
+                <div className="col-span-1 md:col-span-4">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
                     Select Class
                   </label>
@@ -488,7 +488,7 @@ export default function StaffPayrollEngine() {
                   </select>
                 </div>
 
-                <div className="md:col-span-4">
+                <div className="col-span-1 md:col-span-4">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
                     Allotted Subject
                   </label>
@@ -501,66 +501,8 @@ export default function StaffPayrollEngine() {
                   />
                 </div>
 
-                <div className="md:col-span-4">
-                  <label className="block text-[11px] font-bold text-slate-800 mb-1 opacity-0">Action</label>
-                  <button
-                    type="button"
-                    onClick={handleAddMapping}
-                    className="w-full bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white text-[12px] font-bold py-2.5 px-3 rounded-xl shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[3px] transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap"
-                  >
-                    + Add Classes & Subject Mapping
-                  </button>
-                </div>
-              </div>
-
-              {/* Mobile view (Stacked cleanly to prevent overlap) */}
-              <div className="block md:hidden space-y-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                    Select Class
-                  </label>
-                  <select
-                    value={currentClass}
-                    onChange={(e) => setCurrentClass(e.target.value)}
-                    className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
-                  >
-                    <option value="" className="text-slate-400">-- Choose Class --</option>
-                    <option value="PP.3+">PP.3+</option>
-                    <option value="PP.4+">PP.4+</option>
-                    <option value="PP.5+">PP.5+</option>
-                    <option value="First">First</option>
-                    <option value="Second">Second</option>
-                    <option value="Third">Third</option>
-                    <option value="Fourth">Fourth</option>
-                    <option value="Fifth">Fifth</option>
-                    <option value="Sixth">Sixth</option>
-                    <option value="Seventh">Seventh</option>
-                    <option value="Eighth">Eighth</option>
-                    <option value="Ninth">Ninth</option>
-                    <option value="Tenth">Tenth</option>
-                    <option value="Eleventh(Arts)">Eleventh(Arts)</option>
-                    <option value="Eleventh(Commerce)">Eleventh(Commerce)</option>
-                    <option value="Eleventh(Science)">Eleventh(Science)</option>
-                    <option value="Twelth(Arts)">Twelth(Arts)</option>
-                    <option value="Twelth (Commerce)">Twelth (Commerce)</option>
-                    <option value="Twelth (Science)">Twelth (Science)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                    Allotted Subject
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Mathematics, Hindi, Science"
-                    value={currentSubject}
-                    onChange={(e) => setCurrentSubject(e.target.value)}
-                    className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
-                  />
-                </div>
-
-                <div>
+                <div className="col-span-2 md:col-span-4">
+                  <label className="block text-[11px] font-bold text-slate-800 mb-1 hidden md:block opacity-0">Action</label>
                   <button
                     type="button"
                     onClick={handleAddMapping}
@@ -575,9 +517,9 @@ export default function StaffPayrollEngine() {
             <div className="space-y-3 pt-1">
               {mappings.map((item) => (
                 <div key={item.id} className="bg-slate-50 p-3 border border-slate-200 rounded-xl space-y-3 md:bg-transparent md:p-0 md:border-0 md:space-y-0">
-                  {/* Laptop view (md+) */}
-                  <div className="hidden md:grid md:grid-cols-12 gap-3 items-end">
-                    <div className="md:col-span-5">
+                  {/* Allowed Classes & Allowed Subjects: grid grid-cols-2 for mobile, md:grid-cols-12 for laptop */}
+                  <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
+                    <div className="col-span-1 md:col-span-5">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1">
                         Allowed Classes
                       </label>
@@ -609,7 +551,7 @@ export default function StaffPayrollEngine() {
                       </select>
                     </div>
 
-                    <div className="md:col-span-5">
+                    <div className="col-span-1 md:col-span-5">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1">
                         Allowed Subjects
                       </label>
@@ -622,7 +564,8 @@ export default function StaffPayrollEngine() {
                       />
                     </div>
 
-                    <div className="md:col-span-2">
+                    {/* Delete button (for laptop) */}
+                    <div className="hidden md:block md:col-span-2">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1 opacity-0">Action</label>
                       <button
                         type="button"
@@ -632,57 +575,9 @@ export default function StaffPayrollEngine() {
                         <span>🗑</span> Delete
                       </button>
                     </div>
-                  </div>
 
-                  {/* Mobile view */}
-                  <div className="block md:hidden space-y-3">
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                        Allowed Classes
-                      </label>
-                      <select
-                        value={item.class}
-                        onChange={(e) => handleUpdateMappingField(item.id, 'class', e.target.value)}
-                        className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
-                      >
-                        <option value="" className="text-slate-400">-- Choose Class --</option>
-                        <option value="PP.3+">PP.3+</option>
-                        <option value="PP.4+">PP.4+</option>
-                        <option value="PP.5+">PP.5+</option>
-                        <option value="First">First</option>
-                        <option value="Second">Second</option>
-                        <option value="Third">Third</option>
-                        <option value="Fourth">Fourth</option>
-                        <option value="Fifth">Fifth</option>
-                        <option value="Sixth">Sixth</option>
-                        <option value="Seventh">Seventh</option>
-                        <option value="Eighth">Eighth</option>
-                        <option value="Ninth">Ninth</option>
-                        <option value="Tenth">Tenth</option>
-                        <option value="Eleventh(Arts)">Eleventh(Arts)</option>
-                        <option value="Eleventh(Commerce)">Eleventh(Commerce)</option>
-                        <option value="Eleventh(Science)">Eleventh(Science)</option>
-                        <option value="Twelth(Arts)">Twelth(Arts)</option>
-                        <option value="Twelth (Commerce)">Twelth (Commerce)</option>
-                        <option value="Twelth (Science)">Twelth (Science)</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                        Allowed Subjects
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Mathematics, Hindi, Science"
-                        value={item.subject}
-                        onChange={(e) => handleUpdateMappingField(item.id, 'subject', e.target.value)}
-                        className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
-                      />
-                    </div>
-
-                    {/* Delete button and Save staff button side-by-side right beneath Allowed Classes & Subjects */}
-                    <div className="grid grid-cols-2 gap-3 pt-1">
+                    {/* Delete and Save staff side-by-side for mobile */}
+                    <div className="col-span-2 md:hidden grid grid-cols-2 gap-3 pt-1">
                       <button
                         type="button"
                         onClick={() => handleRemoveMapping(item.id)}
@@ -709,7 +604,7 @@ export default function StaffPayrollEngine() {
             </div>
           </div>
 
-          {/* Save Staff button for Laptop view only (hidden on mobile since it's placed next to delete on mobile) */}
+          {/* Save Staff button for Laptop view only */}
           <div className="hidden md:flex pt-2 items-center gap-3">
             <button
               type="submit"
