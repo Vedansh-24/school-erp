@@ -48,8 +48,8 @@ export default function MyDashboardView({
 }) {
   return (
     <div className="space-y-5 font-sans" style={{ background: '#F5F7FA', color: '#1A2332' }}>
-      {/* 6 Summary Stat Cards: Mobile par 1 ya 2 columns, tablet par 3, aur laptop par 6 columns */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      {/* 6 Summary Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5">
         {stats.map((s) => (
           <StatCard key={s.label} {...s} />
         ))}
