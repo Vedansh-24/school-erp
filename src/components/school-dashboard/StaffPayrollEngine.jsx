@@ -454,7 +454,7 @@ export default function StaffPayrollEngine() {
 
           <div className="space-y-4 pt-2">
             <div className="bg-slate-100 p-4 border border-slate-300 rounded-xl space-y-3">
-              {/* Select Class & Allotted Subject: grid grid-cols-2 for mobile, lg:contents / md:grid-cols-12 for laptop */}
+              {/* Select Class & Allotted Subject (2 columns on mobile using grid-cols-2, laptop via md:grid-cols-12) */}
               <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
                 <div className="col-span-1 md:col-span-4">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
@@ -517,7 +517,7 @@ export default function StaffPayrollEngine() {
             <div className="space-y-3 pt-1">
               {mappings.map((item) => (
                 <div key={item.id} className="bg-slate-50 p-3 border border-slate-200 rounded-xl space-y-3 md:bg-transparent md:p-0 md:border-0 md:space-y-0">
-                  {/* Allowed Classes & Allowed Subjects: grid grid-cols-2 for mobile, md:grid-cols-12 for laptop */}
+                  {/* Allowed Classes & Allowed Subjects (2 columns on mobile using grid-cols-2, laptop via md:grid-cols-12) */}
                   <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
                     <div className="col-span-1 md:col-span-5">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1">
@@ -564,7 +564,7 @@ export default function StaffPayrollEngine() {
                       />
                     </div>
 
-                    {/* Delete button (for laptop) */}
+                    {/* Delete button for laptop view */}
                     <div className="hidden md:block md:col-span-2">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1 opacity-0">Action</label>
                       <button
@@ -576,7 +576,7 @@ export default function StaffPayrollEngine() {
                       </button>
                     </div>
 
-                    {/* Delete and Save staff side-by-side for mobile */}
+                    {/* Delete button and Save staff button side-by-side right beneath Allowed Classes & Subjects on mobile */}
                     <div className="col-span-2 md:hidden grid grid-cols-2 gap-3 pt-1">
                       <button
                         type="button"
