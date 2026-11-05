@@ -454,9 +454,9 @@ export default function StaffPayrollEngine() {
 
           <div className="space-y-4 pt-2">
             <div className="bg-slate-100 p-4 border border-slate-300 rounded-xl space-y-3">
-              {/* Select Class & Allotted Subject (2 columns on mobile using grid-cols-2, laptop via md:grid-cols-12) */}
-              <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
-                <div className="col-span-1 md:col-span-4">
+              {/* Select Class & Allotted Subject (2 columns for both mobile and laptop) */}
+              <div className="grid grid-cols-2 gap-3 items-end">
+                <div className="col-span-1">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
                     Select Class
                   </label>
@@ -488,7 +488,7 @@ export default function StaffPayrollEngine() {
                   </select>
                 </div>
 
-                <div className="col-span-1 md:col-span-4">
+                <div className="col-span-1">
                   <label className="block text-[11px] font-bold text-slate-800 mb-1">
                     Allotted Subject
                   </label>
@@ -500,26 +500,26 @@ export default function StaffPayrollEngine() {
                     className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
                   />
                 </div>
+              </div>
 
-                <div className="col-span-2 md:col-span-4">
-                  <label className="block text-[11px] font-bold text-slate-800 mb-1 hidden md:block opacity-0">Action</label>
-                  <button
-                    type="button"
-                    onClick={handleAddMapping}
-                    className="w-full bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white text-[12px] font-bold py-2.5 px-3 rounded-xl shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[3px] transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap"
-                  >
-                    + Add Classes & Subject Mapping
-                  </button>
-                </div>
+              {/* + Add Classes & Subject Mapping button directly underneath */}
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={handleAddMapping}
+                  className="w-full bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white text-[12px] font-bold py-2.5 px-3 rounded-xl shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[3px] transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap"
+                >
+                  + Add Classes & Subject Mapping
+                </button>
               </div>
             </div>
 
             <div className="space-y-3 pt-1">
               {mappings.map((item) => (
                 <div key={item.id} className="bg-slate-50 p-3 border border-slate-200 rounded-xl space-y-3 md:bg-transparent md:p-0 md:border-0 md:space-y-0">
-                  {/* Allowed Classes & Allowed Subjects (2 columns on mobile using grid-cols-2, laptop via md:grid-cols-12) */}
-                  <div className="grid grid-cols-2 md:grid-cols-12 gap-3 items-end">
-                    <div className="col-span-1 md:col-span-5">
+                  {/* Allowed Classes & Allowed Subjects (2 columns for both mobile and laptop) */}
+                  <div className="grid grid-cols-2 gap-3 items-end">
+                    <div className="col-span-1">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1">
                         Allowed Classes
                       </label>
@@ -551,7 +551,7 @@ export default function StaffPayrollEngine() {
                       </select>
                     </div>
 
-                    <div className="col-span-1 md:col-span-5">
+                    <div className="col-span-1">
                       <label className="block text-[11px] font-bold text-slate-800 mb-1">
                         Allowed Subjects
                       </label>
@@ -563,63 +563,33 @@ export default function StaffPayrollEngine() {
                         className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
                       />
                     </div>
+                  </div>
 
-                    {/* Delete button for laptop view */}
-                    <div className="hidden md:block md:col-span-2">
-                      <label className="block text-[11px] font-bold text-slate-800 mb-1 opacity-0">Action</label>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMapping(item.id)}
-                        className="w-full bg-gradient-to-b from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-[13px] font-bold py-2.5 rounded-xl shadow-[0_3px_0_#9f1239] active:shadow-[0_1px_0_#9f1239] active:translate-y-[2px] transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <span>🗑</span> Delete
-                      </button>
-                    </div>
+                  {/* Delete button and Save staff button side-by-side right beneath Allowed Classes & Subjects */}
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMapping(item.id)}
+                      className="w-full bg-gradient-to-b from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-[13px] font-bold py-2.5 rounded-xl shadow-[0_3px_0_#9f1239] active:shadow-[0_1px_0_#9f1239] active:translate-y-[2px] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span>🗑</span> Delete
+                    </button>
 
-                    {/* Delete button and Save staff button side-by-side right beneath Allowed Classes & Subjects on mobile */}
-                    <div className="col-span-2 md:hidden grid grid-cols-2 gap-3 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMapping(item.id)}
-                        className="w-full bg-gradient-to-b from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white text-[13px] font-bold py-2.5 rounded-xl shadow-[0_3px_0_#9f1239] active:shadow-[0_1px_0_#9f1239] active:translate-y-[2px] transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <span>🗑</span> Delete
-                      </button>
-
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className={`w-full font-bold text-[13px] py-2.5 rounded-xl transition-all cursor-pointer disabled:opacity-50 text-white text-center ${
-                          editingStaffId 
-                            ? 'bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-[0_3px_0_#b45309]' 
-                            : 'bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 shadow-[0_3px_0_#0369a1]'
-                        }`}
-                      >
-                        {loading ? 'Saving...' : editingStaffId ? 'Update Staff' : 'Save Staff'}
-                      </button>
-                    </div>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={`w-full font-bold text-[13px] py-2.5 rounded-xl transition-all cursor-pointer disabled:opacity-50 text-white text-center ${
+                        editingStaffId 
+                          ? 'bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-[0_3px_0_#b45309]' 
+                          : 'bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 shadow-[0_3px_0_#0369a1]'
+                      }`}
+                    >
+                      {loading ? 'Saving...' : editingStaffId ? 'Update Staff' : 'Save Staff'}
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Save Staff button for Laptop view only */}
-          <div className="hidden md:flex pt-2 items-center gap-3">
-            <button
-              type="submit"
-              disabled={loading}
-              className={`font-bold text-[13px] px-6 py-2.5 rounded-xl transition-all cursor-pointer disabled:opacity-50 text-white ${
-                editingStaffId 
-                  ? 'bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 shadow-[0_4px_0_#b45309] active:shadow-[0_1px_0_#b45309]' 
-                  : 'bg-gradient-to-b from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1]'
-              } active:translate-y-[3px]`}
-            >
-              {loading ? 'Saving...' : editingStaffId ? 'Update Staff Record' : 'Save Staff'}
-            </button>
-            {editingStaffId && (
-              <span className="text-[12px] text-amber-800 font-bold">Editing Staff ID: {editingStaffId}</span>
-            )}
           </div>
         </form>
       </div>
