@@ -366,14 +366,14 @@ export default function HomeworkPublisherManager() {
   const subjectWiseConsolidatedData = getSubjectWiseConsolidatedData();
 
   return (
-    <div className="p-4 md:p-8 bg-slate-50 text-slate-800 rounded-2xl space-y-8 shadow-md border border-slate-200 font-sans">
+    <div className="p-4 sm:p-6 md:p-8 bg-slate-50 text-slate-800 rounded-2xl space-y-6 sm:space-y-8 shadow-md border border-slate-200 font-sans overflow-x-hidden">
       
       {/* 1. Homework Publisher Entry Form */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+      <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm">
         
-        <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-900 p-6 rounded-2xl shadow-lg text-white mb-6 border border-indigo-400/30 flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-black tracking-wide text-white flex items-center gap-2">
+        <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-900 p-5 sm:p-6 rounded-2xl shadow-lg text-white mb-6 border border-indigo-400/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="w-full md:w-auto">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black tracking-wide text-white flex items-center gap-2 break-words">
               <span>📝</span> Publish Daily Homework
             </h2>
             <p className="text-xs sm:text-sm font-semibold text-indigo-100/90 mt-1">
@@ -381,16 +381,16 @@ export default function HomeworkPublisherManager() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4 flex-wrap w-full md:w-auto">
-            <div className="flex flex-col flex-1 md:flex-none">
-              <label className="text-xs font-black text-indigo-100 uppercase tracking-wider mb-1">Select Class:</label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full md:w-auto">
+            <div className="flex flex-col">
+              <label className="text-[11px] font-black text-indigo-100 uppercase tracking-wider mb-1">Select Class:</label>
               <select
                 value={selectedClass}
                 onChange={(e) => {
                   setSelectedClass(e.target.value);
                   setHomeworkInputs({});
                 }}
-                className="bg-white text-slate-900 font-extrabold text-sm rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-sky-400 shadow-inner cursor-pointer"
+                className="bg-white text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-sky-400 shadow-inner cursor-pointer w-full"
               >
                 {classNamesList.map(cls => (
                   <option key={cls} value={cls}>{cls}</option>
@@ -398,23 +398,23 @@ export default function HomeworkPublisherManager() {
               </select>
             </div>
 
-            <div className="flex flex-col flex-1 md:flex-none">
-              <label className="text-xs font-black text-amber-200 uppercase tracking-wider mb-1">Assign Date:</label>
+            <div className="flex flex-col">
+              <label className="text-[11px] font-black text-amber-200 uppercase tracking-wider mb-1">Assign Date:</label>
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="bg-white text-slate-900 font-bold text-sm rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-amber-400 shadow-inner"
+                className="bg-white text-slate-900 font-bold text-xs sm:text-sm rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-amber-400 shadow-inner w-full"
               />
             </div>
 
-            <div className="flex flex-col flex-1 md:flex-none">
-              <label className="text-xs font-black text-emerald-200 uppercase tracking-wider mb-1">Submission Date:</label>
+            <div className="flex flex-col">
+              <label className="text-[11px] font-black text-emerald-200 uppercase tracking-wider mb-1">Submission Date:</label>
               <input
                 type="date"
                 value={submissionDate}
                 onChange={(e) => setSubmissionDate(e.target.value)}
-                className="bg-white text-slate-900 font-bold text-sm rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-400 shadow-inner"
+                className="bg-white text-slate-900 font-bold text-xs sm:text-sm rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-400 shadow-inner w-full"
               />
             </div>
           </div>
@@ -423,15 +423,15 @@ export default function HomeworkPublisherManager() {
         {/* Dynamic Subject Homework Entry Boxes Grid */}
         <div className="space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <span className="text-base font-bold text-slate-700">
-              Subjects for <span className="text-indigo-600 font-black text-lg">{selectedClass}</span> ({currentSubjects.length} Subjects):
+            <span className="text-sm sm:text-base font-bold text-slate-700">
+              Subjects for <span className="text-indigo-600 font-black text-base sm:text-lg">{selectedClass}</span> ({currentSubjects.length} Subjects):
             </span>
 
             {/* Clear All Fields Button with Press Effect */}
             <button
               type="button"
               onClick={() => setHomeworkInputs({})}
-              className="bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600 hover:from-amber-300 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-t border-amber-200 border-b-[4px] border-amber-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
+              className="bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600 hover:from-amber-300 hover:to-orange-600 text-slate-950 font-black text-[11px] sm:text-xs uppercase tracking-wider px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border-t border-amber-200 border-b-[4px] border-amber-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
             >
               <span>🔄</span> Clear All Fields
             </button>
@@ -446,10 +446,10 @@ export default function HomeworkPublisherManager() {
 
               return (
                 <div key={subject} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
-                  <div className={`${dark} font-black text-base px-4 py-3 flex items-center justify-between`}>
-                    <span className="flex items-center gap-2">📚 {subject}</span>
+                  <div className={`${dark} font-black text-sm sm:text-base px-4 py-3 flex items-center justify-between gap-2`}>
+                    <span className="truncate flex items-center gap-2">📚 {subject}</span>
                     {isFilled && (
-                      <span className="text-xs bg-white/25 text-white border border-white/30 px-2.5 py-0.5 rounded-full font-bold">
+                      <span className="text-[10px] sm:text-xs bg-white/25 text-white border border-white/30 px-2 py-0.5 rounded-full font-bold whitespace-nowrap">
                         Filled ✓
                       </span>
                     )}
@@ -457,7 +457,7 @@ export default function HomeworkPublisherManager() {
 
                   <div className="p-4 space-y-4 flex-1">
                     <div>
-                      <label className="text-xs font-black uppercase text-slate-500 block mb-1.5">
+                      <label className="text-[11px] sm:text-xs font-black uppercase text-slate-500 block mb-1.5">
                         📌 Title / Chapter:
                       </label>
                       <input
@@ -465,12 +465,12 @@ export default function HomeworkPublisherManager() {
                         value={subData.title || ''}
                         onChange={(e) => handleHomeworkChange(subject, 'title', e.target.value)}
                         placeholder="e.g. Chapter 3 - Word Meanings"
-                        className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 shadow-inner font-sans font-semibold"
+                        className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 shadow-inner font-sans font-semibold"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs font-black uppercase text-indigo-600 block mb-1">
+                      <label className="text-[11px] sm:text-xs font-black uppercase text-indigo-600 block mb-1">
                         💡 Quick Professional Templates:
                       </label>
                       <select
@@ -480,7 +480,7 @@ export default function HomeworkPublisherManager() {
                           }
                         }}
                         defaultValue=""
-                        className="w-full bg-indigo-50 border-2 border-indigo-200 rounded-xl px-3 py-2 text-xs text-indigo-950 font-bold outline-none focus:border-indigo-600 shadow-sm cursor-pointer"
+                        className="w-full bg-indigo-50 border-2 border-indigo-200 rounded-xl px-3 py-2 text-[11px] sm:text-xs text-indigo-950 font-bold outline-none focus:border-indigo-600 shadow-sm cursor-pointer truncate"
                       >
                         <option value="" disabled>-- Select professional line (Editable) --</option>
                         {subjectTemplates.map((tmpl, idx) => (
@@ -490,7 +490,7 @@ export default function HomeworkPublisherManager() {
                     </div>
 
                     <div>
-                      <label className="text-xs font-black uppercase text-slate-500 block mb-1.5">
+                      <label className="text-[11px] sm:text-xs font-black uppercase text-slate-500 block mb-1.5">
                         📝 Instructions / Details (Editable):
                       </label>
                       <textarea
@@ -498,7 +498,7 @@ export default function HomeworkPublisherManager() {
                         value={subData.description || ''}
                         onChange={(e) => handleHomeworkChange(subject, 'description', e.target.value)}
                         placeholder="Select above or type custom instructions here..."
-                        className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 resize-none font-sans font-semibold shadow-inner"
+                        className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 resize-none font-sans font-semibold shadow-inner"
                       />
                     </div>
                   </div>
@@ -508,7 +508,7 @@ export default function HomeworkPublisherManager() {
                     <button
                       type="button"
                       onClick={() => handlePublishSingleSubject(subject)}
-                      className={`${dark} text-xs uppercase tracking-wider font-black px-4 py-2.5 rounded-xl active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer`}
+                      className={`${dark} text-[11px] sm:text-xs uppercase tracking-wider font-black px-4 py-2.5 rounded-xl active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer w-full justify-center sm:w-auto`}
                     >
                       <span>🚀</span> Publish {subject}
                     </button>
@@ -523,7 +523,7 @@ export default function HomeworkPublisherManager() {
             <button
               type="button"
               onClick={handlePublishAllHomework}
-              className="bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 hover:from-emerald-400 hover:to-teal-600 text-white font-black text-sm uppercase tracking-wider px-8 py-3.5 rounded-xl border-t border-emerald-300 border-b-[5px] border-emerald-950 shadow-lg active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-2 cursor-pointer"
+              className="bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 hover:from-emerald-400 hover:to-teal-600 text-white font-black text-xs sm:text-sm uppercase tracking-wider px-6 sm:px-8 py-3.5 rounded-xl border-t border-emerald-300 border-b-[5px] border-emerald-950 shadow-lg active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer w-full sm:w-auto"
             >
               <span>💾</span> Save & Publish All Subjects
             </button>
@@ -532,10 +532,10 @@ export default function HomeworkPublisherManager() {
       </div>
 
       {/* 2. Homework History Section */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+      <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b-2 border-slate-100">
           <div>
-            <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
               <span>📜</span> Published Homework History
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-1">
@@ -543,13 +543,13 @@ export default function HomeworkPublisherManager() {
             </p>
           </div>
 
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase text-slate-500">Filter Class:</span>
+          <div className="flex items-center gap-3 flex-wrap w-full md:w-auto">
+            <div className="flex items-center gap-2 flex-1 sm:flex-none">
+              <span className="text-[11px] sm:text-xs font-black uppercase text-slate-500 whitespace-nowrap">Filter Class:</span>
               <select
                 value={historyFilterClass}
                 onChange={(e) => setHistoryFilterClass(e.target.value)}
-                className="bg-slate-50 border-2 border-indigo-200 text-sm text-slate-900 font-extrabold rounded-xl px-3 py-2 outline-none focus:border-indigo-600 shadow-sm cursor-pointer"
+                className="bg-slate-50 border-2 border-indigo-200 text-xs sm:text-sm text-slate-900 font-extrabold rounded-xl px-3 py-2 outline-none focus:border-indigo-600 shadow-sm cursor-pointer w-full sm:w-auto"
               >
                 <option value="All">All Classes</option>
                 {classNamesList.map(cls => (
@@ -558,13 +558,13 @@ export default function HomeworkPublisherManager() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase text-slate-500">Filter Date:</span>
+            <div className="flex items-center gap-2 flex-1 sm:flex-none">
+              <span className="text-[11px] sm:text-xs font-black uppercase text-slate-500 whitespace-nowrap">Filter Date:</span>
               <input
                 type="date"
                 value={historyFilterDate}
                 onChange={(e) => setHistoryFilterDate(e.target.value)}
-                className="bg-slate-50 border-2 border-slate-200 text-sm text-slate-800 font-bold rounded-xl px-3 py-2 outline-none focus:border-indigo-500 shadow-sm cursor-pointer"
+                className="bg-slate-50 border-2 border-slate-200 text-xs sm:text-sm text-slate-800 font-bold rounded-xl px-3 py-2 outline-none focus:border-indigo-500 shadow-sm cursor-pointer w-full sm:w-auto"
               />
             </div>
 
@@ -573,7 +573,7 @@ export default function HomeworkPublisherManager() {
               <button
                 type="button"
                 onClick={handleResetFilters}
-                className="bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 hover:from-slate-500 hover:to-slate-700 text-white font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-t border-slate-400 border-b-[4px] border-slate-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer flex items-center gap-1.5"
+                className="bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 hover:from-slate-500 hover:to-slate-700 text-white font-black text-[11px] sm:text-xs uppercase tracking-wider px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border-t border-slate-400 border-b-[4px] border-slate-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer flex items-center gap-1.5 w-full sm:w-auto justify-center"
               >
                 <span>❌</span> Reset Filters
               </button>
@@ -581,12 +581,12 @@ export default function HomeworkPublisherManager() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-sm text-slate-600 font-bold px-4 py-3 bg-indigo-50 rounded-2xl border border-indigo-200">
-          <span>
-            Showing Homework for: <strong className="text-indigo-700 font-black text-base">{historyFilterClass} Class</strong> 
+        <div className="flex items-center justify-between text-xs sm:text-sm text-slate-600 font-bold px-4 py-3 bg-indigo-50 rounded-2xl border border-indigo-200 flex-wrap gap-2">
+          <span className="truncate">
+            Showing Homework for: <strong className="text-indigo-700 font-black text-sm sm:text-base">{historyFilterClass} Class</strong> 
             {historyFilterDate ? <span> (Date: <strong className="text-amber-700">{historyFilterDate}</strong>)</span> : ' (All Dates)'}
           </span>
-          <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-black">
+          <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-[11px] sm:text-xs font-black whitespace-nowrap">
             {historyFilterClass !== 'All' ? 'Consolidated Subject View' : 'Card View'}
           </span>
         </div>
@@ -602,9 +602,9 @@ export default function HomeworkPublisherManager() {
 
               return (
                 <div key={subject} className="bg-slate-50 rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
-                  <div className={`${dark} font-black text-base px-4 py-3 flex items-center justify-between`}>
-                    <span>📘 {subject}</span>
-                    <span className="bg-black/20 text-white text-xs px-2.5 py-1 rounded-full font-bold">
+                  <div className={`${dark} font-black text-sm sm:text-base px-4 py-3 flex items-center justify-between gap-2`}>
+                    <span className="truncate">📘 {subject}</span>
+                    <span className="bg-black/20 text-white text-[11px] sm:text-xs px-2.5 py-1 rounded-full font-bold whitespace-nowrap">
                       {entriesList.length} Task{entriesList.length !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -613,19 +613,19 @@ export default function HomeworkPublisherManager() {
                     {entriesList.length > 0 ? (
                       entriesList.map((item, idx) => (
                         <div key={item.id || idx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 relative group">
-                          <div className="flex items-center justify-between text-xs font-bold text-slate-500 border-b border-slate-100 pb-2 mb-2">
-                            <span>📅 Date: <strong className="text-slate-800 text-sm">{item.date}</strong></span>
-                            <span className="text-emerald-700 font-extrabold text-sm">Sub: {item.submissionDate}</span>
+                          <div className="flex items-center justify-between text-xs font-bold text-slate-500 border-b border-slate-100 pb-2 mb-2 gap-2 flex-wrap">
+                            <span>📅 Date: <strong className="text-slate-800 text-xs sm:text-sm">{item.date}</strong></span>
+                            <span className="text-emerald-700 font-extrabold text-xs sm:text-sm whitespace-nowrap">Sub: {item.submissionDate}</span>
                           </div>
 
                           <div className="space-y-2">
                             {item.work.title && (
-                              <div className="font-bold text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg text-sm">
+                              <div className="font-bold text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg text-xs sm:text-sm break-words">
                                 📌 {item.work.title}
                               </div>
                             )}
                             {item.work.description && (
-                              <p className="text-slate-800 font-medium whitespace-pre-wrap leading-relaxed text-sm">
+                              <p className="text-slate-800 font-medium whitespace-pre-wrap leading-relaxed text-xs sm:text-sm break-words">
                                 {item.work.description}
                               </p>
                             )}
@@ -635,7 +635,7 @@ export default function HomeworkPublisherManager() {
                             {/* Delete Task Button with Press Effect */}
                             <button
                               onClick={() => handleDeleteHistory(item.id)}
-                              className="bg-gradient-to-r from-rose-500 via-red-600 to-rose-700 hover:from-rose-400 hover:to-red-600 text-white font-black text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border-t border-rose-300 border-b-[3px] border-rose-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] active:shadow-none transition-all cursor-pointer flex items-center gap-1"
+                              className="bg-gradient-to-r from-rose-500 via-red-600 to-rose-700 hover:from-rose-400 hover:to-red-600 text-white font-black text-[10px] sm:text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border-t border-rose-300 border-b-[3px] border-rose-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] active:shadow-none transition-all cursor-pointer flex items-center gap-1"
                             >
                               <span>🗑️</span> Delete Task
                             </button>
@@ -643,7 +643,7 @@ export default function HomeworkPublisherManager() {
                         </div>
                       ))
                     ) : (
-                      <div className="text-slate-400 italic text-sm py-8 text-center font-semibold">
+                      <div className="text-slate-400 italic text-xs sm:text-sm py-8 text-center font-semibold">
                         No homework assigned for {subject}
                       </div>
                     )}
@@ -657,16 +657,16 @@ export default function HomeworkPublisherManager() {
           <div className="space-y-5">
             {groupedHistory.length > 0 ? (
               groupedHistory.map((item) => (
-                <div key={item.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+                <div key={item.id} className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between flex-wrap gap-3 border-b-2 border-slate-200 pb-3">
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <span className="bg-indigo-100 text-indigo-900 text-sm font-black px-3 py-1.5 rounded-xl border border-indigo-200">
+                    <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+                      <span className="bg-indigo-100 text-indigo-900 text-xs sm:text-sm font-black px-3 py-1.5 rounded-xl border border-indigo-200">
                         Class: {item.className}
                       </span>
-                      <span className="text-sm text-slate-600 font-semibold">
+                      <span className="text-xs sm:text-sm text-slate-600 font-semibold">
                         Assigned On: <strong className="text-slate-900">{item.date}</strong>
                       </span>
-                      <span className="text-sm text-slate-600 font-semibold">
+                      <span className="text-xs sm:text-sm text-slate-600 font-semibold">
                         Submission: <strong className="text-emerald-700">{item.submissionDate}</strong>
                       </span>
                     </div>
@@ -678,12 +678,12 @@ export default function HomeworkPublisherManager() {
                       
                       return (
                         <div key={sub} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
-                          <div className={`${dark} px-3 py-2 flex justify-between items-center text-xs font-black`}>
-                            <span>📘 {sub}</span>
+                          <div className={`${dark} px-3 py-2 flex justify-between items-center text-[11px] sm:text-xs font-black gap-2`}>
+                            <span className="truncate">📘 {sub}</span>
                             {/* Card View Delete Button with Press Effect */}
                             <button
                               onClick={() => handleDeleteHistory(work.id)}
-                              className="bg-rose-600 hover:bg-rose-500 text-white font-black text-[11px] px-2.5 py-1 rounded-lg border-t border-rose-300 border-b-[3px] border-rose-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] active:shadow-none transition-all cursor-pointer flex items-center gap-1"
+                              className="bg-rose-600 hover:bg-rose-500 text-white font-black text-[10px] sm:text-[11px] px-2.5 py-1 rounded-lg border-t border-rose-300 border-b-[3px] border-rose-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] active:shadow-none transition-all cursor-pointer flex items-center gap-1 whitespace-nowrap"
                               title="Delete this subject task"
                             >
                               <span>🗑️</span> Delete
@@ -692,12 +692,12 @@ export default function HomeworkPublisherManager() {
 
                           <div className="p-3 space-y-2">
                             {work.title && (
-                              <div className="font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg text-sm">
+                              <div className="font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg text-xs sm:text-sm break-words">
                                 📌 {work.title}
                               </div>
                             )}
                             {work.description && (
-                              <p className="text-slate-700 whitespace-pre-wrap leading-relaxed text-sm">
+                              <p className="text-slate-700 whitespace-pre-wrap leading-relaxed text-xs sm:text-sm break-words">
                                 {work.description}
                               </p>
                             )}
@@ -709,7 +709,7 @@ export default function HomeworkPublisherManager() {
                 </div>
               ))
             ) : (
-              <div className="text-center py-10 text-slate-500 italic text-base font-semibold bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300">
+              <div className="text-center py-10 text-slate-500 italic text-sm sm:text-base font-semibold bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300">
                 कोई होमवर्क हिस्ट्री रिकॉर्ड नहीं मिला। (Supabase table check karein ya naya homework publish karein)
               </div>
             )}
