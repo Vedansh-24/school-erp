@@ -298,7 +298,8 @@ export default function HomeworkPublisherManager() {
       if (!grouped[key]) {
         grouped[key] = {
           id: item.id,
-          date: item.assign_date,
+          date: item.screen_date || item.assign_date,
+          assignDate: item.assign_date,
           submissionDate: item.submission_date,
           className: item.class_name,
           entries: {}
@@ -437,8 +438,8 @@ export default function HomeworkPublisherManager() {
             </button>
           </div>
 
-          {/* Mobile par grid-cols-1 (ek row me ek), aur laptop par sm:grid-cols-2 lg:grid-cols-3 (do-do ya teen-teen) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Mobile par grid-cols-1 (ek ke niche ek), aur laptop par lg:grid-cols-2 xl:grid-cols-3 (file code ke anusaar) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
             {currentSubjects.map((subject) => {
               const subData = homeworkInputs[subject] || {};
               const isFilled = (subData.title && subData.title.trim() !== '') || (subData.description && subData.description.trim() !== '');
@@ -596,7 +597,7 @@ export default function HomeworkPublisherManager() {
           <div className="text-center py-10 text-slate-500 font-bold">Loading homework data from Supabase...</div>
         ) : historyFilterClass !== 'All' ? (
           /* VIEW 1: Consolidated Subject-wise View */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
             {Object.keys(subjectWiseConsolidatedData).map((subject) => {
               const entriesList = subjectWiseConsolidatedData[subject];
               const { dark } = getSubjectStyles(subject);
@@ -673,7 +674,8 @@ export default function HomeworkPublisherManager() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                  {/* Mobile par grid-cols-1 (ek ke niche ek), aur laptop par lg:grid-cols-2 xl:grid-cols-3 */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
                     {Object.entries(item.entries).map(([sub, work]) => {
                       const { dark } = getSubjectStyles(sub);
                       
