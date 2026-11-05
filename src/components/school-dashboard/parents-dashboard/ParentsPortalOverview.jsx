@@ -294,7 +294,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   return (
     <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-4 sm:p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans overflow-x-hidden">
       
-      {/* Academy Header Banner */}
+      {/* Academy Header Banner - Mobile ke liye flex-col aur Laptop ke liye md:flex-row */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-800 text-white border border-blue-500 rounded-2xl p-5 sm:p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transform transition-all duration-300">
         <div className="space-y-2 text-center md:text-left w-full">
           <span className="bg-white/25 backdrop-blur-md text-white border border-white/30 text-[10px] sm:text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-inner inline-block">
@@ -308,7 +308,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           </p>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-left space-y-1.5 w-full md:min-w-[250px] shadow-lg">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-left space-y-1.5 w-full md:min-w-[280px] shadow-lg">
           <div className="text-[12px] text-sky-100 font-bold flex justify-between gap-2">
             <span>Class:</span> <span className="text-white font-extrabold">{studentInfo.class}</span>
           </div>
@@ -316,7 +316,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             <span>Roll No:</span> <span className="text-white font-extrabold">{studentInfo.rollNo}</span>
           </div>
           <div className="text-[12px] text-sky-100 font-bold flex justify-between gap-2">
-            <span>Admission ID:</span> <span className="text-white font-extrabold truncate max-w-[140px]">{studentInfo.admissionNo}</span>
+            <span>Admission ID:</span> <span className="text-white font-extrabold truncate max-w-[160px]">{studentInfo.admissionNo}</span>
           </div>
           <div className="text-[12px] text-sky-100 font-bold flex justify-between gap-2 pt-1 border-t border-white/10 mt-1">
             <span>Mobile:</span> <span className="text-white font-extrabold">{studentInfo.mobile}</span>
