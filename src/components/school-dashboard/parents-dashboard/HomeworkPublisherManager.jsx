@@ -437,8 +437,8 @@ export default function HomeworkPublisherManager() {
             </button>
           </div>
 
-          {/* Mobile par ek ke niche ek (grid-cols-1), aur laptop par md:grid-cols-2 lg:grid-cols-3 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Mobile par grid-cols-1 (ek row me ek), aur laptop par sm:grid-cols-2 lg:grid-cols-3 (do-do ya teen-teen) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {currentSubjects.map((subject) => {
               const subData = homeworkInputs[subject] || {};
               const isFilled = (subData.title && subData.title.trim() !== '') || (subData.description && subData.description.trim() !== '');
