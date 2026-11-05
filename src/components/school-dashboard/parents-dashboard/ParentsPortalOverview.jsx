@@ -292,51 +292,51 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   };
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans">
+    <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-4 sm:p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans overflow-x-hidden">
       
       {/* Academy Header Banner */}
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-800 text-white border border-blue-500 rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transform transition-all duration-300">
-        <div className="space-y-2 text-center md:text-left">
-          <span className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-inner">
+      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-800 text-white border border-blue-500 rounded-2xl p-5 sm:p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transform transition-all duration-300">
+        <div className="space-y-2 text-center md:text-left w-full">
+          <span className="bg-white/25 backdrop-blur-md text-white border border-white/30 text-[10px] sm:text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-inner inline-block">
             Parents Portal Overview
           </span>
-          <h1 className="text-[22px] md:text-[28px] font-black tracking-wide pt-1 drop-shadow-md">
+          <h1 className="text-[20px] sm:text-[24px] md:text-[28px] font-black tracking-wide pt-1 drop-shadow-md break-words">
             BLUE HEAVEN KIDS ACADEMY
           </h1>
-          <p className="text-[13px] text-sky-100 font-medium">
+          <p className="text-[12px] sm:text-[13px] text-sky-100 font-medium">
             Welcome back, <strong className="text-white underline decoration-sky-300">{studentInfo.fatherName || 'Parent'}</strong> (Parent of <span className="text-yellow-300 font-bold">{studentInfo.name || 'Student'}</span>)
           </p>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-left space-y-1.5 min-w-[250px] shadow-lg">
-          <div className="text-[12px] text-sky-100 font-bold flex justify-between">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-left space-y-1.5 w-full md:min-w-[250px] shadow-lg">
+          <div className="text-[12px] text-sky-100 font-bold flex justify-between gap-2">
             <span>Class:</span> <span className="text-white font-extrabold">{studentInfo.class}</span>
           </div>
-          <div className="text-[12px] text-sky-100 font-bold flex justify-between">
+          <div className="text-[12px] text-sky-100 font-bold flex justify-between gap-2">
             <span>Roll No:</span> <span className="text-white font-extrabold">{studentInfo.rollNo}</span>
           </div>
-          <div className="text-[12px] text-sky-100 font-bold flex justify-between">
+          <div className="text-[12px] text-sky-100 font-bold flex justify-between gap-2">
             <span>Admission ID:</span> <span className="text-white font-extrabold truncate max-w-[140px]">{studentInfo.admissionNo}</span>
           </div>
-          <div className="text-[12px] text-sky-100 font-bold flex justify-between pt-1 border-t border-white/10 mt-1">
+          <div className="text-[12px] text-sky-100 font-bold flex justify-between gap-2 pt-1 border-t border-white/10 mt-1">
             <span>Mobile:</span> <span className="text-white font-extrabold">{studentInfo.mobile}</span>
           </div>
         </div>
       </div>
 
       {/* Quick Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-2xl p-5 shadow-lg border border-emerald-400 flex flex-col justify-between">
           <div className="text-[11px] uppercase tracking-wider font-extrabold text-emerald-100">Attendance Rate</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.attendanceRate}</div>
-          <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-emerald-50 whitespace-nowrap">
+          <div className="text-[22px] sm:text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.attendanceRate}</div>
+          <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-emerald-50">
             Presents: {studentInfo.totalPresents} | Absents: {studentInfo.totalAbsents} | Late: {studentInfo.totalLates}
           </div>
         </div>
 
         <div className="bg-gradient-to-br from-blue-500 to-sky-700 text-white rounded-2xl p-5 shadow-lg border border-blue-400 flex flex-col justify-between">
           <div className="text-[11px] uppercase tracking-wider font-extrabold text-blue-100">Total Fee Paid</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.paidFee}</div>
+          <div className="text-[22px] sm:text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.paidFee}</div>
           <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-blue-50">
             Annual Fee: {studentInfo.annualFee}
           </div>
@@ -344,7 +344,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         <div className="bg-gradient-to-br from-rose-500 to-red-700 text-white rounded-2xl p-5 shadow-lg border border-rose-400 flex flex-col justify-between">
           <div className="text-[11px] uppercase tracking-wider font-extrabold text-rose-100">Pending Dues</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.pendingFee}</div>
+          <div className="text-[22px] sm:text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.pendingFee}</div>
           <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-rose-50">
             Current Session
           </div>
@@ -352,7 +352,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl p-5 shadow-lg border border-amber-400 flex flex-col justify-between">
           <div className="text-[11px] uppercase tracking-wider font-extrabold text-amber-100">Academic Session</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.academicSession}</div>
+          <div className="text-[22px] sm:text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.academicSession}</div>
           <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-amber-50">
             Active Status
           </div>
@@ -360,19 +360,19 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
       </div>
 
       {/* Navigation Tabs (Added Online Test / Quiz) */}
-      <div className="flex flex-wrap gap-3 border-b-2 border-slate-200 pb-4">
+      <div className="flex flex-wrap gap-2 sm:gap-3 border-b-2 border-slate-200 pb-4 overflow-x-auto">
         {[
           { key: 'overview', label: '📊 Dashboard Overview' },
           { key: 'attendance', label: '📅 Student Attendance & Remarks' },
           { key: 'homework', label: '📚 Daily Homework' },
           { key: 'notices', label: '📢 School Notices' },
           { key: 'fees', label: '💳 Fee Records' },
-          { key: 'quiz', label: '📝 Online Test / Quiz' }, // 👈 Added Tab
+          { key: 'quiz', label: '📝 Online Test / Quiz' },
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`text-[13px] font-extrabold px-5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer shadow-md ${
+            className={`text-[12px] sm:text-[13px] font-extrabold px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer shadow-md whitespace-nowrap ${
               activeTab === tab.key
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-b-4 border-blue-900'
                 : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'
@@ -392,10 +392,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         <>
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-                <h2 className="text-[16px] font-black text-blue-900 flex items-center justify-between">
-                  <span>Class Homework Tasks ({studentInfo.class})</span>
-                  <span className="text-[11px] bg-blue-100 text-blue-800 px-2.5 py-1 rounded-md font-bold">Live Data</span>
+              <div className="bg-white border border-slate-300 rounded-2xl p-4 sm:p-6 shadow-md space-y-4">
+                <h2 className="text-[15px] sm:text-[16px] font-black text-blue-900 flex items-center justify-between gap-2">
+                  <span className="truncate">Class Homework Tasks ({studentInfo.class})</span>
+                  <span className="text-[10px] sm:text-[11px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md font-bold whitespace-nowrap">Live Data</span>
                 </h2>
                 <div className="space-y-3">
                   {rawHomeworkList.length > 0 ? (
@@ -404,11 +404,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                       const { dark } = getSubjectStyles(subjectName);
                       return (
                         <div key={hw.id} className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                          <div className={`${dark} px-3 py-1.5 text-[11px] font-black flex justify-between items-center`}>
-                            <span>📘 {subjectName}</span>
-                            <span>{hw.assign_date}</span>
+                          <div className={`${dark} px-3 py-1.5 text-[11px] font-black flex justify-between items-center gap-2`}>
+                            <span className="truncate">📘 {subjectName}</span>
+                            <span className="whitespace-nowrap">{hw.assign_date}</span>
                           </div>
-                          <div className="p-3 text-[12px] text-slate-700 font-medium">
+                          <div className="p-3 text-[12px] text-slate-700 font-medium break-words">
                             {hw.chapter_title ? `${hw.chapter_title}: ` : ''}{hw.instructions}
                           </div>
                         </div>
@@ -420,20 +420,20 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 </div>
               </div>
 
-              <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-                <h2 className="text-[16px] font-black text-blue-900 flex items-center justify-between">
+              <div className="bg-white border border-slate-300 rounded-2xl p-4 sm:p-6 shadow-md space-y-4">
+                <h2 className="text-[15px] sm:text-[16px] font-black text-blue-900 flex items-center justify-between gap-2">
                   <span>Latest Notices & Circulars</span>
-                  <span className="text-[11px] bg-amber-100 text-amber-800 px-2.5 py-1 rounded-md font-bold">Important</span>
+                  <span className="text-[10px] sm:text-[11px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md font-bold whitespace-nowrap">Important</span>
                 </h2>
                 <div className="space-y-3">
                   {noticesList.length > 0 ? (
                     noticesList.slice(0, 3).map((n) => (
                       <div key={n.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1 shadow-sm">
-                        <div className="flex justify-between items-center text-[12px]">
-                          <span className="font-extrabold text-slate-900">{n.title}</span>
-                          <span className="text-slate-500 text-[11px] font-bold">{n.date}</span>
+                        <div className="flex justify-between items-center text-[12px] gap-2">
+                          <span className="font-extrabold text-slate-900 truncate">{n.title}</span>
+                          <span className="text-slate-500 text-[11px] font-bold whitespace-nowrap">{n.date}</span>
                         </div>
-                        {n.description && <p className="text-[12px] text-slate-700 font-medium line-clamp-1">{n.description}</p>}
+                        {n.description && <p className="text-[12px] text-slate-700 font-medium line-clamp-1 break-words">{n.description}</p>}
                       </div>
                     ))
                   ) : (
@@ -445,25 +445,25 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           )}
 
           {activeTab === 'attendance' && (
-            <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
+            <div className="bg-white border border-slate-300 rounded-2xl p-4 sm:p-6 shadow-md space-y-4">
               {/* Attendance Table Content */}
             </div>
           )}
 
           {activeTab === 'homework' && (
-            <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+            <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-6">
               {/* Homework Content */}
             </div>
           )}
 
           {activeTab === 'notices' && (
-            <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
+            <div className="bg-white border border-slate-300 rounded-2xl p-4 sm:p-6 shadow-md space-y-4">
               {/* Notices Content */}
             </div>
           )}
 
           {activeTab === 'fees' && (
-            <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
+            <div className="bg-white border border-slate-300 rounded-2xl p-4 sm:p-6 shadow-md space-y-4">
               {/* Fees Content */}
             </div>
           )}
