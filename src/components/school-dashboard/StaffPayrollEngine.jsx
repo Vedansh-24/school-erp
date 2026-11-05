@@ -513,53 +513,51 @@ export default function StaffPayrollEngine() {
                 </div>
               </div>
 
-              {/* Mobile view */}
+              {/* Mobile view (Stacked cleanly to prevent overlap) */}
               <div className="block md:hidden space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                      Select Class
-                    </label>
-                    <select
-                      value={currentClass}
-                      onChange={(e) => setCurrentClass(e.target.value)}
-                      className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
-                    >
-                      <option value="" className="text-slate-400">-- Choose Class --</option>
-                      <option value="PP.3+">PP.3+</option>
-                      <option value="PP.4+">PP.4+</option>
-                      <option value="PP.5+">PP.5+</option>
-                      <option value="First">First</option>
-                      <option value="Second">Second</option>
-                      <option value="Third">Third</option>
-                      <option value="Fourth">Fourth</option>
-                      <option value="Fifth">Fifth</option>
-                      <option value="Sixth">Sixth</option>
-                      <option value="Seventh">Seventh</option>
-                      <option value="Eighth">Eighth</option>
-                      <option value="Ninth">Ninth</option>
-                      <option value="Tenth">Tenth</option>
-                      <option value="Eleventh(Arts)">Eleventh(Arts)</option>
-                      <option value="Eleventh(Commerce)">Eleventh(Commerce)</option>
-                      <option value="Eleventh(Science)">Eleventh(Science)</option>
-                      <option value="Twelth(Arts)">Twelth(Arts)</option>
-                      <option value="Twelth (Commerce)">Twelth (Commerce)</option>
-                      <option value="Twelth (Science)">Twelth (Science)</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-800 mb-1">
+                    Select Class
+                  </label>
+                  <select
+                    value={currentClass}
+                    onChange={(e) => setCurrentClass(e.target.value)}
+                    className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
+                  >
+                    <option value="" className="text-slate-400">-- Choose Class --</option>
+                    <option value="PP.3+">PP.3+</option>
+                    <option value="PP.4+">PP.4+</option>
+                    <option value="PP.5+">PP.5+</option>
+                    <option value="First">First</option>
+                    <option value="Second">Second</option>
+                    <option value="Third">Third</option>
+                    <option value="Fourth">Fourth</option>
+                    <option value="Fifth">Fifth</option>
+                    <option value="Sixth">Sixth</option>
+                    <option value="Seventh">Seventh</option>
+                    <option value="Eighth">Eighth</option>
+                    <option value="Ninth">Ninth</option>
+                    <option value="Tenth">Tenth</option>
+                    <option value="Eleventh(Arts)">Eleventh(Arts)</option>
+                    <option value="Eleventh(Commerce)">Eleventh(Commerce)</option>
+                    <option value="Eleventh(Science)">Eleventh(Science)</option>
+                    <option value="Twelth(Arts)">Twelth(Arts)</option>
+                    <option value="Twelth (Commerce)">Twelth (Commerce)</option>
+                    <option value="Twelth (Science)">Twelth (Science)</option>
+                  </select>
+                </div>
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                      Allotted Subject
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Mathematics, Hindi, Science"
-                      value={currentSubject}
-                      onChange={(e) => setCurrentSubject(e.target.value)}
-                      className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-800 mb-1">
+                    Allotted Subject
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Mathematics, Hindi, Science"
+                    value={currentSubject}
+                    onChange={(e) => setCurrentSubject(e.target.value)}
+                    className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
+                  />
                 </div>
 
                 <div>
@@ -638,51 +636,49 @@ export default function StaffPayrollEngine() {
 
                   {/* Mobile view */}
                   <div className="block md:hidden space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                          Allowed Classes
-                        </label>
-                        <select
-                          value={item.class}
-                          onChange={(e) => handleUpdateMappingField(item.id, 'class', e.target.value)}
-                          className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
-                        >
-                          <option value="" className="text-slate-400">-- Choose Class --</option>
-                          <option value="PP.3+">PP.3+</option>
-                          <option value="PP.4+">PP.4+</option>
-                          <option value="PP.5+">PP.5+</option>
-                          <option value="First">First</option>
-                          <option value="Second">Second</option>
-                          <option value="Third">Third</option>
-                          <option value="Fourth">Fourth</option>
-                          <option value="Fifth">Fifth</option>
-                          <option value="Sixth">Sixth</option>
-                          <option value="Seventh">Seventh</option>
-                          <option value="Eighth">Eighth</option>
-                          <option value="Ninth">Ninth</option>
-                          <option value="Tenth">Tenth</option>
-                          <option value="Eleventh(Arts)">Eleventh(Arts)</option>
-                          <option value="Eleventh(Commerce)">Eleventh(Commerce)</option>
-                          <option value="Eleventh(Science)">Eleventh(Science)</option>
-                          <option value="Twelth(Arts)">Twelth(Arts)</option>
-                          <option value="Twelth (Commerce)">Twelth (Commerce)</option>
-                          <option value="Twelth (Science)">Twelth (Science)</option>
-                        </select>
-                      </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-800 mb-1">
+                        Allowed Classes
+                      </label>
+                      <select
+                        value={item.class}
+                        onChange={(e) => handleUpdateMappingField(item.id, 'class', e.target.value)}
+                        className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm cursor-pointer font-bold"
+                      >
+                        <option value="" className="text-slate-400">-- Choose Class --</option>
+                        <option value="PP.3+">PP.3+</option>
+                        <option value="PP.4+">PP.4+</option>
+                        <option value="PP.5+">PP.5+</option>
+                        <option value="First">First</option>
+                        <option value="Second">Second</option>
+                        <option value="Third">Third</option>
+                        <option value="Fourth">Fourth</option>
+                        <option value="Fifth">Fifth</option>
+                        <option value="Sixth">Sixth</option>
+                        <option value="Seventh">Seventh</option>
+                        <option value="Eighth">Eighth</option>
+                        <option value="Ninth">Ninth</option>
+                        <option value="Tenth">Tenth</option>
+                        <option value="Eleventh(Arts)">Eleventh(Arts)</option>
+                        <option value="Eleventh(Commerce)">Eleventh(Commerce)</option>
+                        <option value="Eleventh(Science)">Eleventh(Science)</option>
+                        <option value="Twelth(Arts)">Twelth(Arts)</option>
+                        <option value="Twelth (Commerce)">Twelth (Commerce)</option>
+                        <option value="Twelth (Science)">Twelth (Science)</option>
+                      </select>
+                    </div>
 
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-800 mb-1">
-                          Allowed Subjects
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Mathematics, Hindi, Science"
-                          value={item.subject}
-                          onChange={(e) => handleUpdateMappingField(item.id, 'subject', e.target.value)}
-                          className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-800 mb-1">
+                        Allowed Subjects
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Mathematics, Hindi, Science"
+                        value={item.subject}
+                        onChange={(e) => handleUpdateMappingField(item.id, 'subject', e.target.value)}
+                        className="w-full bg-white text-slate-900 text-[13px] px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:border-sky-600 transition shadow-sm placeholder:text-slate-400 font-medium"
+                      />
                     </div>
 
                     {/* Delete button and Save staff button side-by-side right beneath Allowed Classes & Subjects */}
