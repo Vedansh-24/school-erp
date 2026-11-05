@@ -456,11 +456,9 @@ export default function AttendanceHolidays() {
           School Working Days & Holiday Management
         </h2>
 
-        {/* Responsive layout: Mobile par vertical stack/rows, Desktop (md+) par 3-column grid */}
-        <form onSubmit={handleAddHoliday} className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 md:items-end">
-          
-          {/* Row 1 / Col 1: Vacation / Holiday Reason */}
-          <div className="md:col-span-3">
+        <form onSubmit={handleAddHoliday} className="space-y-4">
+          {/* Row 1: Vacation / Holiday Reason */}
+          <div>
             <label className="block text-[12px] font-bold text-slate-700 mb-1">Vacation / Holiday Reason</label>
             <input 
               type="text"
@@ -471,8 +469,8 @@ export default function AttendanceHolidays() {
             />
           </div>
 
-          {/* Row 2 / Col 2 (Dates): From Date & To Date (2 columns across mobile and desktop) */}
-          <div className="grid grid-cols-2 gap-3 md:contents">
+          {/* Row 2: From Date & To Date (2 columns on mobile & laptop) */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[12px] font-bold text-slate-700 mb-1">From Date</label>
               <input 
@@ -493,8 +491,8 @@ export default function AttendanceHolidays() {
             </div>
           </div>
 
-          {/* Row 3 / Col 3: Add Button */}
-          <div className="md:col-span-3">
+          {/* Row 3: Add Button */}
+          <div>
             <button 
               type="submit"
               className="w-full bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[3px] transition-all cursor-pointer"
