@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-// 💡 Professional Standard Homework Templates
+// ðŸ’¡ Professional Standard Homework Templates
 const getSubjectTemplates = (subject) => {
   const subLower = (subject || '').toLowerCase();
   if (subLower.includes('english')) {
@@ -18,9 +18,9 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('hindi')) {
     return [
-      'पाठ को ध्यानपूर्वक पढ़ें और कठिन शब्दों के अर्थ अपनी उत्तर-पुस्तिका में लिखें।',
-      'अभ्यास के प्रश्न-उत्तर (प्रश्न 1 से 5) को फेयर कॉपी में सुंदर लेख में हल करें।',
-      'दिए गए ग्यांश/व्याकरण कार्य को पूरा करें और याद करें।'
+      'à¤ªà¤¾à¤  à¤•à¥‹ à¤§à¥à¤¯à¤¾à¤¨à¤ªà¥‚à¤°à¥à¤µà¤• à¤ªà¥à¥‡à¤‚ à¤”à¤° à¤•à¤ à¤¿à¤¨ à¤¶à¤¬à¥à¤¦à¥‹à¤‚ à¤•à¥‡ à¤…à¤°à¥à¤¥ à¤…à¤ªà¤¨à¥€ à¤‰à¤¤à¥à¤¤à¤°-à¤ªà¥à¤¸à¥à¤¤à¤¿à¤•à¤¾ à¤®à¥‡à¤‚ à¤²à¤¿à¤–à¥‡à¤‚à¥¤',
+      'à¤…à¤­à¥à¤¯à¤¾à¤¸ à¤•à¥‡ à¤ªà¥à¤°à¤¶à¥à¤¨-à¤‰à¤¤à¥à¤¤à¤° (à¤ªà¥à¤°à¤¶à¥à¤¨ 1 à¤¸à¥‡ 5) à¤•à¥‹ à¤«à¥‡à¤¯à¤° à¤•à¥‰à¤ªà¥€ à¤®à¥‡à¤‚ à¤¸à¥à¤‚à¤¦à¤° à¤²à¥‡à¤– à¤®à¥‡à¤‚ à¤¹à¤² à¤•à¤°à¥‡à¤‚à¥¤',
+      'à¤¦à¤¿à¤ à¤—à¤ à¤—à¥à¤¯à¤¾à¤‚à¤¶/à¤µà¥à¤¯à¤¾à¤•à¤°à¤£ à¤•à¤¾à¤°à¥à¤¯ à¤•à¥‹ à¤ªà¥‚à¤°à¤¾ à¤•à¤°à¥‡à¤‚ à¤”à¤° à¤¯à¤¾à¤¦ à¤•à¤°à¥‡à¤‚à¥¤'
     ];
   } else if (subLower.includes('math') || subLower.includes('ganit') || subLower.includes('mathematics')) {
     return [
@@ -49,9 +49,9 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('sanskrit')) {
     return [
-      'पाठ का हिंदी अनुवाद पढ़ें और शब्द-ार्थ अपनी उत्तर-पुस्तिका में लिखें।',
-      'संस्कृत व्याकरण (शब्द रूप/धातु रूप) को लिखकर अभ्यास करें।',
-      'अभ्यास कार्य के सभी प्रश्न-उत्तर पूर्ण करें।'
+      'à¤ªà¤¾à¤  à¤•à¤¾ à¤¹à¤¿à¤‚à¤¦à¥€ à¤…à¤¨à¥à¤µà¤¾à¤¦ à¤ªà¥à¥‡à¤‚ à¤”à¤° à¤¶à¤¬à¥à¤¦-à¤¾à¤°à¥à¤¥ à¤…à¤ªà¤¨à¥€ à¤‰à¤¤à¥à¤¤à¤°-à¤ªà¥à¤¸à¥à¤¤à¤¿à¤•à¤¾ à¤®à¥‡à¤‚ à¤²à¤¿à¤–à¥‡à¤‚à¥¤',
+      'à¤¸à¤‚à¤¸à¥à¤•à¥ƒà¤¤ à¤µà¥à¤¯à¤¾à¤•à¤°à¤£ (à¤¶à¤¬à¥à¤¦ à¤°à¥‚à¤ª/à¤§à¤¾à¤¤à¥ à¤°à¥‚à¤ª) à¤•à¥‹ à¤²à¤¿à¤–à¤•à¤° à¤…à¤­à¥à¤¯à¤¾à¤¸ à¤•à¤°à¥‡à¤‚à¥¤',
+      'à¤…à¤­à¥à¤¯à¤¾à¤¸ à¤•à¤¾à¤°à¥à¤¯ à¤•à¥‡ à¤¸à¤­à¥€ à¤ªà¥à¤°à¤¶à¥à¤¨-à¤‰à¤¤à¥à¤¤à¤° à¤ªà¥‚à¤°à¥à¤£ à¤•à¤°à¥‡à¤‚à¥¤'
     ];
   } else if (subLower.includes('computer') || subLower.includes('gk') || subLower.includes('g.k.')) {
     return [
@@ -68,7 +68,7 @@ const getSubjectTemplates = (subject) => {
   ];
 };
 
-// 🎨 Subject 3D Color Gradients & Styles
+// ðŸŽ¨ Subject 3D Color Gradients & Styles
 const getSubjectStyles = (subject) => {
   const subLower = (subject || '').toLowerCase();
   if (subLower.includes('english')) {
@@ -92,7 +92,7 @@ const getSubjectStyles = (subject) => {
   return { light: 'bg-slate-100 text-slate-800 border-slate-300', dark: 'bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 text-white border-t border-slate-300 border-b-[4px] border-slate-950 shadow-md' };
 };
 
-// 🛠️ Helper to normalize subject names for reliable matching
+// ðŸ› ï¸ Helper to normalize subject names for reliable matching
 const normalizeSubject = (sub) => {
   if (!sub) return '';
   return sub.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -112,7 +112,7 @@ export default function HomeworkPublisherManager() {
   const [historyFilterClass, setHistoryFilterClass] = useState('All');
   const [historyFilterDate, setHistoryFilterDate] = useState('');
 
-  // 🔄 Fetch Class Subjects dynamically
+  // ðŸ”„ Fetch Class Subjects dynamically
   const fetchClassSubjects = async () => {
     const { data, error } = await supabase.from('class_subjects').select('*');
     if (error) {
@@ -137,7 +137,7 @@ export default function HomeworkPublisherManager() {
     }
   };
 
-  // 🔄 Robust Client-Side Filtered Supabase Homework Fetching (Fixed order by id)
+  // ðŸ”„ Robust Client-Side Filtered Supabase Homework Fetching (Fixed order by id)
   const fetchHomeworkHistory = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -190,14 +190,14 @@ export default function HomeworkPublisherManager() {
     }));
   };
 
-  // 🚀 Single Subject Publish
+  // ðŸš€ Single Subject Publish
   const handlePublishSingleSubject = async (subject) => {
     const subData = homeworkInputs[subject] || {};
     const title = subData.title?.trim() || '';
     const description = subData.description?.trim() || '';
 
     if (!title && !description) {
-      alert(`कृपया ${subject} का Title या Instructions दर्ज करें!`);
+      alert(`à¤•à¥ƒà¤ªà¤¯à¤¾ ${subject} à¤•à¤¾ Title à¤¯à¤¾ Instructions à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚!`);
       return;
     }
 
@@ -216,7 +216,7 @@ export default function HomeworkPublisherManager() {
     if (error) {
       alert('Error publishing homework: ' + error.message);
     } else {
-      alert(`Class ${selectedClass} - ${subject} का होमवर्क सफलतापूर्वक पब्लिश हो गया!`);
+      alert(`Class ${selectedClass} - ${subject} à¤•à¤¾ à¤¹à¥‹à¤®à¤µà¤°à¥à¤• à¤¸à¤«à¤²à¤¤à¤¾à¤ªà¥‚à¤°à¥à¤µà¤• à¤ªà¤¬à¥à¤²à¤¿à¤¶ à¤¹à¥‹ à¤—à¤¯à¤¾!`);
       setHomeworkInputs(prev => ({
         ...prev,
         [subject]: { title: '', description: '' }
@@ -225,7 +225,7 @@ export default function HomeworkPublisherManager() {
     }
   };
 
-  // 💾 Save & Publish All Subjects
+  // ðŸ’¾ Save & Publish All Subjects
   const handlePublishAllHomework = async (e) => {
     if (e) e.preventDefault();
 
@@ -249,7 +249,7 @@ export default function HomeworkPublisherManager() {
     });
 
     if (insertRows.length === 0) {
-      alert('कृपया कम से कम एक सब्जेक्ट का Title या Instructions लिखें!');
+      alert('à¤•à¥ƒà¤ªà¤¯à¤¾ à¤•à¤® à¤¸à¥‡ à¤•à¤® à¤à¤• à¤¸à¤¬à¥à¤œà¥‡à¤•à¥à¤Ÿ à¤•à¤¾ Title à¤¯à¤¾ Instructions à¤²à¤¿à¤–à¥‡à¤‚!');
       return;
     }
 
@@ -258,15 +258,15 @@ export default function HomeworkPublisherManager() {
     if (error) {
       alert('Error publishing all homework: ' + error.message);
     } else {
-      alert(`Class ${selectedClass} का सभी विषयों का होमवर्क पब्लिश हो गया!`);
+      alert(`Class ${selectedClass} à¤•à¤¾ à¤¸à¤­à¥€ à¤µà¤¿à¤·à¤¯à¥‹à¤‚ à¤•à¤¾ à¤¹à¥‹à¤®à¤µà¤°à¥à¤• à¤ªà¤¬à¥à¤²à¤¿à¤¶ à¤¹à¥‹ à¤—à¤¯à¤¾!`);
       setHomeworkInputs({});
       fetchHomeworkHistory();
     }
   };
 
-  // 🗑️ Delete Homework Record
+  // ðŸ—‘ï¸ Delete Homework Record
   const handleDeleteHistory = async (id) => {
-    if (confirm('क्या आप इस होमवर्क रिकॉर्ड को डिलीट करना चाहते हैं?')) {
+    if (confirm('à¤•à¥à¤¯à¤¾ à¤†à¤ª à¤‡à¤¸ à¤¹à¥‹à¤®à¤µà¤°à¥à¤• à¤°à¤¿à¤•à¥‰à¤°à¥à¤¡ à¤•à¥‹ à¤¡à¤¿à¤²à¥€à¤Ÿ à¤•à¤°à¤¨à¤¾ à¤šà¤¾à¤¹à¤¤à¥‡ à¤¹à¥ˆà¤‚?')) {
       const { error } = await supabase.from('daily_homework').delete().eq('id', id);
       if (error) {
         alert('Error deleting record: ' + error.message);
@@ -374,10 +374,10 @@ export default function HomeworkPublisherManager() {
         <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-indigo-900 p-6 rounded-2xl shadow-lg text-white mb-6 border border-indigo-400/30 flex items-center justify-between flex-wrap gap-4">
           <div>
             <h2 className="text-2xl md:text-3xl font-black tracking-wide text-white flex items-center gap-2">
-              <span>📝</span> Publish Daily Homework
+              <span>ðŸ“</span> Publish Daily Homework
             </h2>
             <p className="text-xs sm:text-sm font-semibold text-indigo-100/90 mt-1">
-              प्रत्येक विषय के लिए Chapter/Title एवं Professional Instructions दर्ज करें।
+              à¤ªà¥à¤°à¤¤à¥à¤¯à¥‡à¤• à¤µà¤¿à¤·à¤¯ à¤•à¥‡ à¤²à¤¿à¤ Chapter/Title à¤à¤µà¤‚ Professional Instructions à¤¦à¤°à¥à¤œ à¤•à¤°à¥‡à¤‚à¥¤
             </p>
           </div>
 
@@ -433,11 +433,10 @@ export default function HomeworkPublisherManager() {
               onClick={() => setHomeworkInputs({})}
               className="bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600 hover:from-amber-300 hover:to-orange-600 text-slate-950 font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-t border-amber-200 border-b-[4px] border-amber-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer"
             >
-              <span>🔄</span> Clear All Fields
+              <span>ðŸ”„</span> Clear All Fields
             </button>
           </div>
 
-          {/* Mobile par ek ke niche ek (grid-cols-1), aur laptop par md:grid-cols-2 lg:grid-cols-3 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {currentSubjects.map((subject) => {
               const subData = homeworkInputs[subject] || {};
@@ -448,10 +447,10 @@ export default function HomeworkPublisherManager() {
               return (
                 <div key={subject} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
                   <div className={`${dark} font-black text-base px-4 py-3 flex items-center justify-between`}>
-                    <span className="flex items-center gap-2">📚 {subject}</span>
+                    <span className="flex items-center gap-2">ðŸ“š {subject}</span>
                     {isFilled && (
                       <span className="text-xs bg-white/25 text-white border border-white/30 px-2.5 py-0.5 rounded-full font-bold">
-                        Filled ✓
+                        Filled âœ“
                       </span>
                     )}
                   </div>
@@ -459,7 +458,7 @@ export default function HomeworkPublisherManager() {
                   <div className="p-4 space-y-4 flex-1">
                     <div>
                       <label className="text-xs font-black uppercase text-slate-500 block mb-1.5">
-                        📌 Title / Chapter:
+                        ðŸ“Œ Title / Chapter:
                       </label>
                       <input
                         type="text"
@@ -472,7 +471,7 @@ export default function HomeworkPublisherManager() {
 
                     <div>
                       <label className="text-xs font-black uppercase text-indigo-600 block mb-1">
-                        💡 Quick Professional Templates:
+                        ðŸ’¡ Quick Professional Templates:
                       </label>
                       <select
                         onChange={(e) => {
@@ -492,7 +491,7 @@ export default function HomeworkPublisherManager() {
 
                     <div>
                       <label className="text-xs font-black uppercase text-slate-500 block mb-1.5">
-                        📝 Instructions / Details (Editable):
+                        ðŸ“ Instructions / Details (Editable):
                       </label>
                       <textarea
                         rows={3}
@@ -511,7 +510,7 @@ export default function HomeworkPublisherManager() {
                       onClick={() => handlePublishSingleSubject(subject)}
                       className={`${dark} text-xs uppercase tracking-wider font-black px-4 py-2.5 rounded-xl active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-1.5 cursor-pointer`}
                     >
-                      <span>🚀</span> Publish {subject}
+                      <span>ðŸš€</span> Publish {subject}
                     </button>
                   </div>
                 </div>
@@ -526,7 +525,7 @@ export default function HomeworkPublisherManager() {
               onClick={handlePublishAllHomework}
               className="bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 hover:from-emerald-400 hover:to-teal-600 text-white font-black text-sm uppercase tracking-wider px-8 py-3.5 rounded-xl border-t border-emerald-300 border-b-[5px] border-emerald-950 shadow-lg active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all flex items-center gap-2 cursor-pointer"
             >
-              <span>💾</span> Save & Publish All Subjects
+              <span>ðŸ’¾</span> Save & Publish All Subjects
             </button>
           </div>
         </div>
@@ -537,10 +536,10 @@ export default function HomeworkPublisherManager() {
         <div className="flex items-center justify-between flex-wrap gap-4 pb-4 border-b-2 border-slate-100">
           <div>
             <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
-              <span>📜</span> Published Homework History
+              <span>ðŸ“œ</span> Published Homework History
             </h3>
             <p className="text-xs sm:text-sm text-slate-500 font-semibold mt-1">
-              क्लास फ़िल्टर करते ही उस क्लास के सभी विषयों का होमवर्क एक साथ दिखेगा।
+              à¤•à¥à¤²à¤¾à¤¸ à¤«à¤¼à¤¿à¤²à¥à¤Ÿà¤° à¤•à¤°à¤¤à¥‡ à¤¹à¥€ à¤‰à¤¸ à¤•à¥à¤²à¤¾à¤¸ à¤•à¥‡ à¤¸à¤­à¥€ à¤µà¤¿à¤·à¤¯à¥‹à¤‚ à¤•à¤¾ à¤¹à¥‹à¤®à¤µà¤°à¥à¤• à¤à¤• à¤¸à¤¾à¤¥ à¤¦à¤¿à¤–à¥‡à¤—à¤¾à¥¤
             </p>
           </div>
 
@@ -576,7 +575,7 @@ export default function HomeworkPublisherManager() {
                 onClick={handleResetFilters}
                 className="bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 hover:from-slate-500 hover:to-slate-700 text-white font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-t border-slate-400 border-b-[4px] border-slate-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer flex items-center gap-1.5"
               >
-                <span>❌</span> Reset Filters
+                <span>âŒ</span> Reset Filters
               </button>
             )}
           </div>
@@ -604,7 +603,7 @@ export default function HomeworkPublisherManager() {
               return (
                 <div key={subject} className="bg-slate-50 rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
                   <div className={`${dark} font-black text-base px-4 py-3 flex items-center justify-between`}>
-                    <span>📘 {subject}</span>
+                    <span>ðŸ“˜ {subject}</span>
                     <span className="bg-black/20 text-white text-xs px-2.5 py-1 rounded-full font-bold">
                       {entriesList.length} Task{entriesList.length !== 1 ? 's' : ''}
                     </span>
@@ -615,14 +614,14 @@ export default function HomeworkPublisherManager() {
                       entriesList.map((item, idx) => (
                         <div key={item.id || idx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 relative group">
                           <div className="flex items-center justify-between text-xs font-bold text-slate-500 border-b border-slate-100 pb-2 mb-2">
-                            <span>📅 Date: <strong className="text-slate-800 text-sm">{item.date}</strong></span>
+                            <span>ðŸ“… Date: <strong className="text-slate-800 text-sm">{item.date}</strong></span>
                             <span className="text-emerald-700 font-extrabold text-sm">Sub: {item.submissionDate}</span>
                           </div>
 
                           <div className="space-y-2">
                             {item.work.title && (
                               <div className="font-bold text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg text-sm">
-                                📌 {item.work.title}
+                                ðŸ“Œ {item.work.title}
                               </div>
                             )}
                             {item.work.description && (
@@ -638,7 +637,7 @@ export default function HomeworkPublisherManager() {
                               onClick={() => handleDeleteHistory(item.id)}
                               className="bg-gradient-to-r from-rose-500 via-red-600 to-rose-700 hover:from-rose-400 hover:to-red-600 text-white font-black text-[11px] uppercase tracking-wider px-3 py-1.5 rounded-lg border-t border-rose-300 border-b-[3px] border-rose-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] active:shadow-none transition-all cursor-pointer flex items-center gap-1"
                             >
-                              <span>🗑️</span> Delete Task
+                              <span>ðŸ—‘ï¸</span> Delete Task
                             </button>
                           </div>
                         </div>
@@ -680,21 +679,21 @@ export default function HomeworkPublisherManager() {
                       return (
                         <div key={sub} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
                           <div className={`${dark} px-3 py-2 flex justify-between items-center text-xs font-black`}>
-                            <span>📘 {sub}</span>
+                            <span>ðŸ“˜ {sub}</span>
                             {/* Card View Delete Button with Press Effect */}
                             <button
                               onClick={() => handleDeleteHistory(work.id)}
                               className="bg-rose-600 hover:bg-rose-500 text-white font-black text-[11px] px-2.5 py-1 rounded-lg border-t border-rose-300 border-b-[3px] border-rose-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] active:shadow-none transition-all cursor-pointer flex items-center gap-1"
                               title="Delete this subject task"
                             >
-                              <span>🗑️</span> Delete
+                              <span>ðŸ—‘ï¸</span> Delete
                             </button>
                           </div>
 
                           <div className="p-3 space-y-2">
                             {work.title && (
                               <div className="font-bold text-slate-900 bg-slate-100 px-2.5 py-1 rounded-lg text-sm">
-                                📌 {work.title}
+                                ðŸ“Œ {work.title}
                               </div>
                             )}
                             {work.description && (
@@ -711,7 +710,7 @@ export default function HomeworkPublisherManager() {
               ))
             ) : (
               <div className="text-center py-10 text-slate-500 italic text-base font-semibold bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300">
-                कोई होमवर्क हिस्ट्री रिकॉर्ड नहीं मिला। (Supabase table check karein ya naya homework publish karein)
+                à¤•à¥‹à¤ˆ à¤¹à¥‹à¤®à¤µà¤°à¥à¤• à¤¹à¤¿à¤¸à¥à¤Ÿà¥à¤°à¥€ à¤°à¤¿à¤•à¥‰à¤°à¥à¤¡ à¤¨à¤¹à¥€à¤‚ à¤®à¤¿à¤²à¤¾à¥¤ (Supabase table check karein ya naya homework publish karein)
               </div>
             )}
           </div>
