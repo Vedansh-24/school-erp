@@ -456,7 +456,8 @@ export default function AttendanceHolidays() {
           School Working Days & Holiday Management
         </h2>
 
-        <form onSubmit={handleAddHoliday} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <form onSubmit={handleAddHoliday} className="space-y-4">
+          {/* Row 1: Vacation / Holiday Reason */}
           <div>
             <label className="block text-[12px] font-bold text-slate-700 mb-1">Vacation / Holiday Reason</label>
             <input 
@@ -468,6 +469,7 @@ export default function AttendanceHolidays() {
             />
           </div>
 
+          {/* Row 2: From Date & To Date (2 columns on mobile & laptop) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[12px] font-bold text-slate-700 mb-1">From Date</label>
@@ -489,6 +491,7 @@ export default function AttendanceHolidays() {
             </div>
           </div>
 
+          {/* Row 3: Add Button */}
           <div>
             <button 
               type="submit"
