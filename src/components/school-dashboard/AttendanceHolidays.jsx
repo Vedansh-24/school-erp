@@ -279,7 +279,6 @@ export default function AttendanceHolidays() {
       const isAllSelected = selectEntity === 'All';
 
       if (isAllSelected) {
-        // Multi-Entity View (Class-wise or All Staff)
         let entities = [];
         if (isStudent) {
           entities = reportClassFilter === 'All' 
@@ -331,7 +330,6 @@ export default function AttendanceHolidays() {
         });
 
       } else {
-        // Single Entity View
         const attendanceMap = {};
         if (data) {
           data.forEach(item => {
@@ -450,15 +448,16 @@ export default function AttendanceHolidays() {
   });
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm space-y-6 text-slate-800 font-sans flex flex-col h-full">
+    <div className="w-full bg-[#F8FAFC] border border-slate-200 rounded-xl p-3 sm:p-5 md:p-8 shadow-sm space-y-6 text-slate-800 font-sans flex flex-col h-full">
       
       {/* 1. School Working Days & Holiday Management */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm space-y-5">
         <h2 className="text-[16px] font-bold text-sky-700 tracking-wide">
           School Working Days & Holiday Management
         </h2>
 
-        <form onSubmit={handleAddHoliday} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <form onSubmit={handleAddHoliday} className="space-y-4">
+          {/* Row 1: Vacation / Holiday Reason */}
           <div>
             <label className="block text-[12px] font-bold text-slate-700 mb-1">Vacation / Holiday Reason</label>
             <input 
@@ -470,6 +469,7 @@ export default function AttendanceHolidays() {
             />
           </div>
 
+          {/* Row 2: From Date & To Date (2 columns on mobile & laptop) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[12px] font-bold text-slate-700 mb-1">From Date</label>
@@ -491,6 +491,7 @@ export default function AttendanceHolidays() {
             </div>
           </div>
 
+          {/* Row 3: Add Button */}
           <div>
             <button 
               type="submit"
@@ -537,7 +538,7 @@ export default function AttendanceHolidays() {
       </div>
 
       {/* 2. Daily Attendance Control Room */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm space-y-5">
         <div className="flex flex-wrap justify-between items-center gap-2">
           <h2 className="text-[16px] font-bold text-sky-700 tracking-wide">
             Daily Attendance & School Holidays Control Room
@@ -644,7 +645,7 @@ export default function AttendanceHolidays() {
               <button 
                 onClick={handleSaveStudentAttendance}
                 disabled={isTodayOff}
-                className="bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-[12px] font-bold px-5 py-2.5 rounded-xl shadow-[0_3px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[2px] transition-all cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-[12px] font-bold px-5 py-2.5 rounded-xl shadow-[0_3px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[2px] transition-all cursor-pointer disabled:opacity-50"
               >
                 Save Student Attendance
               </button>
@@ -711,7 +712,7 @@ export default function AttendanceHolidays() {
               <button 
                 onClick={handleSaveStaffAttendance}
                 disabled={isTodayOff}
-                className="bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-[12px] font-bold px-5 py-2.5 rounded-xl shadow-[0_3px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[2px] transition-all cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-[12px] font-bold px-5 py-2.5 rounded-xl shadow-[0_3px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[2px] transition-all cursor-pointer disabled:opacity-50"
               >
                 Save Staff Attendance
               </button>
@@ -722,7 +723,7 @@ export default function AttendanceHolidays() {
       </div>
 
       {/* 3. Date Range Report Viewer */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-5">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm space-y-5">
         <h2 className="text-[16px] font-bold text-sky-700 tracking-wide">
           Date Range & Monthly Attendance Report Viewer
         </h2>
@@ -817,7 +818,7 @@ export default function AttendanceHolidays() {
           <button 
             onClick={handleShowReport}
             disabled={loading}
-            className="bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[3px] transition-all cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto bg-gradient-to-b from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold text-[13px] px-5 py-2.5 rounded-xl shadow-[0_4px_0_#0369a1] active:shadow-[0_1px_0_#0369a1] active:translate-y-[3px] transition-all cursor-pointer disabled:opacity-50"
           >
             {loading ? 'Fetching...' : 'Show Range Attendance Report'}
           </button>
