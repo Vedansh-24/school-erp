@@ -1,723 +1,475 @@
-// Filename: ParentsPortalOverview.jsx
+// Filename: StudentAttendanceAndRemarks.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { 
-  Loader2, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
-  Calendar, 
-  FileText, 
-  CheckCircle, 
-  Download, 
-  Eye, 
-  AlertCircle, 
-  Paperclip, 
-  X 
+  Calendar, CheckCircle2, XCircle, Clock, Search, 
+  MessageSquare, UserCheck, Filter, Loader2, Send 
 } from 'lucide-react';
-import OnlineTestQuiz from '@/components/school-dashboard/parents-dashboard/OnlineTestQuiz';
 
-// 🎨 Subject 3D Color Gradients & Styles
-const getSubjectStyles = (subject) => {
-  const subLower = (subject || '').toLowerCase();
-  if (subLower.includes('english')) {
-    return { light: 'bg-blue-100 text-blue-900 border-blue-300', dark: 'bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 text-white border-t border-blue-200 border-b-[4px] border-blue-950 shadow-md' };
-  } else if (subLower.includes('hindi')) {
-    return { light: 'bg-orange-100 text-orange-900 border-orange-300', dark: 'bg-gradient-to-r from-orange-500 via-amber-600 to-orange-700 text-white border-t border-orange-200 border-b-[4px] border-orange-950 shadow-md' };
-  } else if (subLower.includes('math') || subLower.includes('mathematics')) {
-    return { light: 'bg-rose-100 text-rose-900 border-rose-300', dark: 'bg-gradient-to-r from-rose-500 via-pink-600 to-red-700 text-white border-t border-rose-200 border-b-[4px] border-rose-950 shadow-md' };
-  } else if (subLower.includes('evs') || subLower.includes('science') || subLower.includes('biology')) {
-    return { light: 'bg-emerald-100 text-emerald-900 border-emerald-300', dark: 'bg-gradient-to-r from-emerald-500 via-teal-600 to-green-700 text-white border-t border-emerald-200 border-b-[4px] border-emerald-950 shadow-md' };
-  } else if (subLower.includes('physics') || subLower.includes('chemistry') || subLower.includes('computer')) {
-    return { light: 'bg-indigo-100 text-indigo-900 border-indigo-300', dark: 'bg-gradient-to-r from-indigo-500 via-purple-600 to-blue-700 text-white border-t border-indigo-200 border-b-[4px] border-indigo-950 shadow-md' };
-  } else if (subLower.includes('social') || subLower.includes('history')) {
-    return { light: 'bg-amber-100 text-amber-900 border-amber-300', dark: 'bg-gradient-to-r from-amber-500 via-orange-600 to-yellow-700 text-white border-t border-amber-200 border-b-[4px] border-amber-950 shadow-md' };
-  } else if (subLower.includes('sanskrit')) {
-    return { light: 'bg-purple-100 text-purple-900 border-purple-300', dark: 'bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 text-white border-t border-purple-200 border-b-[4px] border-purple-950 shadow-md' };
-  } else if (subLower.includes('g.k.') || subLower.includes('gk')) {
-    return { light: 'bg-lime-100 text-lime-900 border-lime-300', dark: 'bg-gradient-to-r from-lime-500 via-emerald-600 to-green-700 text-white border-t border-lime-200 border-b-[4px] border-lime-950 shadow-md' };
-  }
-  
-  return { light: 'bg-slate-100 text-slate-800 border-slate-300', dark: 'bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 text-white border-t border-slate-300 border-b-[4px] border-slate-950 shadow-md' };
-};
+export default function StudentAttendanceAndRemarks() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedClass, setSelectedClass] = useState('All');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [publishingStudentId, setPublishingStudentId] = useState(null);
+  const [students, setStudents] = useState([]);
 
-const getPriorityColor = (priority) => {
-  switch (priority) {
-    case 'High': return 'bg-red-100 text-red-700 border-red-200';
-    case 'Medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    default: return 'bg-green-100 text-green-700 border-green-200';
-  }
-};
+  // Editable Hindi Remark Templates
+  const remarkTemplates = {
+    Present: [
+      "प्रिय अभिभावक, [छात्र का नाम] आज स्कूल में उपस्थित है।",
+      "[छात्र का नाम] की आज की उपस्थिति दर्ज हो चुकी है और कक्षाएं सुचारू रूप से चल रही हैं।",
+      "आपका बच्चा आज स्कूल में बिल्कुल समय पर उपस्थित हुआ है।"
+    ],
+    Absent: [
+      "प्रिय अभिभावक, [छात्र का नाम] आज स्कूल में अनुपस्थित है। कृपया ऐप या पोर्टल में छुट्टी का कारण अपडेट करें।",
+      "[छात्र का नाम] आज कक्षाओं में उपस्थित नहीं था/थी। कृपया इस बारे में कक्षा अध्यापक को सूचित करें।",
+      "आपके बच्चे की आज की उपस्थिति 'अनुपस्थित' दर्ज की गई है। यदि आपने पहले ही छुट्टी के लिए आवेदन कर दिया था, तो कृपया इस संदेश को अनदेखा करें।"
+    ],
+    Late: [
+      "प्रिय अभिभावक, [छात्र का नाम] आज स्कूल देर से आया/आई है। बच्चे के प्रवेश का समय [समय] था।",
+      "[छात्र का नाम] ने आज स्कूल में देर से प्रवेश लिया है। कृपया ध्यान रखें कि कल से बच्चा स्कूल के समय अनुसार ठीक समय पर आए।",
+      "आपके बच्चे की आज की उपस्थिति 'देर से' (Late) दर्ज की गई है। लगातार देर से आने पर स्कूल के नियमों के अनुसार आवश्यक कदम उठाए जा सकते हैं।"
+    ]
+  };
 
-export default function ParentsPortalOverview({ loggedInParentId = null }) {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [loading, setLoading] = useState(true);
+  // Fetch Students & Original Attendance Table Data from Supabase
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // 1. Fetch Students
+      let studentQuery = supabase.from('students').select('*');
+      if (selectedClass !== 'All') {
+        studentQuery = studentQuery.eq('class_name', selectedClass);
+      }
+      const { data: studentData, error: studentError } = await studentQuery;
+      if (studentError) throw studentError;
 
-  const [studentInfo, setStudentInfo] = useState({
-    id: '',
-    name: '',
-    class: '',
-    section: '',
-    rollNo: '',
-    admissionNo: '',
-    fatherName: '',
-    mobile: '',
-    attendanceRate: '0%',
-    totalPresents: '0 Days',
-    totalAbsents: '0 Days',
-    totalLates: '0 Days',
-    annualFee: '₹ 0',
-    paidFee: '₹ 0',
-    pendingFee: '₹ 0',
-    academicSession: '2026 - 2027'
-  });
+      // 2. Fetch Original Attendance Records for Selected Date
+      const { data: attData, error: attError } = await supabase
+        .from('attendance')
+        .select('*')
+        .eq('attendance_date', selectedDate);
 
-  const [noticesList, setNoticesList] = useState([]);
-  const [rawHomeworkList, setRawHomeworkList] = useState([]);
-  const [attendanceRecords, setAttendanceRecords] = useState([]);
-  const [feeRecordsList, setFeeRecordsList] = useState([]);
+      if (attError) throw attError;
 
-  // View Document Modal State for Notices
-  const [viewingNotice, setViewingNotice] = useState(null);
+      // Merge Students with Original Attendance Table Data
+      if (studentData) {
+        const merged = studentData.map((st, index) => {
+          const attendanceRecord = attData?.find(
+            (a) => String(a.student_id) === String(st.id) || String(a.student_id) === String(st.student_id)
+          );
+          return {
+            id: st.id,
+            rollNo: st.sr_no || st.student_id || String(index + 1),
+            name: st.student_full_name || 'Unknown',
+            class: st.class_name || 'Unassigned',
+            attendance: attendanceRecord ? attendanceRecord.status : 'Present',
+            remark: attendanceRecord?.remarks || '',
+            attendanceId: attendanceRecord ? attendanceRecord.id : null,
+          };
+        });
+        setStudents(merged);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function fetchPortalData() {
-      setLoading(true);
-      try {
-        // 1. Fetch Student Info (Matching sr_no, id, or student_id safely)
-        let studentQuery = supabase.from('students').select('*');
-        if (loggedInParentId) {
-          const cleanId = String(loggedInParentId).trim();
-          studentQuery = studentQuery.or(`sr_no.eq.${cleanId},id.eq.${cleanId},student_id.eq.${cleanId}`);
-        }
-        const { data: stData, error: stErr } = await studentQuery.limit(1);
+    fetchData();
+  }, [selectedClass, selectedDate]);
 
-        let currentStudentId = null;
-        let currentSrNo = null;
-        let currentStudentName = '';
-        let currentClass = '';
-        let annualFeesNum = 0;
+  // Handle Attendance Status Change locally
+  const handleStatusChange = (id, newStatus) => {
+    setStudents((prev) =>
+      prev.map((std) => (std.id === id ? { ...std, attendance: newStatus } : std))
+    );
+  };
 
-        if (!stErr && stData && stData.length > 0) {
-          const st = stData[0];
-          currentStudentId = st.student_id || st.id;
-          currentSrNo = st.sr_no;
-          currentStudentName = st.student_full_name || st.name || '';
-          currentClass = (st.class_name || '').trim();
-          annualFeesNum = Number(st.annual_fees || 0);
+  // Handle Remark Update locally
+  const handleRemarkChange = (id, newRemark) => {
+    setStudents((prev) =>
+      prev.map((std) => (std.id === id ? { ...std, remark: newRemark } : std))
+    );
+  };
 
-          setStudentInfo(prev => ({
-            ...prev,
-            id: st.id || st.student_id || '',
-            name: currentStudentName,
-            class: currentClass,
-            section: st.section || 'A',
-            rollNo: st.sr_no || st.student_id || '',
-            admissionNo: st.sr_no ? `SR-${st.sr_no}` : `STU-${st.id}`,
-            fatherName: st.father_name || '',
-            mobile: st.mobile_number || st.whatsapp_number || '',
-            annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0'
-          }));
-        }
+  // Select Quick Template with Dynamic Name Insertion
+  const handleSelectTemplate = (id, studentName, templateStr) => {
+    if (!templateStr) return;
+    const formattedText = templateStr.replace(/\[छात्र का नाम\]/g, studentName);
+    handleRemarkChange(id, formattedText);
+  };
 
-        // 2. Fetch Daily Homework
-        const { data: hwData, error: hwErr } = await supabase
-          .from('daily_homework')
-          .select('*')
-          .order('id', { ascending: false });
+  // Publish Single Student Attendance & Remark
+  const handlePublishSingle = async (student) => {
+    setPublishingStudentId(student.id);
+    try {
+      const recordToUpsert = {
+        student_id: student.id,
+        sr_no: student.rollNo,
+        attendance_date: selectedDate,
+        date: selectedDate,
+        status: student.attendance,
+        class_name: student.class,
+        session: '2026-2027',
+        remarks: student.remark
+      };
 
-        if (!hwErr && hwData) {
-          const classFilteredHW = currentClass
-            ? hwData.filter(h => (h.class_name || '').toLowerCase().includes(currentClass.toLowerCase()))
-            : hwData;
-          setRawHomeworkList(classFilteredHW);
-        }
+      const { error } = await supabase
+        .from('attendance')
+        .upsert([recordToUpsert], { onConflict: ['student_id', 'attendance_date'] });
 
-        // 3. Fetch Attendance strictly using loggedInParentId matching sr_no or student_id
-        let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
-        
-        const filterConditions = [];
-        if (currentSrNo) filterConditions.push(`sr_no.eq.${currentSrNo}`);
-        if (currentStudentId) filterConditions.push(`student_id.eq.${currentStudentId}`);
-        if (loggedInParentId) {
-          const cleanId = String(loggedInParentId).trim();
-          filterConditions.push(`sr_no.eq.${cleanId}`);
-          filterConditions.push(`student_id.eq.${cleanId}`);
-        }
-        
-        if (filterConditions.length > 0) {
-          attQuery = attQuery.or(filterConditions.join(','));
-        }
-
-        const { data: attData, error: attErr } = await attQuery;
-
-        if (!attErr && attData) {
-          setAttendanceRecords(attData);
-
-          const dbPresentsOnly = attData.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
-          const dbLates = attData.filter(a => a.status?.toLowerCase() === 'late' || a.status?.toLowerCase() === 'l').length;
-          const dbAbsents = attData.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
-          
-          const totalPresentIncludingLate = dbPresentsOnly + dbLates;
-          const totalWorkingDays = totalPresentIncludingLate + dbAbsents;
-          const percentage = totalWorkingDays > 0 ? Math.round((totalPresentIncludingLate / totalWorkingDays) * 100) : 0;
-          
-          setStudentInfo(prev => ({
-            ...prev,
-            attendanceRate: `${percentage}%`,
-            totalPresents: `${totalPresentIncludingLate} Days`,
-            totalAbsents: `${dbAbsents} Days`,
-            totalLates: `${dbLates} Times`
-          }));
-        }
-
-        // 4. Fetch Notices
-        const { data: noticeData, error: noticeErr } = await supabase
-          .from('circulars_and_notices')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (!noticeErr && noticeData) {
-          setNoticesList(noticeData.map((n, idx) => ({
-            id: n.id || idx + 1,
-            date: n.notice_date || (n.created_at ? n.created_at.split('T')[0] : ''),
-            title: n.title || 'Notice',
-            description: n.description || '',
-            category: n.category || 'General',
-            audience: n.audience || 'All Students & Parents',
-            priority: n.priority || 'Medium',
-            hasAttachment: n.has_attachment || false,
-            attachmentUrl: n.attachment_url || ''
-          })));
-        }
-
-        // 5. Fetch Fees (Match both sr_no and student_id)
-        let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        if (filterConditions.length > 0) {
-          feeQuery = feeQuery.or(filterConditions.join(','));
-        }
-
-        const { data: feeData, error: feeErr } = await feeQuery;
-
-        if (!feeErr && feeData) {
-          let totalPaidSum = 0;
-          const mappedFees = feeData.map((f, idx) => {
-            const paid = Number(f.total_paid || f.fee_paid || 0);
-            totalPaidSum += paid;
-            return {
-              id: f.id ? `TXN-2026-${f.id}` : `TXN-${idx + 1}`,
-              studentName: currentStudentName || 'Student',
-              class: f.class_name || currentClass || '',
-              description: f.allocation_month ? `Tuition Fee Allocation (${f.allocation_month})` : 'Fee Payment',
-              date: f.receipt_date || (f.created_at ? f.created_at.split('T')[0] : ''),
-              receiptNo: f.receipt_no || `REC-${idx + 1}`,
-              amount: `₹ ${paid.toLocaleString()}`,
-              status: 'PAID',
-              mode: f.payment_mode ? f.payment_mode.toUpperCase() : 'CASH'
-            };
-          });
-
-          const calculatedPending = Math.max(0, annualFeesNum - totalPaidSum);
-
-          setFeeRecordsList(mappedFees);
-          setStudentInfo(prev => ({
-            ...prev,
-            paidFee: `₹ ${totalPaidSum.toLocaleString()}`,
-            pendingFee: `₹ ${calculatedPending.toLocaleString()}`
-          }));
-        }
-
-      } catch (error) {
-        console.error('Supabase fetch error:', error.message);
-      } finally {
-        setLoading(false);
-      }
+      if (error) throw error;
+      alert(`Attendance & remark published successfully for ${student.name}! 🚀`);
+      fetchData();
+    } catch (error) {
+      console.error('Error publishing single attendance:', error.message);
+      alert('Error publishing: ' + error.message);
+    } finally {
+      setPublishingStudentId(null);
     }
+  };
 
-    fetchPortalData();
-  }, [loggedInParentId]);
+  // Publish All Attendance to Supabase
+  const handlePublishAttendance = async () => {
+    setPublishing(true);
+    try {
+      const recordsToUpsert = students.map((student) => ({
+        student_id: student.id,
+        sr_no: student.rollNo,
+        attendance_date: selectedDate,
+        date: selectedDate,
+        status: student.attendance,
+        class_name: student.class,
+        session: '2026-2027',
+        remarks: student.remark
+      }));
+
+      const { error } = await supabase
+        .from('attendance')
+        .upsert(recordsToUpsert, { onConflict: ['student_id', 'attendance_date'] });
+
+      if (error) throw error;
+      alert('All attendance records published and saved successfully! 🚀');
+      fetchData();
+    } catch (error) {
+      console.error('Error publishing attendance:', error.message);
+      alert('Error publishing attendance: ' + error.message);
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  // Class & Search Filter Logic
+  const filteredStudents = students.filter((std) => {
+    const matchesSearch = std.name.toLowerCase().includes(searchQuery.toLowerCase()) || std.rollNo.includes(searchQuery);
+    const matchesClass = selectedClass === 'All' || std.class === selectedClass;
+    return matchesSearch && matchesClass;
+  });
+
+  // Calculations for Summary Cards
+  const totalStudents = filteredStudents.length;
+  const totalPresent = filteredStudents.filter((s) => s.attendance === 'Present').length;
+  const totalAbsent = filteredStudents.filter((s) => s.attendance === 'Absent').length;
+  const totalLate = filteredStudents.filter((s) => s.attendance === 'Late').length;
+
+  const classOptions = [
+    'PP.3+', 'PP.4+', 'PP.5+', 'First', 'Second', 'Third', 'Fourth', 'Fifth', 
+    'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth', 'Eleventh(Arts)', 
+    'Eleventh(Commerce)', 'Eleventh(Science)', 'Twelfth(Arts)', 'Twelfth(Commerce)', 'Twelfth(Science)'
+  ];
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans">
+    <div className="space-y-6 p-2 animate-in fade-in zoom-in duration-300">
       
-      {/* Academy Header Banner */}
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-800 text-white border border-blue-500 rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transform transition-all duration-300">
-        <div className="space-y-2 text-center md:text-left">
-          <span className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-inner">
-            Parents Portal Overview
-          </span>
-          <h1 className="text-[22px] md:text-[28px] font-black tracking-wide pt-1 drop-shadow-md">
-            BLUE HEAVEN KIDS ACADEMY
-          </h1>
-          <p className="text-[13px] text-sky-100 font-medium">
-            Welcome back, <strong className="text-white underline decoration-sky-300">{studentInfo.fatherName || 'Parent'}</strong> (Parent of <span className="text-yellow-300 font-bold">{studentInfo.name || 'Student'}</span>)
-          </p>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-left space-y-1.5 min-w-[250px] shadow-lg">
-          <div className="text-[12px] text-sky-100 font-bold flex justify-between">
-            <span>Class:</span> <span className="text-white font-extrabold">{studentInfo.class}</span>
-          </div>
-          <div className="text-[12px] text-sky-100 font-bold flex justify-between">
-            <span>SR.NO:</span> <span className="text-white font-extrabold">{studentInfo.rollNo}</span>
-          </div>
-          <div className="text-[12px] text-sky-100 font-bold flex justify-between">
-            <span>Admission ID:</span> <span className="text-white font-extrabold truncate max-w-[140px]">{studentInfo.admissionNo}</span>
-          </div>
-          <div className="text-[12px] text-sky-100 font-bold flex justify-between pt-1 border-t border-white/10 mt-1">
-            <span>Mobile:</span> <span className="text-white font-extrabold">{studentInfo.mobile}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Summary Cards */}
+      {/* Top Summary Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-2xl p-5 shadow-lg border border-emerald-400 flex flex-col justify-between">
-          <div className="text-[11px] uppercase tracking-wider font-extrabold text-emerald-100">Attendance Rate</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.attendanceRate}</div>
-          <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-emerald-50 whitespace-nowrap">
-            Presents: {studentInfo.totalPresents} | Absents: {studentInfo.totalAbsents} | Late: {studentInfo.totalLates}
+        
+        {/* Total Strength */}
+        <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800 p-6 rounded-2xl shadow-lg flex items-center justify-between text-white border border-indigo-400/30">
+          <div>
+            <p className="text-xs font-black uppercase text-indigo-100 tracking-wider">Total Strength</p>
+            <h3 className="text-3xl font-black text-white mt-1.5">{totalStudents}</h3>
+            <p className="text-xs font-semibold text-indigo-100/80 mt-1">Enrolled students</p>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center border border-white/30 shadow-inner">
+            <UserCheck size={24} />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-sky-700 text-white rounded-2xl p-5 shadow-lg border border-blue-400 flex flex-col justify-between">
-          <div className="text-[11px] uppercase tracking-wider font-extrabold text-blue-100">Total Fee Paid</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.paidFee}</div>
-          <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-blue-50">
-            Annual Fee: {studentInfo.annualFee}
+        {/* Present Today */}
+        <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-800 p-6 rounded-2xl shadow-lg flex items-center justify-between text-white border border-emerald-400/30">
+          <div>
+            <p className="text-xs font-black uppercase text-emerald-100 tracking-wider">Present Today</p>
+            <h3 className="text-3xl font-black text-white mt-1.5">{totalPresent}</h3>
+            <p className="text-xs font-semibold text-emerald-100/80 mt-1">Marked present</p>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center border border-white/30 shadow-inner">
+            <CheckCircle2 size={24} />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-rose-500 to-red-700 text-white rounded-2xl p-5 shadow-lg border border-rose-400 flex flex-col justify-between">
-          <div className="text-[11px] uppercase tracking-wider font-extrabold text-rose-100">Pending Dues</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.pendingFee}</div>
-          <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-rose-50">
-            Current Session
+        {/* Absent Today */}
+        <div className="bg-gradient-to-br from-rose-600 via-red-600 to-rose-800 p-6 rounded-2xl shadow-lg flex items-center justify-between text-white border border-rose-400/30">
+          <div>
+            <p className="text-xs font-black uppercase text-rose-100 tracking-wider">Absent Today</p>
+            <h3 className="text-3xl font-black text-white mt-1.5">{totalAbsent}</h3>
+            <p className="text-xs font-semibold text-rose-100/80 mt-1">Requires notification</p>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center border border-white/30 shadow-inner">
+            <XCircle size={24} />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl p-5 shadow-lg border border-amber-400 flex flex-col justify-between">
-          <div className="text-[11px] uppercase tracking-wider font-extrabold text-amber-100">Academic Session</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.academicSession}</div>
-          <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-amber-50">
-            Active Status
+        {/* Late Arrivals */}
+        <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-700 p-6 rounded-2xl shadow-lg flex items-center justify-between text-white border border-amber-400/30">
+          <div>
+            <p className="text-xs font-black uppercase text-amber-100 tracking-wider">Late Arrivals</p>
+            <h3 className="text-3xl font-black text-white mt-1.5">{totalLate}</h3>
+            <p className="text-xs font-semibold text-amber-100/80 mt-1">Arrived past schedule</p>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center border border-white/30 shadow-inner">
+            <Clock size={24} />
           </div>
         </div>
+
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-3 border-b-2 border-slate-200 pb-4">
-        {[
-          { key: 'overview', label: '📊 Dashboard Overview' },
-          { key: 'notices', label: '📢 School Notices' },
-          { key: 'attendance', label: '📅 Student Attendance & Remarks' },
-          { key: 'homework', label: '📚 Daily Homework' },
-          { key: 'fees', label: '💳 Fee Records' },
-          { key: 'quiz', label: '📝 Online Test / Quiz' },
-        ].map((tab) => (
+      {/* Controls & Class Filter Section with Publish Button */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-5">
+        <div className="flex items-center gap-3.5 w-full md:w-auto">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#1B3A6B] to-[#2F6690] text-white flex items-center justify-center shadow">
+            <Calendar size={22} />
+          </div>
+          <div>
+            <h3 className="text-lg font-black text-slate-800 tracking-tight">Daily Attendance & Remarks</h3>
+            <p className="text-xs font-semibold text-slate-500 mt-0.5">Select class, record attendance and publish records</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          
+          {/* Class Filter Dropdown */}
+          <div className="relative w-full sm:w-auto">
+            <select 
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="w-full sm:w-auto bg-slate-50 border border-slate-200 text-slate-700 text-xs font-black rounded-xl pl-9 pr-8 py-2.5 outline-none focus:border-indigo-500 cursor-pointer appearance-none shadow-sm"
+            >
+              <option value="All">All Classes</option>
+              {classOptions.map((cls, index) => (
+                <option key={index} value={cls}>{cls}</option>
+              ))}
+            </select>
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={15} />
+          </div>
+
+          {/* Date Picker */}
+          <input 
+            type="date" 
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-2.5 outline-none focus:border-indigo-500 cursor-pointer shadow-sm"
+          />
+
+          {/* Search Bar */}
+          <div className="relative w-full sm:w-48">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search student..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 shadow-sm"
+            />
+          </div>
+
+          {/* Publish All Button */}
           <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`text-[13px] font-extrabold px-5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer shadow-md ${
-              activeTab === tab.key
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-b-4 border-blue-900'
-                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'
-            }`}
+            onClick={handlePublishAttendance}
+            disabled={publishing}
+            className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white px-5 py-2.5 rounded-xl text-xs font-black shadow-md flex items-center gap-2 cursor-pointer transition-all border-t border-emerald-400/40 border-b-4 border-emerald-950 active:translate-y-0.5 active:border-b-[1px]"
           >
-            {tab.label}
+            {publishing ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
+            <span>Publish All</span>
           </button>
-        ))}
+
+        </div>
       </div>
 
-      {loading ? (
-        <div className="py-20 text-center flex flex-col items-center justify-center gap-3 text-slate-500 font-bold">
-          <Loader2 className="animate-spin text-blue-700" size={32} />
-          Fetching student live records from Supabase...
-        </div>
-      ) : (
-        <>
-          {/* TAB 1: OVERVIEW */}
-          {activeTab === 'overview' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-                <h2 className="text-[16px] font-black text-blue-900 flex items-center justify-between">
-                  <span>Class Homework Tasks ({studentInfo.class})</span>
-                  <span className="text-[11px] bg-blue-100 text-blue-800 px-2.5 py-1 rounded-md font-bold">Live Data</span>
-                </h2>
-                <div className="space-y-3">
-                  {rawHomeworkList.length > 0 ? (
-                    rawHomeworkList.slice(0, 5).map((hw) => {
-                      const subjectName = hw.subject_name || 'General';
-                      const { dark } = getSubjectStyles(subjectName);
-                      return (
-                        <div key={hw.id} className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                          <div className={`${dark} px-3 py-1.5 text-[11px] font-black flex justify-between items-center`}>
-                            <span>📘 {subjectName}</span>
-                            <span>{hw.assign_date}</span>
-                          </div>
-                          <div className="p-3 text-[12px] text-slate-700 font-medium">
-                            {hw.chapter_title ? `${hw.chapter_title}: ` : ''}{hw.instructions}
-                          </div>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <p className="text-xs font-semibold text-slate-400 py-4 text-center">No homework tasks found for {studentInfo.class}.</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-                <h2 className="text-[16px] font-black text-blue-900 flex items-center justify-between">
-                  <span>Latest Notices & Circulars</span>
-                  <span className="text-[11px] bg-amber-100 text-amber-800 px-2.5 py-1 rounded-md font-bold">Important</span>
-                </h2>
-                <div className="space-y-3">
-                  {noticesList.length > 0 ? (
-                    noticesList.slice(0, 3).map((n) => (
-                      <div key={n.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1 shadow-sm">
-                        <div className="flex justify-between items-center text-[12px]">
-                          <span className="font-extrabold text-slate-900">{n.title}</span>
-                          <span className="text-slate-500 text-[11px] font-bold">{n.date}</span>
-                        </div>
-                        {n.description && <p className="text-[12px] text-slate-700 font-medium line-clamp-1">{n.description}</p>}
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-xs font-semibold text-slate-400 py-4 text-center">No notices found.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: SCHOOL NOTICES */}
-          {activeTab === 'notices' && (
-            <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-              <h2 className="text-[18px] font-black text-blue-900">School Notices & Announcements</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {noticesList.length > 0 ? (
-                  noticesList.map((notice) => (
-                    <div key={notice.id} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
-                      <div className="p-5">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide border ${getPriorityColor(notice.priority)} flex items-center gap-1.5`}>
-                            <AlertCircle size={14} />
-                            {notice.priority} Priority
-                          </div>
-                        </div>
-
-                        <h3 className="text-lg font-black text-slate-800 leading-tight mb-2">
-                          {notice.title}
-                        </h3>
-                        
-                        {notice.description && (
-                          <p className="text-slate-600 text-sm font-medium mb-4 whitespace-pre-wrap">
-                            {notice.description}
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-4 text-xs font-bold text-slate-500 bg-white p-3 rounded-xl border border-slate-100 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar size={14} className="text-slate-400" />
-                            {notice.date ? new Date(notice.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
-                          </div>
-                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                          <div className="flex items-center gap-1.5 text-indigo-600">
-                            <FileText size={14} />
-                            {notice.category}
-                          </div>
-                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                          <div className="flex items-center gap-1.5">
-                            <CheckCircle size={14} className="text-slate-400" />
-                            {notice.audience}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {notice.hasAttachment && (
-                        <div className="bg-white px-5 py-3 border-t border-slate-200 flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                            <Paperclip size={16} className="text-indigo-600" />
-                            <span>Attached Document</span>
-                          </div>
-                          {notice.attachmentUrl ? (
-                            <button 
-                              onClick={() => setViewingNotice(notice)}
-                              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-t border-indigo-300 border-b-[3px] border-indigo-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] transition-all cursor-pointer"
-                            >
-                              <Eye size={14} /> View File
-                            </button>
-                          ) : (
-                            <span className="text-xs text-slate-400 font-semibold">No URL available</span>
-                          )}
-                        </div>
-                      )}
+      {/* Daily Attendance Matrix Table */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-100/80 text-slate-600 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
+                <th className="py-4 px-3 text-center w-16">Roll No</th>
+                <th className="py-4 px-5 min-w-[180px]">Student Name</th>
+                <th className="py-4 px-4 text-center w-28">Class</th>
+                <th className="py-4 px-3 text-center w-32">Attendance Date</th>
+                <th className="py-4 px-5 text-center min-w-[240px]">Attendance Status</th>
+                <th className="py-4 px-5 min-w-[340px]">Teacher Remarks / Feedback</th>
+                <th className="py-4 px-4 text-center w-28">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="py-16 text-center text-slate-400 font-bold">
+                    <div className="flex justify-center items-center gap-2">
+                      <Loader2 className="animate-spin text-indigo-600" size={24} />
+                      Loading student attendance records...
                     </div>
-                  ))
-                ) : (
-                  <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
-                    No notices found.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+                  </td>
+                </tr>
+              ) : filteredStudents.length > 0 ? (
+                filteredStudents.map((student) => (
+                  <tr key={student.id} className="hover:bg-slate-50/80 transition-colors">
+                    
+                    {/* Roll No Column */}
+                    <td className="py-4 px-3 text-center">
+                      <span className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 font-black inline-flex items-center justify-center text-xs border border-indigo-100 shadow-sm">
+                        {student.rollNo}
+                      </span>
+                    </td>
 
-          {/* TAB 3: ATTENDANCE & REMARKS */}
-          {activeTab === 'attendance' && (
-            <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <h2 className="text-[16px] font-black text-[#1E293B]">Student Attendance History & Teacher Remarks</h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] bg-emerald-100 text-emerald-800 px-3 py-1 rounded-md font-extrabold">
-                    Overall Status: {studentInfo.attendanceRate}
-                  </span>
-                  <span className="text-[11px] bg-amber-100 text-amber-800 px-3 py-1 rounded-md font-extrabold">
-                    Late Count: {studentInfo.totalLates}
-                  </span>
-                </div>
-              </div>
-
-              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
-                      <th className="py-3 px-4 min-w-[90px]">SR.NO</th>
-                      <th className="py-3 px-4 min-w-[200px]">Student Name</th>
-                      <th className="py-3 px-4 min-w-[100px]">Class</th>
-                      <th className="py-3 px-4 min-w-[130px]">Attendance Date</th>
-                      <th className="py-3 px-4 min-w-[140px] text-center">Attendance Status</th>
-                      <th className="py-3 px-4 min-w-[240px]">Teacher Remarks / Feedback</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
-                    {attendanceRecords.length > 0 ? (
-                      attendanceRecords.map((att, idx) => (
-                        <tr key={att.id || idx} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-3.5 px-4">
-                            <span className="shrink-0 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-black text-xs border border-indigo-100">
-                              {att.sr_no || studentInfo.rollNo || idx + 1}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <p className="font-black text-slate-900 text-sm leading-tight">{studentInfo.name || 'Student'}</p>
-                            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">ID: STU-{studentInfo.id || '01'}</p>
-                          </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-600">
-                            <span className="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700 font-black border border-slate-200">
-                              {att.class_name || studentInfo.class || 'N/A'}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-600 whitespace-nowrap">
-                            <span className="text-slate-700 font-semibold">
-                              {att.attendance_date || att.date || ''}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                            {att.status?.toLowerCase() === 'present' || att.status?.toLowerCase() === 'p' ? (
-                              <span className="px-3 py-1 rounded-xl text-xs font-black inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                <CheckCircle2 size={13} /> Present
-                              </span>
-                            ) : att.status?.toLowerCase() === 'late' ? (
-                              <span className="px-3 py-1 rounded-xl text-xs font-black inline-flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-200">
-                                <Clock size={13} /> Late
-                              </span>
-                            ) : (
-                              <span className="px-3 py-1 rounded-xl text-xs font-black inline-flex items-center gap-1 bg-rose-100 text-rose-800 border border-rose-200">
-                                <XCircle size={13} /> Absent
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-3.5 px-4 text-slate-700 font-medium">
-                            {att.remarks || 'No remarks recorded for this date.'}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="6" className="py-12 text-center text-slate-400 font-bold">
-                          No attendance records found for {studentInfo.name || 'this student'}.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: DAILY HOMEWORK */}
-          {activeTab === 'homework' && (
-            <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-              <h2 className="text-[18px] font-black text-blue-900 flex justify-between items-center">
-                <span>Daily Class Homework ({studentInfo.class || 'All Classes'})</span>
-                <span className="text-xs bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full">
-                  Total: {rawHomeworkList.length} Tasks
-                </span>
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {rawHomeworkList.length > 0 ? (
-                  rawHomeworkList.map((hw) => {
-                    const subjectName = hw.subject_name || 'General';
-                    const { dark } = getSubjectStyles(subjectName);
-                    return (
-                      <div key={hw.id} className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
-                        <div className={`${dark} px-4 py-2.5 text-xs font-black flex justify-between items-center`}>
-                          <span>📘 {subjectName}</span>
-                          <span>Assigned: {hw.assign_date}</span>
-                        </div>
-                        <div className="p-4 space-y-2 flex-1">
-                          <h4 className="font-extrabold text-slate-900 text-sm">
-                            {hw.chapter_title ? `Chapter: ${hw.chapter_title}` : 'Homework Instructions'}
-                          </h4>
-                          <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                            {hw.instructions || 'No specific instructions provided.'}
-                          </p>
-                        </div>
-                        <div className="px-4 py-2 bg-slate-100 border-t border-slate-200 text-[11px] font-bold text-slate-600 flex justify-between">
-                          <span>Class: {hw.class_name}</span>
-                          <span>Submission: {hw.submission_date || 'Next Class'}</span>
-                        </div>
+                    {/* Student Name Column */}
+                    <td className="py-4 px-5">
+                      <div className="flex flex-col">
+                        <span className="font-black text-slate-900 text-sm leading-tight">{student.name}</span>
+                        <span className="text-[11px] text-slate-400 mt-0.5">ID: STU-{student.id}</span>
                       </div>
-                    );
-                  })
-                ) : (
-                  <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
-                    No homework assigned for class {studentInfo.class}.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+                    </td>
 
-          {/* TAB 5: FEE RECORDS */}
-          {activeTab === 'fees' && (
-            <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-[16px] font-black text-[#1E293B]">Fee Payment History & Ledger</h2>
-                
-                <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs font-black text-slate-700 shadow-sm">
-                  Annual Fee: <span className="text-emerald-600 font-black">{studentInfo.annualFee}</span> | Paid: <span className="text-blue-600 font-black">{studentInfo.paidFee}</span> | Pending: <span className="text-rose-600 font-black">{studentInfo.pendingFee}</span>
-                </div>
-              </div>
-              
-              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
-                      <th className="py-3 px-4 min-w-[150px]">STUDENT DETAILS</th>
-                      <th className="py-3 px-4 min-w-[280px]">DESCRIPTION</th>
-                      <th className="py-3 px-4 min-w-[120px]">DATE</th>
-                      <th className="py-3 px-4 min-w-[130px]">RECEIPT NO</th>
-                      <th className="py-3 px-4 min-w-[110px]">AMOUNT</th>
-                      <th className="py-3 px-4 min-w-[130px]">STATUS</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
-                    {feeRecordsList.length > 0 ? (
-                      feeRecordsList.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-3.5 px-4">
-                            <p className="font-black text-slate-900 text-sm leading-tight">{item.studentName}</p>
-                            <p className="text-[11px] text-indigo-600 font-bold mt-0.5">{item.class}</p>
-                          </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-600">
-                            {item.description}
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <p className="font-black text-slate-800 text-xs">{item.date}</p>
-                            <p className="text-[10px] text-slate-400 font-semibold mt-0.5">{item.id}</p>
-                          </td>
-                          <td className="py-3.5 px-4 font-mono text-slate-600 font-bold">
-                            {item.receiptNo}
-                          </td>
-                          <td className="py-3.5 px-4 font-black text-emerald-600 text-sm whitespace-nowrap">
-                            + {item.amount}
-                          </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap">
-                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-black uppercase shadow-sm">
-                              ✅ {item.mode} ({item.status})
-                            </span>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="6" className="py-12 text-center text-slate-400 font-bold">
-                          No fee payment records found for {studentInfo.name || 'this student'}.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
+                    {/* Class Column */}
+                    <td className="py-4 px-4 text-center font-bold text-slate-600">
+                      <span className="bg-slate-100 px-3 py-1 rounded-lg text-slate-700 font-black border border-slate-200 inline-block">
+                        {student.class}
+                      </span>
+                    </td>
 
-          {/* TAB 6: ONLINE TEST / QUIZ */}
-          {activeTab === 'quiz' && (
-            <OnlineTestQuiz loggedInParentId={loggedInParentId} />
-          )}
-        </>
-      )}
+                    {/* Attendance Date Column */}
+                    <td className="py-4 px-3 text-center font-bold text-slate-600 whitespace-nowrap">
+                      {selectedDate}
+                    </td>
 
-      {/* Modal Popup for Notices Attachments */}
-      {viewingNotice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-200">
-            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-              <div>
-                <h3 className="text-lg font-black text-slate-900">{viewingNotice.title}</h3>
-                <p className="text-xs text-slate-500 font-semibold">Document Preview & Download</p>
-              </div>
-              <button 
-                onClick={() => setViewingNotice(null)} 
-                className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 hover:bg-rose-100 hover:text-rose-600 transition-colors cursor-pointer"
-              >
-                <X size={20} />
-              </button>
-            </div>
+                    {/* Attendance Status Buttons Column */}
+                    <td className="py-4 px-5 text-center">
+                      <div className="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-200 gap-1 shadow-inner">
+                        
+                        {/* Present Button */}
+                        <button 
+                          onClick={() => handleStatusChange(student.id, 'Present')}
+                          className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                            student.attendance === 'Present' 
+                              ? 'bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 text-white border-t border-emerald-300 border-b-[3px] border-emerald-950 shadow-md active:translate-y-0.5 active:border-b-[1px] active:shadow-none' 
+                              : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
+                          }`}
+                        >
+                          Present
+                        </button>
 
-            <div className="flex-1 bg-slate-100 p-4 overflow-auto flex items-center justify-center">
-              {viewingNotice.attachmentUrl.includes('.pdf') || viewingNotice.attachmentUrl.startsWith('data:application/pdf') ? (
-                <iframe 
-                  src={viewingNotice.attachmentUrl} 
-                  className="w-full h-full rounded-xl border border-slate-300 bg-white shadow-inner"
-                  title="PDF Viewer"
-                />
+                        {/* Absent Button */}
+                        <button 
+                          onClick={() => handleStatusChange(student.id, 'Absent')}
+                          className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                            student.attendance === 'Absent' 
+                              ? 'bg-gradient-to-r from-rose-500 via-red-600 to-rose-700 text-white border-t border-rose-300 border-b-[3px] border-rose-950 shadow-md active:translate-y-0.5 active:border-b-[1px] active:shadow-none' 
+                              : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
+                          }`}
+                        >
+                          Absent
+                        </button>
+
+                        {/* Late Button */}
+                        <button 
+                          onClick={() => handleStatusChange(student.id, 'Late')}
+                          className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                            student.attendance === 'Late' 
+                              ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-amber-600 text-white border-t border-amber-200 border-b-[3px] border-amber-950 shadow-md active:translate-y-0.5 active:border-b-[1px] active:shadow-none' 
+                              : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/60'
+                          }`}
+                        >
+                          Late
+                        </button>
+
+                      </div>
+                    </td>
+
+                    {/* Teacher Remarks / Feedback Column */}
+                    <td className="py-4 px-5">
+                      <div className="flex flex-col gap-2">
+                        
+                        {/* Quick Remark Template Selector Dropdown */}
+                        <div className="flex items-center gap-1.5">
+                          <select
+                            onChange={(e) => handleSelectTemplate(student.id, student.name, e.target.value)}
+                            defaultValue=""
+                            className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl px-2.5 py-1.5 text-xs font-bold cursor-pointer outline-none transition-colors shadow-sm"
+                            title="Select quick remark template"
+                          >
+                            <option value="" disabled>⚡ Choose Hindi Remark Template</option>
+                            {(remarkTemplates[student.attendance] || []).map((tmpl, idx) => (
+                              <option key={idx} value={tmpl}>
+                                Template {idx + 1}: {tmpl.replace(/\[छात्र का नाम\]/g, student.name).substring(0, 35)}...
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Directly Editable Remark Text Input */}
+                        <div className="relative w-full">
+                          <textarea 
+                            rows="2"
+                            value={student.remark}
+                            onChange={(e) => handleRemarkChange(student.id, e.target.value)}
+                            placeholder="Type or select remark template..."
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-3.5 pr-8 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:border-indigo-500 shadow-sm resize-none"
+                          />
+                          <span className="absolute right-3 top-3 text-slate-400 pointer-events-none">
+                            <MessageSquare size={14} />
+                          </span>
+                        </div>
+
+                      </div>
+                    </td>
+
+                    {/* Individual Publish Action Column */}
+                    <td className="py-4 px-4 text-center">
+                      <button
+                        onClick={() => handlePublishSingle(student)}
+                        disabled={publishingStudentId === student.id}
+                        className="bg-gradient-to-r from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 text-white px-3 py-2 rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1.5 mx-auto cursor-pointer transition-all border-t border-indigo-400/40 border-b-2 border-indigo-950 active:translate-y-0.5"
+                        title="Publish this student's attendance & remark"
+                      >
+                        {publishingStudentId === student.id ? (
+                          <Loader2 className="animate-spin" size={14} />
+                        ) : (
+                          <Send size={13} />
+                        )}
+                        <span>Save</span>
+                      </button>
+                    </td>
+
+                  </tr>
+                ))
               ) : (
-                <img 
-                  src={viewingNotice.attachmentUrl} 
-                  alt="Attachment Preview" 
-                  className="max-w-full max-h-full object-contain rounded-xl shadow-md border border-slate-300 bg-white" 
-                />
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-400 font-bold">
+                    No students found matching your selected class or search filter.
+                  </td>
+                </tr>
               )}
-            </div>
-
-            <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-white">
-              <button 
-                onClick={() => setViewingNotice(null)}
-                className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 transition-colors cursor-pointer"
-              >
-                Close
-              </button>
-              <a 
-                href={viewingNotice.attachmentUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                download
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-black shadow-md cursor-pointer"
-              >
-                <Download size={18} /> Download File
-              </a>
-            </div>
-          </div>
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
 
     </div>
   );
