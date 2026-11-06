@@ -92,7 +92,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         const cleanId = String(loggedInParentId).trim();
 
-        // 1. Fetch Student Info (Clean & Explicit Lookup)
+        // 1. Fetch Student Info
         const { data: stData, error: stErr } = await supabase
           .from('students')
           .select('*')
@@ -144,27 +144,36 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Fetch Attendance (Strict multi-pass filter fallback)
+        // 3. Fetch Attendance (Robust Multi-Condition Query without PostgREST syntax error)
         let attData = [];
+        let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
         
-        // Pass A: Fetch by sr_no
+        const conditions = [];
         if (currentSrNo) {
-          const { data: srAtt } = await supabase
-            .from('attendance')
-            .select('*')
-            .eq('sr_no', String(currentSrNo))
-            .order('attendance_date', { ascending: false });
-          if (srAtt && srAtt.length > 0) attData = srAtt;
+          conditions.push(`sr_no.eq.${currentSrNo}`);
+          conditions.push(`sr_no.eq.${String(currentSrNo)}`);
         }
-        
-        // Pass B: Fallback by student_id if sr_no returns empty
-        if (attData.length === 0 && currentStudentId) {
-          const { data: idAtt } = await supabase
-            .from('attendance')
-            .select('*')
-            .eq('student_id', String(currentStudentId))
-            .order('attendance_date', { ascending: false });
-          if (idAtt && idAtt.length > 0) attData = idAtt;
+        if (currentStudentId) {
+          conditions.push(`student_id.eq.${currentStudentId}`);
+          conditions.push(`student_id.eq.${String(currentStudentId)}`);
+        }
+
+        if (conditions.length > 0) {
+          const { data: fetchedAtt, error: attErr } = await attQuery.or(conditions.join(','));
+          if (!attErr && fetchedAtt) {
+            attData = fetchedAtt;
+          }
+        }
+
+        // Fallback: Agar upar ki query se na mile toh saara data fetch karke client side filter kar lo
+        if (attData.length === 0) {
+          const { data: allAtt } = await supabase.from('attendance').select('*');
+          if (allAtt) {
+            attData = allAtt.filter(a => 
+              String(a.sr_no).trim() === String(currentSrNo).trim() || 
+              String(a.student_id).trim() === String(currentStudentId).trim()
+            );
+          }
         }
 
         setAttendanceRecords(attData);
@@ -205,27 +214,29 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fees (Strict Multi-pass Filter)
+        // 5. Fetch Fees (Robust Multi-Condition Query)
         let feeData = [];
-        if (currentSrNo) {
-          const { data: srFee } = await supabase
-            .from('fee_collections')
-            .select('*')
-            .eq('sr_no', String(currentSrNo))
-            .order('receipt_date', { ascending: false });
-          if (srFee && srFee.length > 0) feeData = srFee;
+        let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
+        
+        if (conditions.length > 0) {
+          const { data: fetchedFee, error: feeErr } = await feeQuery.or(conditions.join(','));
+          if (!feeErr && fetchedFee) {
+            feeData = fetchedFee;
+          }
         }
-        if (feeData.length === 0 && currentStudentId) {
-          const { data: idFee } = await supabase
-            .from('fee_collections')
-            .select('*')
-            .eq('student_id', String(currentStudentId))
-            .order('receipt_date', { ascending: false });
-          if (idFee && idFee.length > 0) feeData = idFee;
+
+        if (feeData.length === 0) {
+          const { data: allFee } = await supabase.from('fee_collections').select('*');
+          if (allFee) {
+            feeData = allFee.filter(f => 
+              String(f.sr_no).trim() === String(currentSrNo).trim() || 
+              String(f.student_id).trim() === String(currentStudentId).trim()
+            );
+          }
         }
 
         let totalPaidSum = 0;
-        const mappedFees = (feeData || []).map((f, idx) => {
+        const mappedFees = feeData.map((f, idx) => {
           const paid = Number(f.total_paid || f.fee_paid || 0);
           totalPaidSum += paid;
           return {
@@ -548,7 +559,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
               <h2 className="text-[18px] font-black text-blue-900">School Notices & Announcements</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 {noticesList.length > 0 ? (
-                  noticesList.map((notice) => (
+                  noticesList.noticesList?.map((notice) => (
                     <div key={notice.id} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
                       <div className="p-5">
                         <div className="flex justify-between items-start mb-3">
