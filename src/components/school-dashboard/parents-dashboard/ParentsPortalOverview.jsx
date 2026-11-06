@@ -1,3 +1,4 @@
+// Filename: ParentsPortalOverview.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -85,19 +86,12 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     async function fetchPortalData() {
       setLoading(true);
       try {
-        if (!loggedInParentId) {
-          setLoading(false);
-          return;
-        }
-
-        const cleanId = String(loggedInParentId).trim();
-
         // 1. Fetch Student Info
-        const { data: stData, error: stErr } = await supabase
-          .from('students')
-          .select('*')
-          .or(`sr_no.eq.${cleanId},student_id.eq.${cleanId},id.eq.${cleanId}`)
-          .limit(1);
+        let studentQuery = supabase.from('students').select('*');
+        if (loggedInParentId) {
+          studentQuery = studentQuery.eq('sr_no', loggedInParentId);
+        }
+        const { data: stData, error: stErr } = await studentQuery.limit(1);
 
         let currentStudentId = null;
         let currentSrNo = null;
@@ -107,15 +101,15 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         if (!stErr && stData && stData.length > 0) {
           const st = stData[0];
-          currentStudentId = st.student_id || st.id;
+          currentStudentId = st.id;
           currentSrNo = st.sr_no;
-          currentStudentName = st.student_full_name || st.name || st.student_name || '';
+          currentStudentName = st.student_full_name || '';
           currentClass = (st.class_name || '').trim();
           annualFeesNum = Number(st.annual_fees || 0);
 
           setStudentInfo(prev => ({
             ...prev,
-            id: st.student_id || st.id || '',
+            id: st.id,
             name: currentStudentName,
             class: currentClass,
             section: st.section || 'A',
@@ -125,10 +119,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             mobile: st.mobile_number || st.whatsapp_number || '',
             annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0'
           }));
-        } else {
-          console.warn('Student record not found for loggedInParentId:', loggedInParentId);
-          setLoading(false);
-          return;
         }
 
         // 2. Fetch Daily Homework
@@ -144,55 +134,35 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Fetch Attendance (Robust Multi-Condition Query without PostgREST syntax error)
-        let attData = [];
+        // 3. Fetch Attendance
         let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
-        
-        const conditions = [];
         if (currentSrNo) {
-          conditions.push(`sr_no.eq.${currentSrNo}`);
-          conditions.push(`sr_no.eq.${String(currentSrNo)}`);
-        }
-        if (currentStudentId) {
-          conditions.push(`student_id.eq.${currentStudentId}`);
-          conditions.push(`student_id.eq.${String(currentStudentId)}`);
+          attQuery = attQuery.eq('sr_no', currentSrNo);
+        } else if (currentStudentId) {
+          attQuery = attQuery.eq('student_id', currentStudentId);
         }
 
-        if (conditions.length > 0) {
-          const { data: fetchedAtt, error: attErr } = await attQuery.or(conditions.join(','));
-          if (!attErr && fetchedAtt) {
-            attData = fetchedAtt;
-          }
+        const { data: attData, error: attErr } = await attQuery;
+
+        if (!attErr && attData) {
+          setAttendanceRecords(attData);
+
+          const dbPresentsOnly = attData.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
+          const dbLates = attData.filter(a => a.status?.toLowerCase() === 'late' || a.status?.toLowerCase() === 'l').length;
+          const dbAbsents = attData.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
+          
+          const totalPresentIncludingLate = dbPresentsOnly + dbLates;
+          const totalWorkingDays = totalPresentIncludingLate + dbAbsents;
+          const percentage = totalWorkingDays > 0 ? Math.round((totalPresentIncludingLate / totalWorkingDays) * 100) : 0;
+          
+          setStudentInfo(prev => ({
+            ...prev,
+            attendanceRate: `${percentage}%`,
+            totalPresents: `${totalPresentIncludingLate} Days`,
+            totalAbsents: `${dbAbsents} Days`,
+            totalLates: `${dbLates} Times`
+          }));
         }
-
-        // Fallback: Agar upar ki query se na mile toh saara data fetch karke client side filter kar lo
-        if (attData.length === 0) {
-          const { data: allAtt } = await supabase.from('attendance').select('*');
-          if (allAtt) {
-            attData = allAtt.filter(a => 
-              String(a.sr_no).trim() === String(currentSrNo).trim() || 
-              String(a.student_id).trim() === String(currentStudentId).trim()
-            );
-          }
-        }
-
-        setAttendanceRecords(attData);
-
-        const dbPresentsOnly = attData.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
-        const dbLates = attData.filter(a => a.status?.toLowerCase() === 'late' || a.status?.toLowerCase() === 'l').length;
-        const dbAbsents = attData.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
-        
-        const totalPresentIncludingLate = dbPresentsOnly + dbLates;
-        const totalWorkingDays = totalPresentIncludingLate + dbAbsents;
-        const percentage = totalWorkingDays > 0 ? Math.round((totalPresentIncludingLate / totalWorkingDays) * 100) : 0;
-        
-        setStudentInfo(prev => ({
-          ...prev,
-          attendanceRate: `${percentage}%`,
-          totalPresents: `${totalPresentIncludingLate} Days`,
-          totalAbsents: `${dbAbsents} Days`,
-          totalLates: `${dbLates} Times`
-        }));
 
         // 4. Fetch Notices
         const { data: noticeData, error: noticeErr } = await supabase
@@ -214,52 +184,43 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fees (Robust Multi-Condition Query)
-        let feeData = [];
+        // 5. Fetch Fees
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        
-        if (conditions.length > 0) {
-          const { data: fetchedFee, error: feeErr } = await feeQuery.or(conditions.join(','));
-          if (!feeErr && fetchedFee) {
-            feeData = fetchedFee;
-          }
+        if (currentSrNo) {
+          feeQuery = feeQuery.eq('sr_no', currentSrNo);
+        } else if (currentStudentId) {
+          feeQuery = feeQuery.eq('student_id', currentStudentId);
         }
 
-        if (feeData.length === 0) {
-          const { data: allFee } = await supabase.from('fee_collections').select('*');
-          if (allFee) {
-            feeData = allFee.filter(f => 
-              String(f.sr_no).trim() === String(currentSrNo).trim() || 
-              String(f.student_id).trim() === String(currentStudentId).trim()
-            );
-          }
+        const { data: feeData, error: feeErr } = await feeQuery;
+
+        if (!feeErr && feeData) {
+          let totalPaidSum = 0;
+          const mappedFees = feeData.map((f, idx) => {
+            const paid = Number(f.total_paid || f.fee_paid || 0);
+            totalPaidSum += paid;
+            return {
+              id: f.id ? `TXN-2026-${f.id}` : `TXN-${idx + 1}`,
+              studentName: currentStudentName || 'Student',
+              class: f.class_name || currentClass || '',
+              description: f.allocation_month ? `Tuition Fee Allocation (${f.allocation_month})` : 'Fee Payment',
+              date: f.receipt_date || (f.created_at ? f.created_at.split('T')[0] : ''),
+              receiptNo: f.receipt_no || `REC-${idx + 1}`,
+              amount: `₹ ${paid.toLocaleString()}`,
+              status: 'PAID',
+              mode: f.payment_mode ? f.payment_mode.toUpperCase() : 'CASH'
+            };
+          });
+
+          const calculatedPending = Math.max(0, annualFeesNum - totalPaidSum);
+
+          setFeeRecordsList(mappedFees);
+          setStudentInfo(prev => ({
+            ...prev,
+            paidFee: `₹ ${totalPaidSum.toLocaleString()}`,
+            pendingFee: `₹ ${calculatedPending.toLocaleString()}`
+          }));
         }
-
-        let totalPaidSum = 0;
-        const mappedFees = feeData.map((f, idx) => {
-          const paid = Number(f.total_paid || f.fee_paid || 0);
-          totalPaidSum += paid;
-          return {
-            id: f.id ? `TXN-2026-${f.id}` : `TXN-${idx + 1}`,
-            studentName: currentStudentName || 'Student',
-            class: f.class_name || currentClass || '',
-            description: f.allocation_month ? `Tuition Fee Allocation (${f.allocation_month})` : 'Fee Payment',
-            date: f.receipt_date || (f.created_at ? f.created_at.split('T')[0] : ''),
-            receiptNo: f.receipt_no || `REC-${idx + 1}`,
-            amount: `₹ ${paid.toLocaleString()}`,
-            status: 'PAID',
-            mode: f.payment_mode ? f.payment_mode.toUpperCase() : 'CASH'
-          };
-        });
-
-        const calculatedPending = Math.max(0, annualFeesNum - totalPaidSum);
-
-        setFeeRecordsList(mappedFees);
-        setStudentInfo(prev => ({
-          ...prev,
-          paidFee: `₹ ${totalPaidSum.toLocaleString()}`,
-          pendingFee: `₹ ${calculatedPending.toLocaleString()}`
-        }));
 
       } catch (error) {
         console.error('Supabase fetch error:', error.message);
@@ -444,7 +405,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
-                      <th className="py-3 px-4 min-w-[90px]">Roll No / SR</th>
+                      <th className="py-3 px-4 min-w-[90px]">Roll No</th>
                       <th className="py-3 px-4 min-w-[200px]">Student Name</th>
                       <th className="py-3 px-4 min-w-[100px]">Class</th>
                       <th className="py-3 px-4 min-w-[130px]">Attendance Date</th>
@@ -463,11 +424,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                           </td>
                           <td className="py-3.5 px-4">
                             <p className="font-black text-slate-900 text-sm leading-tight">{studentInfo.name || 'Student'}</p>
-                            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">ID: STU-{att.student_id || studentInfo.id || '01'}</p>
+                            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">ID: STU-{studentInfo.id || '01'}</p>
                           </td>
                           <td className="py-3.5 px-4 font-bold text-slate-600">
                             <span className="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700 font-black border border-slate-200">
-                              {att.class_name || studentInfo.class || 'N/A'}
+                              {studentInfo.class || 'N/A'}
                             </span>
                           </td>
                           <td className="py-3.5 px-4 font-bold text-slate-600 whitespace-nowrap">
@@ -559,7 +520,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
               <h2 className="text-[18px] font-black text-blue-900">School Notices & Announcements</h2>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 {noticesList.length > 0 ? (
-                  noticesList.noticesList?.map((notice) => (
+                  noticesList.map((notice) => (
                     <div key={notice.id} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
                       <div className="p-5">
                         <div className="flex justify-between items-start mb-3">
