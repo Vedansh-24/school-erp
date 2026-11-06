@@ -92,15 +92,12 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         const cleanId = String(loggedInParentId).trim();
 
-        // 1. Safe Student Query (Wrapped values with quotes for PostgREST)
-        const studentOrConditions = [
-          `sr_no.eq."${cleanId}"`,
-          `id.eq."${cleanId}"`,
-          `student_id.eq."${cleanId}"`
-        ].join(',');
-
-        let studentQuery = supabase.from('students').select('*').or(studentOrConditions).limit(1);
-        const { data: stData, error: stErr } = await studentQuery;
+        // 1. Fetch Student Info (Clean & Explicit Lookup)
+        const { data: stData, error: stErr } = await supabase
+          .from('students')
+          .select('*')
+          .or(`sr_no.eq.${cleanId},student_id.eq.${cleanId},id.eq.${cleanId}`)
+          .limit(1);
 
         let currentStudentId = null;
         let currentSrNo = null;
@@ -147,44 +144,46 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Construct Safe PostgREST Filter String for Attendance & Fee
-        const matchFilterClauses = [];
-        if (currentStudentId) {
-          matchFilterClauses.push(`student_id.eq."${currentStudentId}"`);
-        }
+        // 3. Fetch Attendance (Strict multi-pass filter fallback)
+        let attData = [];
+        
+        // Pass A: Fetch by sr_no
         if (currentSrNo) {
-          matchFilterClauses.push(`sr_no.eq."${currentSrNo}"`);
+          const { data: srAtt } = await supabase
+            .from('attendance')
+            .select('*')
+            .eq('sr_no', String(currentSrNo))
+            .order('attendance_date', { ascending: false });
+          if (srAtt && srAtt.length > 0) attData = srAtt;
+        }
+        
+        // Pass B: Fallback by student_id if sr_no returns empty
+        if (attData.length === 0 && currentStudentId) {
+          const { data: idAtt } = await supabase
+            .from('attendance')
+            .select('*')
+            .eq('student_id', String(currentStudentId))
+            .order('attendance_date', { ascending: false });
+          if (idAtt && idAtt.length > 0) attData = idAtt;
         }
 
-        const safeOrClause = matchFilterClauses.join(',');
+        setAttendanceRecords(attData);
 
-        // Fetch Attendance using double-quoted string parameters
-        let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
-        if (safeOrClause) {
-          attQuery = attQuery.or(safeOrClause);
-        }
-
-        const { data: attData, error: attErr } = await attQuery;
-
-        if (!attErr && attData) {
-          setAttendanceRecords(attData);
-
-          const dbPresentsOnly = attData.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
-          const dbLates = attData.filter(a => a.status?.toLowerCase() === 'late' || a.status?.toLowerCase() === 'l').length;
-          const dbAbsents = attData.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
-          
-          const totalPresentIncludingLate = dbPresentsOnly + dbLates;
-          const totalWorkingDays = totalPresentIncludingLate + dbAbsents;
-          const percentage = totalWorkingDays > 0 ? Math.round((totalPresentIncludingLate / totalWorkingDays) * 100) : 0;
-          
-          setStudentInfo(prev => ({
-            ...prev,
-            attendanceRate: `${percentage}%`,
-            totalPresents: `${totalPresentIncludingLate} Days`,
-            totalAbsents: `${dbAbsents} Days`,
-            totalLates: `${dbLates} Times`
-          }));
-        }
+        const dbPresentsOnly = attData.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
+        const dbLates = attData.filter(a => a.status?.toLowerCase() === 'late' || a.status?.toLowerCase() === 'l').length;
+        const dbAbsents = attData.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
+        
+        const totalPresentIncludingLate = dbPresentsOnly + dbLates;
+        const totalWorkingDays = totalPresentIncludingLate + dbAbsents;
+        const percentage = totalWorkingDays > 0 ? Math.round((totalPresentIncludingLate / totalWorkingDays) * 100) : 0;
+        
+        setStudentInfo(prev => ({
+          ...prev,
+          attendanceRate: `${percentage}%`,
+          totalPresents: `${totalPresentIncludingLate} Days`,
+          totalAbsents: `${dbAbsents} Days`,
+          totalLates: `${dbLates} Times`
+        }));
 
         // 4. Fetch Notices
         const { data: noticeData, error: noticeErr } = await supabase
@@ -206,41 +205,50 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fees (Safe Quoting)
-        let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        if (safeOrClause) {
-          feeQuery = feeQuery.or(safeOrClause);
+        // 5. Fetch Fees (Strict Multi-pass Filter)
+        let feeData = [];
+        if (currentSrNo) {
+          const { data: srFee } = await supabase
+            .from('fee_collections')
+            .select('*')
+            .eq('sr_no', String(currentSrNo))
+            .order('receipt_date', { ascending: false });
+          if (srFee && srFee.length > 0) feeData = srFee;
+        }
+        if (feeData.length === 0 && currentStudentId) {
+          const { data: idFee } = await supabase
+            .from('fee_collections')
+            .select('*')
+            .eq('student_id', String(currentStudentId))
+            .order('receipt_date', { ascending: false });
+          if (idFee && idFee.length > 0) feeData = idFee;
         }
 
-        const { data: feeData, error: feeErr } = await feeQuery;
+        let totalPaidSum = 0;
+        const mappedFees = (feeData || []).map((f, idx) => {
+          const paid = Number(f.total_paid || f.fee_paid || 0);
+          totalPaidSum += paid;
+          return {
+            id: f.id ? `TXN-2026-${f.id}` : `TXN-${idx + 1}`,
+            studentName: currentStudentName || 'Student',
+            class: f.class_name || currentClass || '',
+            description: f.allocation_month ? `Tuition Fee Allocation (${f.allocation_month})` : 'Fee Payment',
+            date: f.receipt_date || (f.created_at ? f.created_at.split('T')[0] : ''),
+            receiptNo: f.receipt_no || `REC-${idx + 1}`,
+            amount: `₹ ${paid.toLocaleString()}`,
+            status: 'PAID',
+            mode: f.payment_mode ? f.payment_mode.toUpperCase() : 'CASH'
+          };
+        });
 
-        if (!feeErr && feeData) {
-          let totalPaidSum = 0;
-          const mappedFees = feeData.map((f, idx) => {
-            const paid = Number(f.total_paid || f.fee_paid || 0);
-            totalPaidSum += paid;
-            return {
-              id: f.id ? `TXN-2026-${f.id}` : `TXN-${idx + 1}`,
-              studentName: currentStudentName || 'Student',
-              class: f.class_name || currentClass || '',
-              description: f.allocation_month ? `Tuition Fee Allocation (${f.allocation_month})` : 'Fee Payment',
-              date: f.receipt_date || (f.created_at ? f.created_at.split('T')[0] : ''),
-              receiptNo: f.receipt_no || `REC-${idx + 1}`,
-              amount: `₹ ${paid.toLocaleString()}`,
-              status: 'PAID',
-              mode: f.payment_mode ? f.payment_mode.toUpperCase() : 'CASH'
-            };
-          });
+        const calculatedPending = Math.max(0, annualFeesNum - totalPaidSum);
 
-          const calculatedPending = Math.max(0, annualFeesNum - totalPaidSum);
-
-          setFeeRecordsList(mappedFees);
-          setStudentInfo(prev => ({
-            ...prev,
-            paidFee: `₹ ${totalPaidSum.toLocaleString()}`,
-            pendingFee: `₹ ${calculatedPending.toLocaleString()}`
-          }));
-        }
+        setFeeRecordsList(mappedFees);
+        setStudentInfo(prev => ({
+          ...prev,
+          paidFee: `₹ ${totalPaidSum.toLocaleString()}`,
+          pendingFee: `₹ ${calculatedPending.toLocaleString()}`
+        }));
 
       } catch (error) {
         console.error('Supabase fetch error:', error.message);
@@ -425,7 +433,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
-                      <th className="py-3 px-4 min-w-[90px]">Roll No</th>
+                      <th className="py-3 px-4 min-w-[90px]">Roll No / SR</th>
                       <th className="py-3 px-4 min-w-[200px]">Student Name</th>
                       <th className="py-3 px-4 min-w-[100px]">Class</th>
                       <th className="py-3 px-4 min-w-[130px]">Attendance Date</th>
@@ -444,7 +452,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                           </td>
                           <td className="py-3.5 px-4">
                             <p className="font-black text-slate-900 text-sm leading-tight">{studentInfo.name || 'Student'}</p>
-                            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">ID: STU-{studentInfo.id || '01'}</p>
+                            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">ID: STU-{att.student_id || studentInfo.id || '01'}</p>
                           </td>
                           <td className="py-3.5 px-4 font-bold text-slate-600">
                             <span className="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700 font-black border border-slate-200">
