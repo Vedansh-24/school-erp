@@ -309,7 +309,7 @@ export default function StudentAttendanceAndRemarks() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-100/80 text-slate-600 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
-                <th className="py-4 px-3 text-center w-16">Roll No</th>
+                <th className="py-4 px-3 text-center w-16">SR.NO</th>
                 <th className="py-4 px-5 min-w-[180px]">Student Name</th>
                 <th className="py-4 px-4 text-center w-28">Class</th>
                 <th className="py-4 px-3 text-center w-32">Attendance Date</th>
@@ -332,7 +332,7 @@ export default function StudentAttendanceAndRemarks() {
                 filteredStudents.map((student) => (
                   <tr key={student.id} className="hover:bg-slate-50/80 transition-colors">
                     
-                    {/* Roll No Column */}
+                    {/* SR.NO Column */}
                     <td className="py-4 px-3 text-center">
                       <span className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 font-black inline-flex items-center justify-center text-xs border border-indigo-100 shadow-sm">
                         {student.rollNo}
