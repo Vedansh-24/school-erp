@@ -300,13 +300,13 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Navigation Tabs (School Notices shifted to 2nd position) */}
       <div className="flex flex-wrap gap-3 border-b-2 border-slate-200 pb-4">
         {[
           { key: 'overview', label: '📊 Dashboard Overview' },
+          { key: 'notices', label: '📢 School Notices' },
           { key: 'attendance', label: '📅 Student Attendance & Remarks' },
           { key: 'homework', label: '📚 Daily Homework' },
-          { key: 'notices', label: '📢 School Notices' },
           { key: 'fees', label: '💳 Fee Records' },
           { key: 'quiz', label: '📝 Online Test / Quiz' },
         ].map((tab) => (
@@ -386,7 +386,80 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* TAB 2: ATTENDANCE & REMARKS */}
+          {/* TAB 2: SCHOOL NOTICES */}
+          {activeTab === 'notices' && (
+            <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
+              <h2 className="text-[18px] font-black text-blue-900">School Notices & Announcements</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {noticesList.length > 0 ? (
+                  noticesList.map((notice) => (
+                    <div key={notice.id} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
+                      <div className="p-5">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide border ${getPriorityColor(notice.priority)} flex items-center gap-1.5`}>
+                            <AlertCircle size={14} />
+                            {notice.priority} Priority
+                          </div>
+                        </div>
+
+                        <h3 className="text-lg font-black text-slate-800 leading-tight mb-2">
+                          {notice.title}
+                        </h3>
+                        
+                        {notice.description && (
+                          <p className="text-slate-600 text-sm font-medium mb-4 whitespace-pre-wrap">
+                            {notice.description}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-4 text-xs font-bold text-slate-500 bg-white p-3 rounded-xl border border-slate-100 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar size={14} className="text-slate-400" />
+                            {notice.date ? new Date(notice.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
+                          </div>
+                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                          <div className="flex items-center gap-1.5 text-indigo-600">
+                            <FileText size={14} />
+                            {notice.category}
+                          </div>
+                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                          <div className="flex items-center gap-1.5">
+                            <CheckCircle size={14} className="text-slate-400" />
+                            {notice.audience}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {notice.hasAttachment && (
+                        <div className="bg-white px-5 py-3 border-t border-slate-200 flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                            <Paperclip size={16} className="text-indigo-600" />
+                            <span>Attached Document</span>
+                          </div>
+                          {notice.attachmentUrl ? (
+                            <button 
+                              onClick={() => setViewingNotice(notice)}
+                              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-t border-indigo-300 border-b-[3px] border-indigo-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] transition-all cursor-pointer"
+                            >
+                              <Eye size={14} /> View File
+                            </button>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-semibold">No URL available</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
+                    No notices found.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: ATTENDANCE & REMARKS */}
           {activeTab === 'attendance' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
@@ -469,7 +542,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* TAB 3: DAILY HOMEWORK */}
+          {/* TAB 4: DAILY HOMEWORK */}
           {activeTab === 'homework' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
               <h2 className="text-[18px] font-black text-blue-900 flex justify-between items-center">
@@ -508,79 +581,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 ) : (
                   <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
                     No homework assigned for class {studentInfo.class}.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: SCHOOL NOTICES */}
-          {activeTab === 'notices' && (
-            <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-              <h2 className="text-[18px] font-black text-blue-900">School Notices & Announcements</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                {noticesList.length > 0 ? (
-                  noticesList.map((notice) => (
-                    <div key={notice.id} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
-                      <div className="p-5">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide border ${getPriorityColor(notice.priority)} flex items-center gap-1.5`}>
-                            <AlertCircle size={14} />
-                            {notice.priority} Priority
-                          </div>
-                        </div>
-
-                        <h3 className="text-lg font-black text-slate-800 leading-tight mb-2">
-                          {notice.title}
-                        </h3>
-                        
-                        {notice.description && (
-                          <p className="text-slate-600 text-sm font-medium mb-4 whitespace-pre-wrap">
-                            {notice.description}
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-4 text-xs font-bold text-slate-500 bg-white p-3 rounded-xl border border-slate-100 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar size={14} className="text-slate-400" />
-                            {notice.date ? new Date(notice.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
-                          </div>
-                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                          <div className="flex items-center gap-1.5 text-indigo-600">
-                            <FileText size={14} />
-                            {notice.category}
-                          </div>
-                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                          <div className="flex items-center gap-1.5">
-                            <CheckCircle size={14} className="text-slate-400" />
-                            {notice.audience}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {notice.hasAttachment && (
-                        <div className="bg-white px-5 py-3 border-t border-slate-200 flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
-                            <Paperclip size={16} className="text-indigo-600" />
-                            <span>Attached Document</span>
-                          </div>
-                          {notice.attachmentUrl ? (
-                            <button 
-                              onClick={() => setViewingNotice(notice)}
-                              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-t border-indigo-300 border-b-[3px] border-indigo-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] transition-all cursor-pointer"
-                            >
-                              <Eye size={14} /> View File
-                            </button>
-                          ) : (
-                            <span className="text-xs text-slate-400 font-semibold">No URL available</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                ) : (
-                  <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
-                    No notices found.
                   </div>
                 )}
               </div>
