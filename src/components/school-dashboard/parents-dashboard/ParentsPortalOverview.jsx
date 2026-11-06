@@ -86,12 +86,22 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     async function fetchPortalData() {
       setLoading(true);
       try {
-        // 1. Fetch Student Info (Matching sr_no, id, or student_id safely)
-        let studentQuery = supabase.from('students').select('*');
-        if (loggedInParentId) {
-          const cleanId = String(loggedInParentId).trim();
-          studentQuery = studentQuery.or(`sr_no.eq.${cleanId},id.eq.${cleanId},student_id.eq.${cleanId}`);
+        if (!loggedInParentId) {
+          setLoading(false);
+          return;
         }
+
+        const cleanId = String(loggedInParentId).trim();
+        const numericId = Number(cleanId);
+
+        // 1. Fetch Student Info (Filter explicitly to avoid fetching the wrong top row)
+        let studentQuery = supabase.from('students').select('*');
+        if (!isNaN(numericId)) {
+          studentQuery = studentQuery.or(`sr_no.eq.${numericId},student_id.eq.${numericId},sr_no.eq.${cleanId}`);
+        } else {
+          studentQuery = studentQuery.or(`sr_no.eq.${cleanId},id.eq.${cleanId}`);
+        }
+
         const { data: stData, error: stErr } = await studentQuery.limit(1);
 
         let currentStudentId = null;
@@ -104,13 +114,13 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           const st = stData[0];
           currentStudentId = st.student_id || st.id;
           currentSrNo = st.sr_no;
-          currentStudentName = st.student_full_name || st.name || '';
+          currentStudentName = st.student_full_name || st.name || st.student_name || '';
           currentClass = (st.class_name || '').trim();
           annualFeesNum = Number(st.annual_fees || 0);
 
           setStudentInfo(prev => ({
             ...prev,
-            id: st.id || st.student_id || '',
+            id: st.student_id || st.id || '',
             name: currentStudentName,
             class: currentClass,
             section: st.section || 'A',
@@ -120,6 +130,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             mobile: st.mobile_number || st.whatsapp_number || '',
             annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0'
           }));
+        } else {
+          console.warn('Student record not found for loggedInParentId:', loggedInParentId);
+          setLoading(false);
+          return;
         }
 
         // 2. Fetch Daily Homework
@@ -135,15 +149,20 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Fetch Attendance (Match both sr_no and student_id)
+        // 3. Fetch Attendance (Match using student_id / sr_no)
         let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
         
-        const filterConditions = [];
-        if (currentSrNo) filterConditions.push(`sr_no.eq.${currentSrNo}`);
-        if (currentStudentId) filterConditions.push(`student_id.eq.${currentStudentId}`);
-        
-        if (filterConditions.length > 0) {
-          attQuery = attQuery.or(filterConditions.join(','));
+        const filterOrClause = [];
+        if (currentStudentId) {
+          filterOrClause.push(`student_id.eq.${currentStudentId}`);
+        }
+        if (currentSrNo) {
+          filterOrClause.push(`sr_no.eq.${currentSrNo}`);
+          filterOrClause.push(`sr_no.eq.${String(currentSrNo)}`);
+        }
+
+        if (filterOrClause.length > 0) {
+          attQuery = attQuery.or(filterOrClause.join(','));
         }
 
         const { data: attData, error: attErr } = await attQuery;
@@ -188,10 +207,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fees (Match both sr_no and student_id)
+        // 5. Fetch Fees
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        if (filterConditions.length > 0) {
-          feeQuery = feeQuery.or(filterConditions.join(','));
+        if (filterOrClause.length > 0) {
+          feeQuery = feeQuery.or(filterOrClause.join(','));
         }
 
         const { data: feeData, error: feeErr } = await feeQuery;
