@@ -86,10 +86,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     async function fetchPortalData() {
       setLoading(true);
       try {
-        // 1. Fetch Student Info
+        // 1. Fetch Student Info (Matching sr_no, id, or student_id safely)
         let studentQuery = supabase.from('students').select('*');
         if (loggedInParentId) {
-          studentQuery = studentQuery.eq('sr_no', loggedInParentId);
+          const cleanId = String(loggedInParentId).trim();
+          studentQuery = studentQuery.or(`sr_no.eq.${cleanId},id.eq.${cleanId},student_id.eq.${cleanId}`);
         }
         const { data: stData, error: stErr } = await studentQuery.limit(1);
 
@@ -101,15 +102,15 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         if (!stErr && stData && stData.length > 0) {
           const st = stData[0];
-          currentStudentId = st.id;
+          currentStudentId = st.student_id || st.id;
           currentSrNo = st.sr_no;
-          currentStudentName = st.student_full_name || '';
+          currentStudentName = st.student_full_name || st.name || '';
           currentClass = (st.class_name || '').trim();
           annualFeesNum = Number(st.annual_fees || 0);
 
           setStudentInfo(prev => ({
             ...prev,
-            id: st.id,
+            id: st.id || st.student_id || '',
             name: currentStudentName,
             class: currentClass,
             section: st.section || 'A',
@@ -134,12 +135,15 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Fetch Attendance
+        // 3. Fetch Attendance (Match both sr_no and student_id)
         let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
-        if (currentSrNo) {
-          attQuery = attQuery.eq('sr_no', currentSrNo);
-        } else if (currentStudentId) {
-          attQuery = attQuery.eq('student_id', currentStudentId);
+        
+        const filterConditions = [];
+        if (currentSrNo) filterConditions.push(`sr_no.eq.${currentSrNo}`);
+        if (currentStudentId) filterConditions.push(`student_id.eq.${currentStudentId}`);
+        
+        if (filterConditions.length > 0) {
+          attQuery = attQuery.or(filterConditions.join(','));
         }
 
         const { data: attData, error: attErr } = await attQuery;
@@ -184,12 +188,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fees
+        // 5. Fetch Fees (Match both sr_no and student_id)
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        if (currentSrNo) {
-          feeQuery = feeQuery.eq('sr_no', currentSrNo);
-        } else if (currentStudentId) {
-          feeQuery = feeQuery.eq('student_id', currentStudentId);
+        if (filterConditions.length > 0) {
+          feeQuery = feeQuery.or(filterConditions.join(','));
         }
 
         const { data: feeData, error: feeErr } = await feeQuery;
@@ -300,7 +302,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         </div>
       </div>
 
-      {/* Navigation Tabs (School Notices shifted to 2nd position) */}
+      {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-3 border-b-2 border-slate-200 pb-4">
         {[
           { key: 'overview', label: '📊 Dashboard Overview' },
@@ -478,7 +480,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
-                      <th className="py-3 px-4 min-w-[90px]">Roll No</th>
+                      <th className="py-3 px-4 min-w-[90px]">SR.No</th>
                       <th className="py-3 px-4 min-w-[200px]">Student Name</th>
                       <th className="py-3 px-4 min-w-[100px]">Class</th>
                       <th className="py-3 px-4 min-w-[130px]">Attendance Date</th>
@@ -501,7 +503,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                           </td>
                           <td className="py-3.5 px-4 font-bold text-slate-600">
                             <span className="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700 font-black border border-slate-200">
-                              {studentInfo.class || 'N/A'}
+                              {att.class_name || studentInfo.class || 'N/A'}
                             </span>
                           </td>
                           <td className="py-3.5 px-4 font-bold text-slate-600 whitespace-nowrap">
