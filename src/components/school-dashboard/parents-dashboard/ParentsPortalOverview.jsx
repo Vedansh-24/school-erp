@@ -89,7 +89,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         // 1. Fetch Student Info
         let studentQuery = supabase.from('students').select('*');
         if (loggedInParentId) {
-          studentQuery = studentQuery.eq('id', loggedInParentId);
+          studentQuery = studentQuery.eq('sr_no', loggedInParentId);
         }
         const { data: stData, error: stErr } = await studentQuery.limit(1);
 
