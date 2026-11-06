@@ -102,25 +102,28 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         if (!stErr && stData && stData.length > 0) {
           const st = stData[0];
-          currentStudentId = st.student_id || st.id;
-          currentSrNo = st.sr_no;
+          currentStudentId = String(st.student_id || st.id || '').trim();
+          currentSrNo = String(st.sr_no || '').trim();
           currentStudentName = st.student_full_name || st.name || '';
           currentClass = (st.class_name || '').trim();
           annualFeesNum = Number(st.annual_fees || 0);
 
           setStudentInfo(prev => ({
             ...prev,
-            id: st.id || st.student_id || '',
+            id: currentStudentId,
             name: currentStudentName,
             class: currentClass,
             section: st.section || 'A',
-            rollNo: st.sr_no || st.student_id || '',
-            admissionNo: st.sr_no ? `SR-${st.sr_no}` : `STU-${st.id}`,
+            rollNo: currentSrNo,
+            admissionNo: currentSrNo ? `SR-${currentSrNo}` : `STU-${currentStudentId}`,
             fatherName: st.father_name || '',
             mobile: st.mobile_number || st.whatsapp_number || '',
             annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0'
           }));
         }
+
+        // Fallback agar loggedInParentId direct props se mila ho aur student table me query se match na hua ho
+        const fallbackId = loggedInParentId ? String(loggedInParentId).trim() : '';
 
         // 2. Fetch Daily Homework
         const { data: hwData, error: hwErr } = await supabase
@@ -135,20 +138,25 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Fetch Attendance strictly using loggedInParentId matching sr_no or student_id
+        // 3. Fetch Attendance (Handling both sr_no, student_id, and integer/string conversions safely)
         let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
         
-        const filterConditions = [];
-        if (currentSrNo) filterConditions.push(`sr_no.eq.${currentSrNo}`);
-        if (currentStudentId) filterConditions.push(`student_id.eq.${currentStudentId}`);
-        if (loggedInParentId) {
-          const cleanId = String(loggedInParentId).trim();
-          filterConditions.push(`sr_no.eq.${cleanId}`);
-          filterConditions.push(`student_id.eq.${cleanId}`);
+        const conditions = [];
+        if (currentSrNo) {
+          conditions.push(`sr_no.eq.${currentSrNo}`);
         }
-        
-        if (filterConditions.length > 0) {
-          attQuery = attQuery.or(filterConditions.join(','));
+        if (currentStudentId) {
+          conditions.push(`student_id.eq.${currentStudentId}`);
+        }
+        if (fallbackId) {
+          conditions.push(`sr_no.eq.${fallbackId}`);
+          conditions.push(`student_id.eq.${fallbackId}`);
+        }
+
+        if (conditions.length > 0) {
+          // Remove duplicates if any
+          const uniqueConditions = [...new Set(conditions)];
+          attQuery = attQuery.or(uniqueConditions.join(','));
         }
 
         const { data: attData, error: attErr } = await attQuery;
@@ -193,10 +201,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fees (Match both sr_no and student_id)
+        // 5. Fetch Fees
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        if (filterConditions.length > 0) {
-          feeQuery = feeQuery.or(filterConditions.join(','));
+        if (conditions.length > 0) {
+          feeQuery = feeQuery.or([...new Set(conditions)].join(','));
         }
 
         const { data: feeData, error: feeErr } = await feeQuery;
