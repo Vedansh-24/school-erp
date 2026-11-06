@@ -135,12 +135,17 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Fetch Attendance (Match both sr_no and student_id)
+        // 3. Fetch Attendance strictly using loggedInParentId matching sr_no or student_id
         let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
         
         const filterConditions = [];
         if (currentSrNo) filterConditions.push(`sr_no.eq.${currentSrNo}`);
         if (currentStudentId) filterConditions.push(`student_id.eq.${currentStudentId}`);
+        if (loggedInParentId) {
+          const cleanId = String(loggedInParentId).trim();
+          filterConditions.push(`sr_no.eq.${cleanId}`);
+          filterConditions.push(`student_id.eq.${cleanId}`);
+        }
         
         if (filterConditions.length > 0) {
           attQuery = attQuery.or(filterConditions.join(','));
