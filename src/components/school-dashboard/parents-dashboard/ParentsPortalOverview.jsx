@@ -88,8 +88,9 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
       try {
         // 1. Fetch Student Info (Matching sr_no, id, or student_id safely)
         let studentQuery = supabase.from('students').select('*');
-        if (loggedInParentId) {
-          const cleanId = String(loggedInParentId).trim();
+        let cleanId = '';
+        if (loggedInParentId !== null && loggedInParentId !== undefined) {
+          cleanId = String(loggedInParentId).trim();
           studentQuery = studentQuery.or(`sr_no.eq.${cleanId},id.eq.${cleanId},student_id.eq.${cleanId}`);
         }
         const { data: stData, error: stErr } = await studentQuery.limit(1);
@@ -122,9 +123,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // Fallback agar loggedInParentId direct props se mila ho aur student table me query se match na hua ho
-        const fallbackId = loggedInParentId ? String(loggedInParentId).trim() : '';
-
         // 2. Fetch Daily Homework
         const { data: hwData, error: hwErr } = await supabase
           .from('daily_homework')
@@ -138,7 +136,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Fetch Attendance (Handling both sr_no, student_id, and integer/string conversions safely)
+        // 3. Robust Attendance Fetching using both student_id and sr_no matches
         let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
         
         const conditions = [];
@@ -148,13 +146,12 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         if (currentStudentId) {
           conditions.push(`student_id.eq.${currentStudentId}`);
         }
-        if (fallbackId) {
-          conditions.push(`sr_no.eq.${fallbackId}`);
-          conditions.push(`student_id.eq.${fallbackId}`);
+        if (cleanId) {
+          conditions.push(`sr_no.eq.${cleanId}`);
+          conditions.push(`student_id.eq.${cleanId}`);
         }
 
         if (conditions.length > 0) {
-          // Remove duplicates if any
           const uniqueConditions = [...new Set(conditions)];
           attQuery = attQuery.or(uniqueConditions.join(','));
         }
@@ -269,7 +266,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             <span>Class:</span> <span className="text-white font-extrabold">{studentInfo.class}</span>
           </div>
           <div className="text-[12px] text-sky-100 font-bold flex justify-between">
-            <span>Roll No:</span> <span className="text-white font-extrabold">{studentInfo.rollNo}</span>
+            <span>SR.NO:</span> <span className="text-white font-extrabold">{studentInfo.rollNo}</span>
           </div>
           <div className="text-[12px] text-sky-100 font-bold flex justify-between">
             <span>Admission ID:</span> <span className="text-white font-extrabold truncate max-w-[140px]">{studentInfo.admissionNo}</span>
@@ -493,7 +490,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
-                      <th className="py-3 px-4 min-w-[90px]">SR.No</th>
+                      <th className="py-3 px-4 min-w-[90px]">SR.NO</th>
                       <th className="py-3 px-4 min-w-[200px]">Student Name</th>
                       <th className="py-3 px-4 min-w-[100px]">Class</th>
                       <th className="py-3 px-4 min-w-[130px]">Attendance Date</th>
