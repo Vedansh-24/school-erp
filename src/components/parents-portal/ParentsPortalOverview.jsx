@@ -1,4 +1,3 @@
-// Filename: ParentsPortalOverview.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -92,17 +91,16 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         }
 
         const cleanId = String(loggedInParentId).trim();
-        const numericId = Number(cleanId);
 
-        // 1. Fetch Student Info (Filter explicitly to avoid fetching the wrong top row)
-        let studentQuery = supabase.from('students').select('*');
-        if (!isNaN(numericId)) {
-          studentQuery = studentQuery.or(`sr_no.eq.${numericId},student_id.eq.${numericId},sr_no.eq.${cleanId}`);
-        } else {
-          studentQuery = studentQuery.or(`sr_no.eq.${cleanId},id.eq.${cleanId}`);
-        }
+        // 1. Safe Student Query (Wrapped values with quotes for PostgREST)
+        const studentOrConditions = [
+          `sr_no.eq."${cleanId}"`,
+          `id.eq."${cleanId}"`,
+          `student_id.eq."${cleanId}"`
+        ].join(',');
 
-        const { data: stData, error: stErr } = await studentQuery.limit(1);
+        let studentQuery = supabase.from('students').select('*').or(studentOrConditions).limit(1);
+        const { data: stData, error: stErr } = await studentQuery;
 
         let currentStudentId = null;
         let currentSrNo = null;
@@ -149,20 +147,21 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Fetch Attendance (Match using student_id / sr_no)
-        let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
-        
-        const filterOrClause = [];
+        // 3. Construct Safe PostgREST Filter String for Attendance & Fee
+        const matchFilterClauses = [];
         if (currentStudentId) {
-          filterOrClause.push(`student_id.eq.${currentStudentId}`);
+          matchFilterClauses.push(`student_id.eq."${currentStudentId}"`);
         }
         if (currentSrNo) {
-          filterOrClause.push(`sr_no.eq.${currentSrNo}`);
-          filterOrClause.push(`sr_no.eq.${String(currentSrNo)}`);
+          matchFilterClauses.push(`sr_no.eq."${currentSrNo}"`);
         }
 
-        if (filterOrClause.length > 0) {
-          attQuery = attQuery.or(filterOrClause.join(','));
+        const safeOrClause = matchFilterClauses.join(',');
+
+        // Fetch Attendance using double-quoted string parameters
+        let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
+        if (safeOrClause) {
+          attQuery = attQuery.or(safeOrClause);
         }
 
         const { data: attData, error: attErr } = await attQuery;
@@ -207,10 +206,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fees
+        // 5. Fetch Fees (Safe Quoting)
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        if (filterOrClause.length > 0) {
-          feeQuery = feeQuery.or(filterOrClause.join(','));
+        if (safeOrClause) {
+          feeQuery = feeQuery.or(safeOrClause);
         }
 
         const { data: feeData, error: feeErr } = await feeQuery;
