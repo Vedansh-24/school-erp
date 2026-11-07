@@ -62,7 +62,7 @@ export default function FeeCollectionReceipt() {
     return dateStr;
   };
 
-  // Helper function to accurately get Student Details
+  // Helper function to accurately get Student Details based on the students table columns
   const getStudentDetails = (tx) => {
     if (!tx) return { name: 'N/A', father: 'N/A', sr: 'N/A' };
     
@@ -294,7 +294,7 @@ export default function FeeCollectionReceipt() {
 
     const txData = {
       receipt_no: manualReceiptNo || Math.floor(1000 + Math.random() * 9000).toString(),
-      student_id: studentUuid,
+      student_id: studentUuid ? String(studentUuid) : null, // Ensured matching schema text column requirement if needed
       sr_no: srNoVal,
       class_name: selectedClass,
       allocation_month: allocationMonth,
@@ -548,7 +548,6 @@ Thank you!
             <p className="text-[13px] font-extrabold text-slate-700 mb-2.5 text-center lg:text-left">
               {feePlanType === 'monthly' ? 'Click on the exact month you want to collect fee for:' : feePlanType === 'yearly' ? 'All months selected for Annual/Yearly Plan:' : 'Auto-selected months based on chosen instalment:'}
             </p>
-            {/* Mobile screen par ek row me keval 2 months show honge (grid-cols-2), jabki laptop par 6 columns (lg:grid-cols-6) */}
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
               {Object.keys(selectedMonths).map((mKey) => (
                 <label key={mKey} onClick={() => handleMonthCheckboxToggle(mKey)} className={`flex items-center space-x-2.5 bg-white border-2 px-3 py-2 rounded-xl text-[13px] font-bold shadow-sm transition ${feePlanType === 'monthly' ? 'cursor-pointer hover:border-sky-500 hover:bg-sky-50/50' : 'cursor-default opacity-90 border-slate-200'}`}>
