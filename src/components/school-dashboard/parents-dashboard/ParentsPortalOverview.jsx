@@ -86,7 +86,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     async function fetchPortalData() {
       setLoading(true);
       try {
-        // 1. Fetch Student Info (Matching sr_no, id, or student_id safely)[cite: 12]
+        // STEP 1: Student Table se Student ki pehchan karna
         let studentQuery = supabase.from('students').select('*');
         let cleanId = '';
         if (loggedInParentId !== null && loggedInParentId !== undefined) {
@@ -123,10 +123,21 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // Fallback agar loggedInParentId direct props se mila ho aur student table me query se match na hua ho
-        const fallbackId = loggedInParentId ? String(loggedInParentId).trim() : '';
+        // Search conditions taiyar karna taaki Attendance aur Fee tables me match kiya ja sake
+        const conditions = [];
+        if (currentSrNo) {
+          conditions.push(`sr_no.eq.${currentSrNo}`);
+        }
+        if (currentStudentId) {
+          conditions.push(`student_id.eq.${currentStudentId}`);
+        }
+        if (cleanId) {
+          conditions.push(`sr_no.eq.${cleanId}`);
+          conditions.push(`student_id.eq.${cleanId}`);
+        }
+        const uniqueConditions = [...new Set(conditions)];
 
-        // 2. Fetch Daily Homework[cite: 12]
+        // STEP 2: Student ki Class ke anusaar Daily Homework fetch karna
         const { data: hwData, error: hwErr } = await supabase
           .from('daily_homework')
           .select('*')
@@ -139,23 +150,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Fetch Attendance (Handling both sr_no and student_id correctly)[cite: 12]
+        // STEP 3: Student ki id/sr_no se Attendance & Remarks table se data fetch karna
         let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
         
-        const conditions = [];
-        if (currentSrNo) {
-          conditions.push(`sr_no.eq.${currentSrNo}`);
-        }
-        if (currentStudentId) {
-          conditions.push(`student_id.eq.${currentStudentId}`);
-        }
-        if (fallbackId) {
-          conditions.push(`sr_no.eq.${fallbackId}`);
-          conditions.push(`student_id.eq.${fallbackId}`);
-        }
-
-        if (conditions.length > 0) {
-          const uniqueConditions = [...new Set(conditions)];
+        if (uniqueConditions.length > 0) {
           attQuery = attQuery.or(uniqueConditions.join(','));
         }
 
@@ -181,7 +179,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // 4. Fetch Notices[cite: 12]
+        // 4. Fetch Notices
         const { data: noticeData, error: noticeErr } = await supabase
           .from('circulars_and_notices')
           .select('*')
@@ -201,10 +199,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fees[cite: 12]
+        // STEP 5: Student ki pehchan karke fee_collections table se Fee Data fetch karna
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        if (conditions.length > 0) {
-          feeQuery = feeQuery.or([...new Set(conditions)].join(','));
+        if (uniqueConditions.length > 0) {
+          feeQuery = feeQuery.or(uniqueConditions.join(','));
         }
 
         const { data: feeData, error: feeErr } = await feeQuery;
@@ -627,7 +625,32 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
                     {feeRecordsList.length > 0 ? (
-                      feeRecordsList.map((item) => (
+                      feeRecordsList.key ? feeRecordsList.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <p className="font-black text-slate-900 text-sm leading-tight">{item.studentName}</p>
+                            <p className="text-[11px] text-indigo-600 font-bold mt-0.5">{item.class}</p>
+                          </td>
+                          <td className="py-3.5 px-4 font-bold text-slate-600">
+                            {item.description}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <p className="font-black text-slate-800 text-xs">{item.date}</p>
+                            <p className="text-[10px] text-slate-400 font-semibold mt-0.5">{item.id}</p>
+                          </td>
+                          <td className="py-3.5 px-4 font-mono text-slate-600 font-bold">
+                            {item.receiptNo}
+                          </td>
+                          <td className="py-3.5 px-4 font-black text-emerald-600 text-sm whitespace-nowrap">
+                            + {item.amount}
+                          </td>
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-black uppercase shadow-sm">
+                              ✅ {item.mode} ({item.status})
+                            </span>
+                          </td>
+                        </tr>
+                      )) : feeRecordsList.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-3.5 px-4">
                             <p className="font-black text-slate-900 text-sm leading-tight">{item.studentName}</p>
