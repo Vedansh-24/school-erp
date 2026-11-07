@@ -123,19 +123,33 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // Search conditions taiyar karna taaki Attendance aur Fee tables me match kiya ja sake
-        const conditions = [];
+        // Attendance के लिए conditions (sr_no या student_id)
+        const attConditions = [];
         if (currentSrNo) {
-          conditions.push(`sr_no.eq.${currentSrNo}`);
+          attConditions.push(`sr_no.eq.${currentSrNo}`);
         }
         if (currentStudentId) {
-          conditions.push(`student_id.eq.${currentStudentId}`);
+          attConditions.push(`student_id.eq.${currentStudentId}`);
         }
         if (cleanId) {
-          conditions.push(`sr_no.eq.${cleanId}`);
-          conditions.push(`student_id.eq.${cleanId}`);
+          attConditions.push(`sr_no.eq.${cleanId}`);
+          attConditions.push(`student_id.eq.${cleanId}`);
         }
-        const uniqueConditions = [...new Set(conditions)];
+        const uniqueAttConditions = [...new Set(attConditions)];
+
+        // Fee Collections के लिए conditions (केवल id या sr_no के आधार पर)
+        const feeConditions = [];
+        if (currentSrNo) {
+          feeConditions.push(`sr_no.eq.${currentSrNo}`);
+        }
+        if (currentStudentId) {
+          feeConditions.push(`id.eq.${currentStudentId}`);
+        }
+        if (cleanId) {
+          feeConditions.push(`sr_no.eq.${cleanId}`);
+          feeConditions.push(`id.eq.${cleanId}`);
+        }
+        const uniqueFeeConditions = [...new Set(feeConditions)];
 
         // STEP 2: Student ki Class ke anusaar Daily Homework fetch karna
         const { data: hwData, error: hwErr } = await supabase
@@ -153,8 +167,8 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         // STEP 3: Student ki id/sr_no se Attendance & Remarks table se data fetch karna
         let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
         
-        if (uniqueConditions.length > 0) {
-          attQuery = attQuery.or(uniqueConditions.join(','));
+        if (uniqueAttConditions.length > 0) {
+          attQuery = attQuery.or(uniqueAttConditions.join(','));
         }
 
         const { data: attData, error: attErr } = await attQuery;
@@ -199,10 +213,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // STEP 5: Student ki pehchan karke fee_collections table se Fee Data fetch karna
+        // STEP 5: Fee Collections - id या sr_no के आधार पर फीस रिकॉर्ड फेच करना
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        if (uniqueConditions.length > 0) {
-          feeQuery = feeQuery.or(uniqueConditions.join(','));
+        if (uniqueFeeConditions.length > 0) {
+          feeQuery = feeQuery.or(uniqueFeeConditions.join(','));
         }
 
         const { data: feeData, error: feeErr } = await feeQuery;
