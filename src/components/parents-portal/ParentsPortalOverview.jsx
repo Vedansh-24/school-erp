@@ -86,7 +86,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     async function fetchPortalData() {
       setLoading(true);
       try {
-        // 1. Fetch Student Info (Matching sr_no, id, or student_id safely)
+        // 1. Fetch Student Info (Matching sr_no, id, or student_id safely)[cite: 12]
         let studentQuery = supabase.from('students').select('*');
         let cleanId = '';
         if (loggedInParentId !== null && loggedInParentId !== undefined) {
@@ -123,7 +123,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // 2. Fetch Daily Homework
+        // Fallback agar loggedInParentId direct props se mila ho aur student table me query se match na hua ho
+        const fallbackId = loggedInParentId ? String(loggedInParentId).trim() : '';
+
+        // 2. Fetch Daily Homework[cite: 12]
         const { data: hwData, error: hwErr } = await supabase
           .from('daily_homework')
           .select('*')
@@ -136,7 +139,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // 3. Robust Attendance Fetching using both student_id and sr_no matches
+        // 3. Fetch Attendance (Handling both sr_no and student_id correctly)[cite: 12]
         let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
         
         const conditions = [];
@@ -146,9 +149,9 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         if (currentStudentId) {
           conditions.push(`student_id.eq.${currentStudentId}`);
         }
-        if (cleanId) {
-          conditions.push(`sr_no.eq.${cleanId}`);
-          conditions.push(`student_id.eq.${cleanId}`);
+        if (fallbackId) {
+          conditions.push(`sr_no.eq.${fallbackId}`);
+          conditions.push(`student_id.eq.${fallbackId}`);
         }
 
         if (conditions.length > 0) {
@@ -178,7 +181,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // 4. Fetch Notices
+        // 4. Fetch Notices[cite: 12]
         const { data: noticeData, error: noticeErr } = await supabase
           .from('circulars_and_notices')
           .select('*')
@@ -198,7 +201,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // 5. Fetch Fees
+        // 5. Fetch Fees[cite: 12]
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
         if (conditions.length > 0) {
           feeQuery = feeQuery.or([...new Set(conditions)].join(','));
