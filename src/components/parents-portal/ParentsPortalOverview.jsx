@@ -84,57 +84,74 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   useEffect(() => {
     async function fetchPortalData() {
-      if (!loggedInParentId) {
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
       try {
-        const cleanId = String(loggedInParentId).trim();
+        // STEP 1: Student Table se Student ki pehchan karna
+        let studentQuery = supabase.from('students').select('*');
+        let cleanId = '';
+        if (loggedInParentId !== null && loggedInParentId !== undefined) {
+          cleanId = String(loggedInParentId).trim();
+          studentQuery = studentQuery.or(`sr_no.eq.${cleanId},id.eq.${cleanId},student_id.eq.${cleanId}`);
+        }
+        const { data: stData, error: stErr } = await studentQuery.limit(1);
 
-        // STEP 1: सबसे पहले students टेबल से सटीक छात्र की जानकारी प्राप्त करें
-        const { data: stData, error: stErr } = await supabase
-          .from('students')
-          .select('*')
-          .or(`sr_no.eq.${cleanId},id.eq.${cleanId},student_id.eq.${cleanId}`)
-          .limit(1);
+        let currentStudentId = null;
+        let currentSrNo = null;
+        let currentStudentName = '';
+        let currentClass = '';
+        let annualFeesNum = 0;
 
-        if (stErr || !stData || stData.length === 0) {
-          console.error('Student not found for ID:', cleanId);
-          setLoading(false);
-          return;
+        if (!stErr && stData && stData.length > 0) {
+          const st = stData[0];
+          currentStudentId = String(st.student_id || st.id || '').trim();
+          currentSrNo = String(st.sr_no || '').trim();
+          currentStudentName = st.student_full_name || st.name || '';
+          currentClass = (st.class_name || '').trim();
+          annualFeesNum = Number(st.annual_fees || 0);
+
+          setStudentInfo(prev => ({
+            ...prev,
+            id: currentStudentId,
+            name: currentStudentName,
+            class: currentClass,
+            section: st.section || 'A',
+            rollNo: currentSrNo,
+            admissionNo: currentSrNo ? `SR-${currentSrNo}` : `STU-${currentStudentId}`,
+            fatherName: st.father_name || '',
+            mobile: st.mobile_number || st.whatsapp_number || '',
+            annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0'
+          }));
         }
 
-        const st = stData[0];
-        // student table की primary key (id) और sr_no को सुरक्षित रूप से निकालें
-        const dbStudentUuid = String(st.id || '').trim();
-        const dbStudentIdField = String(st.student_id || '').trim();
-        const dbSrNo = String(st.sr_no || '').trim();
-        const currentStudentName = st.student_full_name || st.name || '';
-        const currentClass = (st.class_name || '').trim();
-        const annualFeesNum = Number(st.annual_fees || 0);
+        // Attendance के लिए conditions (sr_no या student_id)
+        const attConditions = [];
+        if (currentSrNo) {
+          attConditions.push(`sr_no.eq.${currentSrNo}`);
+        }
+        if (currentStudentId) {
+          attConditions.push(`student_id.eq.${currentStudentId}`);
+        }
+        if (cleanId) {
+          attConditions.push(`sr_no.eq.${cleanId}`);
+          attConditions.push(`student_id.eq.${cleanId}`);
+        }
+        const uniqueAttConditions = [...new Set(attConditions)];
 
-        setStudentInfo({
-          id: dbStudentUuid || dbStudentIdField,
-          name: currentStudentName,
-          class: currentClass,
-          section: st.section || 'A',
-          rollNo: dbSrNo,
-          admissionNo: dbSrNo ? `SR-${dbSrNo}` : `STU-${dbStudentUuid}`,
-          fatherName: st.father_name || '',
-          mobile: st.mobile_number || st.whatsapp_number || '',
-          annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0',
-          paidFee: '₹ 0',
-          pendingFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0',
-          attendanceRate: '0%',
-          totalPresents: '0 Days',
-          totalAbsents: '0 Days',
-          totalLates: '0 Times',
-          academicSession: '2026 - 2027'
-        });
+        // Fee Collections के लिए conditions (केवल id या sr_no के आधार पर)
+        const feeConditions = [];
+        if (currentSrNo) {
+          feeConditions.push(`sr_no.eq.${currentSrNo}`);
+        }
+        if (currentStudentId) {
+          feeConditions.push(`id.eq.${currentStudentId}`);
+        }
+        if (cleanId) {
+          feeConditions.push(`sr_no.eq.${cleanId}`);
+          feeConditions.push(`id.eq.${cleanId}`);
+        }
+        const uniqueFeeConditions = [...new Set(feeConditions)];
 
-        // STEP 2: Student की Class के अनुसार Daily Homework fetch करना
+        // STEP 2: Student ki Class ke anusaar Daily Homework fetch karna
         const { data: hwData, error: hwErr } = await supabase
           .from('daily_homework')
           .select('*')
@@ -147,49 +164,36 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // STEP 3: Attendance टेबल से केवल इसी छात्र का सटीक डेटा निकालना (sr_no या student_id के जरिए)
-        let attConditions = [];
-        if (dbSrNo) attConditions.push(`sr_no.eq.${dbSrNo}`);
-        if (dbStudentIdField) attConditions.push(`student_id.eq.${dbStudentIdField}`);
-        if (dbStudentUuid) attConditions.push(`student_id.eq.${dbStudentUuid}`);
-        if (cleanId) {
-          attConditions.push(`sr_no.eq.${cleanId}`);
-          attConditions.push(`student_id.eq.${cleanId}`);
-        }
-
-        const uniqueAttConditions = [...new Set(attConditions)];
-        let attData = [];
+        // STEP 3: Student ki id/sr_no se Attendance & Remarks table se data fetch karna
+        let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
+        
         if (uniqueAttConditions.length > 0) {
-          const { data: resAtt, error: attErr } = await supabase
-            .from('attendance')
-            .select('*')
-            .or(uniqueAttConditions.join(','))
-            .order('attendance_date', { ascending: false });
-
-          if (!attErr && resAtt) {
-            attData = resAtt;
-          }
+          attQuery = attQuery.or(uniqueAttConditions.join(','));
         }
 
-        setAttendanceRecords(attData);
+        const { data: attData, error: attErr } = await attQuery;
 
-        const dbPresentsOnly = attData.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
-        const dbLates = attData.filter(a => a.status?.toLowerCase() === 'late' || a.status?.toLowerCase() === 'l').length;
-        const dbAbsents = attData.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
-        
-        const totalPresentIncludingLate = dbPresentsOnly + dbLates;
-        const totalWorkingDays = totalPresentIncludingLate + dbAbsents;
-        const attendancePercentage = totalWorkingDays > 0 ? Math.round((totalPresentIncludingLate / totalWorkingDays) * 100) : 0;
-        
-        setStudentInfo(prev => ({
-          ...prev,
-          attendanceRate: `${attendancePercentage}%`,
-          totalPresents: `${totalPresentIncludingLate} Days`,
-          totalAbsents: `${dbAbsents} Days`,
-          totalLates: `${dbLates} Times`
-        }));
+        if (!attErr && attData) {
+          setAttendanceRecords(attData);
 
-        // STEP 4: Notices fetch करना
+          const dbPresentsOnly = attData.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
+          const dbLates = attData.filter(a => a.status?.toLowerCase() === 'late' || a.status?.toLowerCase() === 'l').length;
+          const dbAbsents = attData.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
+          
+          const totalPresentIncludingLate = dbPresentsOnly + dbLates;
+          const totalWorkingDays = totalPresentIncludingLate + dbAbsents;
+          const percentage = totalWorkingDays > 0 ? Math.round((totalPresentIncludingLate / totalWorkingDays) * 100) : 0;
+          
+          setStudentInfo(prev => ({
+            ...prev,
+            attendanceRate: `${percentage}%`,
+            totalPresents: `${totalPresentIncludingLate} Days`,
+            totalAbsents: `${dbAbsents} Days`,
+            totalLates: `${dbLates} Times`
+          }));
+        }
+
+        // 4. Fetch Notices
         const { data: noticeData, error: noticeErr } = await supabase
           .from('circulars_and_notices')
           .select('*')
@@ -209,55 +213,41 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // STEP 5: Fee Collections - id या sr_no के आधार पर सटीक फीस रिकॉर्ड फेच करना
-        let feeConditions = [];
-        if (dbSrNo) feeConditions.push(`sr_no.eq.${dbSrNo}`);
-        if (dbStudentUuid) feeConditions.push(`id.eq.${dbStudentUuid}`);
-        if (dbStudentIdField) feeConditions.push(`id.eq.${dbStudentIdField}`);
-        if (cleanId) {
-          feeConditions.push(`sr_no.eq.${cleanId}`);
-          feeConditions.push(`id.eq.${cleanId}`);
-        }
-
-        const uniqueFeeConditions = [...new Set(feeConditions)];
-        let feeData = [];
+        // STEP 5: Fee Collections - id या sr_no के आधार पर फीस रिकॉर्ड फेच करना
+        let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
         if (uniqueFeeConditions.length > 0) {
-          const { data: resFee, error: feeErr } = await supabase
-            .from('fee_collections')
-            .select('*')
-            .or(uniqueFeeConditions.join(','))
-            .order('receipt_date', { ascending: false });
-
-          if (!feeErr && resFee) {
-            feeData = resFee;
-          }
+          feeQuery = feeQuery.or(uniqueFeeConditions.join(','));
         }
 
-        let totalPaidSum = 0;
-        const mappedFees = feeData.map((f, idx) => {
-          const paid = Number(f.total_paid || f.fee_paid || 0);
-          totalPaidSum += paid;
-          return {
-            id: f.id ? `TXN-2026-${f.id}` : `TXN-${idx + 1}`,
-            studentName: currentStudentName || 'Student',
-            class: f.class_name || currentClass || '',
-            description: f.allocation_month ? `Tuition Fee Allocation (${f.allocation_month})` : 'Fee Payment',
-            date: f.receipt_date || (f.created_at ? f.created_at.split('T')[0] : ''),
-            receiptNo: f.receipt_no || `REC-${idx + 1}`,
-            amount: `₹ ${paid.toLocaleString()}`,
-            status: 'PAID',
-            mode: f.payment_mode ? f.payment_mode.toUpperCase() : 'CASH'
-          };
-        });
+        const { data: feeData, error: feeErr } = await feeQuery;
 
-        const calculatedPending = Math.max(0, annualFeesNum - totalPaidSum);
+        if (!feeErr && feeData) {
+          let totalPaidSum = 0;
+          const mappedFees = feeData.map((f, idx) => {
+            const paid = Number(f.total_paid || f.fee_paid || 0);
+            totalPaidSum += paid;
+            return {
+              id: f.id ? `TXN-2026-${f.id}` : `TXN-${idx + 1}`,
+              studentName: currentStudentName || 'Student',
+              class: f.class_name || currentClass || '',
+              description: f.allocation_month ? `Tuition Fee Allocation (${f.allocation_month})` : 'Fee Payment',
+              date: f.receipt_date || (f.created_at ? f.created_at.split('T')[0] : ''),
+              receiptNo: f.receipt_no || `REC-${idx + 1}`,
+              amount: `₹ ${paid.toLocaleString()}`,
+              status: 'PAID',
+              mode: f.payment_mode ? f.payment_mode.toUpperCase() : 'CASH'
+            };
+          });
 
-        setFeeRecordsList(mappedFees);
-        setStudentInfo(prev => ({
-          ...prev,
-          paidFee: `₹ ${totalPaidSum.toLocaleString()}`,
-          pendingFee: `₹ ${calculatedPending.toLocaleString()}`
-        }));
+          const calculatedPending = Math.max(0, annualFeesNum - totalPaidSum);
+
+          setFeeRecordsList(mappedFees);
+          setStudentInfo(prev => ({
+            ...prev,
+            paidFee: `₹ ${totalPaidSum.toLocaleString()}`,
+            pendingFee: `₹ ${calculatedPending.toLocaleString()}`
+          }));
+        }
 
       } catch (error) {
         console.error('Supabase fetch error:', error.message);
@@ -649,7 +639,32 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
                     {feeRecordsList.length > 0 ? (
-                      feeRecordsList.map((item) => (
+                      feeRecordsList.key ? feeRecordsList.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <p className="font-black text-slate-900 text-sm leading-tight">{item.studentName}</p>
+                            <p className="text-[11px] text-indigo-600 font-bold mt-0.5">{item.class}</p>
+                          </td>
+                          <td className="py-3.5 px-4 font-bold text-slate-600">
+                            {item.description}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <p className="font-black text-slate-800 text-xs">{item.date}</p>
+                            <p className="text-[10px] text-slate-400 font-semibold mt-0.5">{item.id}</p>
+                          </td>
+                          <td className="py-3.5 px-4 font-mono text-slate-600 font-bold">
+                            {item.receiptNo}
+                          </td>
+                          <td className="py-3.5 px-4 font-black text-emerald-600 text-sm whitespace-nowrap">
+                            + {item.amount}
+                          </td>
+                          <td className="py-3.5 px-4 whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-black uppercase shadow-sm">
+                              ✅ {item.mode} ({item.status})
+                            </span>
+                          </td>
+                        </tr>
+                      )) : feeRecordsList.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-3.5 px-4">
                             <p className="font-black text-slate-900 text-sm leading-tight">{item.studentName}</p>
