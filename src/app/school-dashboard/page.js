@@ -193,7 +193,20 @@ export default function SchoolDashboard() {
     return ComponentToRender ? <ComponentToRender /> : null;
   };
 
-  // Handler for uploading PSP student report (HTML/Excel table format)
+  // Helper date formatter (DD/MM/YYYY to YYYY-MM-DD)
+  const formatDate = (val) => {
+    if (!val || val === 'NaN' || val === 'undefined') return null;
+    const cleanVal = String(val).trim();
+    if (cleanVal.includes('/')) {
+      const parts = cleanVal.split('/');
+      if (parts.length === 3) {
+        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+    }
+    return cleanVal.length === 10 ? cleanVal : null;
+  };
+
+  // Handler for uploading PSP student report with FULL column mapping & Duplicate Sr_No skipping
   const handlePspUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -227,30 +240,43 @@ export default function SchoolDashboard() {
 
         const srNo = rowData['SR No.'] || rowData['Admission Number/SR No'] || '';
         const studentName = rowData['Student Name'] || '';
-        const fatherName = rowData['Father Name'] || '';
-        const className = rowData['Studying in Class'] || '';
-        const mobile = rowData['Mobile Number'] || '';
-        const studentId = rowData['Student NIC ID'] || '';
-        const dob = rowData['DOB'] ? rowData['DOB'].split('/').reverse().join('-') : null; // Convert DD/MM/YYYY to YYYY-MM-DD
-
+        
         if (srNo && studentName) {
           parsedStudents.push({
             sr_no: String(srNo),
-            student_id: String(studentId || ''),
+            student_id: String(rowData['Student NIC ID'] || ''),
             student_full_name: studentName,
-            father_name: fatherName,
-            class_name: className,
-            mobile_number: mobile,
-            dob: dob && dob.length === 10 ? dob : null,
-            session: '2026-27',
+            father_name: rowData['Father Name'] || '',
+            mother_name: rowData['Mother Name'] || '',
+            dob: formatDate(rowData['DOB']),
+            gender: rowData['Gender'] || '',
+            category: rowData['Social Category'] || '',
+            religion: rowData['Religion'] || '',
+            aadhaar_no: rowData['Aadhar Number'] || '',
+            address: rowData['Habitation or Locality'] || '',
+            class_name: rowData['Studying in Class'] || '',
+            admission_date: formatDate(rowData['Date of Admission']),
+            rte_status: rowData['Getting Free Education'] || 'No',
+            bpl_status: rowData['Belong To BPL'] || 'No',
+            minority_status: rowData['Belong to Disadvantaged Group'] || 'No',
+            cwsn_type: rowData['Type of Disablity'] || 'Not Applicable',
+            medium_of_instruction: rowData['Medium of Instruction'] || 'English',
+            previous_class: rowData['Class Studied in Prev. Year'] || '',
+            previous_percentage: rowData['In Last Examination % Marks'] ? parseFloat(rowData['In Last Examination % Marks']) || null : null,
+            transport_facility: rowData['Free Transport'] || 'No',
+            hostel_facility: rowData['Free Hostel Facility'] || 'No',
+            mobile_number: rowData['Mobile Number'] || '',
+            email: rowData['Email Address'] || '',
+            session: rowData['Session'] || '2026-27',
             status: 'Active',
-            admission_type: 'New Admission (नया प्रवेश)'
+            admission_type: 'New Admission (नया प्रवेश)',
+            annual_fees: 13535.00 // Default or computed annual fee
           });
         }
       }
 
       if (parsedStudents.length === 0) {
-        alert('Could not parse any students from the file.');
+        alert('Could not parse any valid students from the file.');
         setUploadingPsp(false);
         return;
       }
@@ -264,7 +290,7 @@ export default function SchoolDashboard() {
 
       const existingSrSet = new Set((existingStudents || []).map(s => String(s.sr_no)));
 
-      // Filter out students whose sr_no already exists in Supabase
+      // Filter out students whose sr_no already exists in Supabase (Skip duplicates)
       const newStudentsToInsert = parsedStudents.filter(s => !existingSrSet.has(s.sr_no));
 
       if (newStudentsToInsert.length === 0) {
@@ -273,14 +299,14 @@ export default function SchoolDashboard() {
         return;
       }
 
-      // Insert new students into Supabase
+      // Insert new filtered students into Supabase
       const { error: insertErr } = await supabase
         .from('students')
         .insert(newStudentsToInsert);
 
       if (insertErr) throw insertErr;
 
-      alert(`Successfully uploaded ${newStudentsToInsert.length} new student(s) from PSP! (${parsedStudents.length - newStudentsToInsert.length} existing duplicates were skipped). 🎉`);
+      alert(`Successfully uploaded ${newStudentsToInsert.length} new student(s) with full details from PSP! (${parsedStudents.length - newStudentsToInsert.length} existing duplicates were skipped). 🎉`);
       window.location.reload(); // Refresh to show updated data
 
     } catch (err) {
@@ -449,7 +475,7 @@ export default function SchoolDashboard() {
                 />
               </div>
 
-              {/* Upload from PSP Button with Smart Duplicate Filtering */}
+              {/* Upload from PSP Button with Full Mapping & Duplicate Skip */}
               <label 
                 className={`bg-gradient-to-b from-[#FB923C] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] text-white text-xs sm:text-sm px-4.5 py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1.5 border-t border-orange-200/50 border-b-[5px] border-[#9A3412] shadow-[0_0_18px_rgba(249,115,22,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer ${uploadingPsp ? 'opacity-50 pointer-events-none' : ''}`}
               >
