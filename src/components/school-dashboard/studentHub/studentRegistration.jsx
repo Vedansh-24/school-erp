@@ -226,13 +226,14 @@ export default function StudentRegistration() {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [facingMode, setFacingMode] = useState('environment'); // 'environment' for mobile back, 'user' for laptop front
 
   const fileInputRef = useRef(null);
   const bulkFileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  const [formData, setFormData] = useState({
+  const initialFormState = {
     studentName: '',
     studyingInClass: 'PP.3+',
     srNo: '',
@@ -259,7 +260,9 @@ export default function StudentRegistration() {
     transportFacility: 'No',
     hostelFacility: 'No',
     session: '2026-27',
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormState);
 
   const classesList = [
     'PP.3+', 'PP.4+', 'PP.5+', 
@@ -276,11 +279,19 @@ export default function StudentRegistration() {
     }
   };
 
-  const startCamera = async () => {
+  const startCamera = async (customFacingMode) => {
     try {
       setErrorMsg('');
       setIsCameraActive(true);
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      const modeToUse = customFacingMode || (window.innerWidth <= 768 ? 'environment' : 'user');
+      setFacingMode(modeToUse);
+
+      if (videoRef.current && videoRef.current.srcObject) {
+        const oldStream = videoRef.current.srcObject;
+        oldStream.getTracks().forEach((track) => track.stop());
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: modeToUse } });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
@@ -288,6 +299,11 @@ export default function StudentRegistration() {
       setErrorMsg('Camera open nahi ho paya: ' + err.message);
       setIsCameraActive(false);
     }
+  };
+
+  const switchCamera = () => {
+    const newMode = facingMode === 'environment' ? 'user' : 'environment';
+    startCamera(newMode);
   };
 
   const capturePhoto = () => {
@@ -537,8 +553,14 @@ export default function StudentRegistration() {
 
       if (error) throw error;
 
-      setSuccessMsg('Student registration database me safaltapoorvak save ho gaya! 🎉');
+      setSuccessMsg('Student registration database me safaltapoorvak save ho gaya! 🎉 Ab aap agla student register kar sakte hain.');
       
+      // Reset form fields and photo preview to blank for next student
+      setFormData(initialFormState);
+      setPhotoPreview(null);
+      setPhotoFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+
     } catch (error) {
       setErrorMsg('Error: ' + error.message);
     } finally {
@@ -622,7 +644,7 @@ export default function StudentRegistration() {
 
       <form onSubmit={handleFormSubmit} className="space-y-4 sm:space-y-6">
         
-        {/* Photo Section: Stacked layout on mobile/tablet, Side-by-side (as-it-is) on Laptop */}
+        {/* Photo Section */}
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row lg:flex-row items-center sm:items-center lg:items-center text-center sm:text-left lg:text-left gap-3 sm:gap-6">
           <input
             type="file"
@@ -643,7 +665,7 @@ export default function StudentRegistration() {
           <div className="space-y-1 sm:space-y-2 flex-1">
             <h4 className="text-xs sm:text-sm font-bold text-slate-800">Student Passport Photo</h4>
             <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
-              Upload image from gallery or capture live photo using mobile camera.
+              Upload image from gallery or capture live photo using camera.
             </p>
             <div className="flex flex-row items-center justify-center sm:justify-start gap-2 pt-1 w-full">
               <button
@@ -655,7 +677,7 @@ export default function StudentRegistration() {
               </button>
               <button
                 type="button"
-                onClick={startCamera}
+                onClick={() => startCamera()}
                 className="flex-1 sm:flex-none bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs sm:text-sm px-3 py-1.5 sm:py-2 rounded-lg font-bold transition shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <span>📷</span> Live Camera
@@ -668,18 +690,25 @@ export default function StudentRegistration() {
           <div className="p-4 bg-black/90 rounded-xl flex flex-col items-center gap-3">
             <video ref={videoRef} autoPlay playsInline className="w-full max-w-[280px] sm:max-w-[320px] h-48 rounded-lg bg-black object-cover border border-slate-700" />
             <canvas ref={canvasRef} className="hidden" />
-            <div className="flex gap-3">
+            <div className="flex flex-wrap justify-center gap-2">
               <button
                 type="button"
                 onClick={capturePhoto}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-1.5 rounded-lg text-xs"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs"
               >
                 📸 Capture Photo
               </button>
               <button
                 type="button"
+                onClick={switchCamera}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs"
+              >
+                🔄 Switch Camera ({facingMode === 'environment' ? 'Back' : 'Front'})
+              </button>
+              <button
+                type="button"
                 onClick={stopCamera}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-1.5 rounded-lg text-xs"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold px-3.5 py-1.5 rounded-lg text-xs"
               >
                 ❌ Close Camera
               </button>
