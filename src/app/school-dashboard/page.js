@@ -104,6 +104,7 @@ export default function SchoolDashboard() {
   const [examSubTab, setExamSubTab] = useState('Class-wise Subject Master'); 
   const [parentsDashboardSubTab, setParentsDashboardSubTab] = useState('Parent Portal Overview');
   const [searchQuery, setSearchQuery] = useState('');
+  const [uploadingPsp, setUploadingPsp] = useState(false);
 
   const sessionsList = ['2025-2026', '2026-2027', '2027-2028', '2028-2029', '2029-2030'];
   const classList = [
@@ -190,6 +191,105 @@ export default function SchoolDashboard() {
   const renderSubComponent = (ComponentMap, currentKey) => {
     const ComponentToRender = ComponentMap[currentKey];
     return ComponentToRender ? <ComponentToRender /> : null;
+  };
+
+  // Handler for uploading PSP student report (HTML/Excel table format)
+  const handlePspUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPsp(true);
+    try {
+      const htmlContent = await file.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, 'text/html');
+      const rows = doc.querySelectorAll('table tr');
+
+      if (rows.length <= 1) {
+        alert('No valid student rows found in the uploaded PSP file.');
+        setUploadingPsp(false);
+        return;
+      }
+
+      // Extract headers from the first row
+      const headers = Array.from(rows[0].querySelectorAll('th, td')).map(cell => cell.textContent.trim());
+      
+      const parsedStudents = [];
+      for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].querySelectorAll('td');
+        if (cells.length === 0) continue;
+        
+        const rowData = {};
+        cells.forEach((cell, idx) => {
+          const headerName = headers[idx] || `col_${idx}`;
+          rowData[headerName] = cell.textContent.trim();
+        });
+
+        const srNo = rowData['SR No.'] || rowData['Admission Number/SR No'] || '';
+        const studentName = rowData['Student Name'] || '';
+        const fatherName = rowData['Father Name'] || '';
+        const className = rowData['Studying in Class'] || '';
+        const mobile = rowData['Mobile Number'] || '';
+        const studentId = rowData['Student NIC ID'] || '';
+        const dob = rowData['DOB'] ? rowData['DOB'].split('/').reverse().join('-') : null; // Convert DD/MM/YYYY to YYYY-MM-DD
+
+        if (srNo && studentName) {
+          parsedStudents.push({
+            sr_no: String(srNo),
+            student_id: String(studentId || ''),
+            student_full_name: studentName,
+            father_name: fatherName,
+            class_name: className,
+            mobile_number: mobile,
+            dob: dob && dob.length === 10 ? dob : null,
+            session: '2026-27',
+            status: 'Active',
+            admission_type: 'New Admission (नया प्रवेश)'
+          });
+        }
+      }
+
+      if (parsedStudents.length === 0) {
+        alert('Could not parse any students from the file.');
+        setUploadingPsp(false);
+        return;
+      }
+
+      // Fetch existing students sr_no from Supabase to filter out duplicates
+      const { data: existingStudents, error: fetchErr } = await supabase
+        .from('students')
+        .select('sr_no');
+
+      if (fetchErr) throw fetchErr;
+
+      const existingSrSet = new Set((existingStudents || []).map(s => String(s.sr_no)));
+
+      // Filter out students whose sr_no already exists in Supabase
+      const newStudentsToInsert = parsedStudents.filter(s => !existingSrSet.has(s.sr_no));
+
+      if (newStudentsToInsert.length === 0) {
+        alert('All students in this file already exist in the database! No new records added.');
+        setUploadingPsp(false);
+        return;
+      }
+
+      // Insert new students into Supabase
+      const { error: insertErr } = await supabase
+        .from('students')
+        .insert(newStudentsToInsert);
+
+      if (insertErr) throw insertErr;
+
+      alert(`Successfully uploaded ${newStudentsToInsert.length} new student(s) from PSP! (${parsedStudents.length - newStudentsToInsert.length} existing duplicates were skipped). 🎉`);
+      window.location.reload(); // Refresh to show updated data
+
+    } catch (err) {
+      console.error('PSP Upload error:', err);
+      alert('Error processing PSP file: ' + err.message);
+    } finally {
+      setUploadingPsp(false);
+      e.target.value = ''; // Reset input
+    }
   };
 
   return (
@@ -349,26 +449,17 @@ export default function SchoolDashboard() {
                 />
               </div>
 
-              {/* Upload from PSP Button */}
+              {/* Upload from PSP Button with Smart Duplicate Filtering */}
               <label 
-                className="bg-gradient-to-b from-[#FB923C] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] text-white text-xs sm:text-sm px-4.5 py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1.5 border-t border-orange-200/50 border-b-[5px] border-[#9A3412] shadow-[0_0_18px_rgba(249,115,22,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer"
+                className={`bg-gradient-to-b from-[#FB923C] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] text-white text-xs sm:text-sm px-4.5 py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1.5 border-t border-orange-200/50 border-b-[5px] border-[#9A3412] shadow-[0_0_18px_rgba(249,115,22,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer ${uploadingPsp ? 'opacity-50 pointer-events-none' : ''}`}
               >
-                <span>📤</span> Upload from PSP
+                <span>📤</span> {uploadingPsp ? 'Uploading...' : 'Upload from PSP'}
                 <input 
                   type="file" 
                   accept=".xls,.xlsx,.html" 
                   className="hidden" 
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    try {
-                      const text = await file.text();
-                      // Simple parser simulation for uploaded PSP excel/html table
-                      alert(`File "${file.name}" selected successfully! Ready to process students data into Supabase.`);
-                    } catch (err) {
-                      alert('Error reading PSP file: ' + err.message);
-                    }
-                  }} 
+                  onChange={handlePspUpload} 
+                  disabled={uploadingPsp}
                 />
               </label>
 
