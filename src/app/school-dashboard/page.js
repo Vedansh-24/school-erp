@@ -9,7 +9,7 @@ import {
   Wallet as IconWallet, UserCheck as IconCheck, Award as IconAward, 
   Calendar as IconCalendar, BookOpen as IconBook, FileText as IconFile, 
   Users as IconUsers, Database as IconDatabase, Search as IconSearch, 
-  User as IconUser, Menu as IconMenu 
+  User as IconUser, Menu as IconMenu, Upload as IconUpload 
 } from 'lucide-react';
 
 import DashboardAndPL from '@/components/school-dashboard/DashboardAndPL';
@@ -348,6 +348,29 @@ export default function SchoolDashboard() {
                   className="bg-[#F5F7FA] text-xs sm:text-sm font-semibold text-[#1A2332] placeholder-slate-400 pl-9 pr-3.5 py-2 rounded-md border border-slate-300 focus:outline-none focus:border-[#2F6690] w-56 shadow-sm"
                 />
               </div>
+
+              {/* Upload from PSP Button */}
+              <label 
+                className="bg-gradient-to-b from-[#FB923C] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] text-white text-xs sm:text-sm px-4.5 py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1.5 border-t border-orange-200/50 border-b-[5px] border-[#9A3412] shadow-[0_0_18px_rgba(249,115,22,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer"
+              >
+                <span>📤</span> Upload from PSP
+                <input 
+                  type="file" 
+                  accept=".xls,.xlsx,.html" 
+                  className="hidden" 
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const text = await file.text();
+                      // Simple parser simulation for uploaded PSP excel/html table
+                      alert(`File "${file.name}" selected successfully! Ready to process students data into Supabase.`);
+                    } catch (err) {
+                      alert('Error reading PSP file: ' + err.message);
+                    }
+                  }} 
+                />
+              </label>
 
               <button 
                 onClick={async () => {
