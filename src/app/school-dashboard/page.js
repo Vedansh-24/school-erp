@@ -206,7 +206,7 @@ export default function SchoolDashboard() {
     return cleanVal.length === 10 ? cleanVal : null;
   };
 
-  // Handler for uploading PSP student report with FULL column mapping & Duplicate Sr_No skipping
+  // Handler for uploading PSP student report using UPSERT on sr_no
   const handlePspUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -270,7 +270,7 @@ export default function SchoolDashboard() {
             session: rowData['Session'] || '2026-27',
             status: 'Active',
             admission_type: 'New Admission (नया प्रवेश)',
-            annual_fees: 13535.00 // Default or computed annual fee
+            annual_fees: 13535.00
           });
         }
       }
@@ -281,33 +281,15 @@ export default function SchoolDashboard() {
         return;
       }
 
-      // Fetch existing students sr_no from Supabase to filter out duplicates
-      const { data: existingStudents, error: fetchErr } = await supabase
+      // UPSERT operation into Supabase: Update existing sr_no and Insert new ones
+      const { error: upsertErr } = await supabase
         .from('students')
-        .select('sr_no');
+        .upsert(parsedStudents, { onConflict: 'sr_no' });
 
-      if (fetchErr) throw fetchErr;
+      if (upsertErr) throw upsertErr;
 
-      const existingSrSet = new Set((existingStudents || []).map(s => String(s.sr_no)));
-
-      // Filter out students whose sr_no already exists in Supabase (Skip duplicates)
-      const newStudentsToInsert = parsedStudents.filter(s => !existingSrSet.has(s.sr_no));
-
-      if (newStudentsToInsert.length === 0) {
-        alert('All students in this file already exist in the database! No new records added.');
-        setUploadingPsp(false);
-        return;
-      }
-
-      // Insert new filtered students into Supabase
-      const { error: insertErr } = await supabase
-        .from('students')
-        .insert(newStudentsToInsert);
-
-      if (insertErr) throw insertErr;
-
-      alert(`Successfully uploaded ${newStudentsToInsert.length} new student(s) with full details from PSP! (${parsedStudents.length - newStudentsToInsert.length} existing duplicates were skipped). 🎉`);
-      window.location.reload(); // Refresh to show updated data
+      alert(`Successfully processed ${parsedStudents.length} student records! New students added and existing records updated with full details. 🎉`);
+      window.location.reload(); // Refresh screen to show updated values
 
     } catch (err) {
       console.error('PSP Upload error:', err);
@@ -323,7 +305,7 @@ export default function SchoolDashboard() {
       
       {/* Top Header */}
       <header 
-        className="bg-[#FFFFFF] px-6 py-3.5 flex items-center justify-between shadow-sm border-b border-slate-200 gap-4"
+        className="bg-[#FFFFFF] px-4 sm:px-6 py-3.5 flex items-center justify-between shadow-sm border-b border-slate-200 gap-4 flex-wrap"
         style={{
           borderBottom: '3px solid transparent',
           borderImage: 'linear-gradient(to right, #FF6B8B, #9D4EDD, #00C9A7, #FFB800) 1'
@@ -358,19 +340,19 @@ export default function SchoolDashboard() {
         
         {/* Left Sidebar */}
         <aside 
-          className={`${isSidebarOpen ? 'w-72' : 'w-20'} transition-all duration-300 bg-[#1B3A6B] border-r border-[#2F6690]/40 flex flex-col justify-between shrink-0 p-3 shadow-xl z-10`}
+          className={`${isSidebarOpen ? 'w-64 sm:w-72' : 'w-16 sm:w-20'} transition-all duration-300 bg-[#1B3A6B] border-r border-[#2F6690]/40 flex flex-col justify-between shrink-0 p-2 sm:p-3 shadow-xl z-10`}
         >
           <div>
-            <div className="mb-4 pb-3 border-b border-blue-900/40 text-center flex flex-col items-center">
+            <div className="mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-blue-900/40 text-center flex flex-col items-center">
               <div className="w-full flex items-center justify-between px-1 mb-2">
                 {isSidebarOpen && (
-                  <span className="text-[12px] font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] truncate">
+                  <span className="text-[11px] sm:text-[12px] font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B8B] via-[#FFB800] to-[#00C9A7] truncate">
                     BLUE HEAVEN KIDS ACADEMY
                   </span>
                 )}
                 <button 
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
-                  className="p-2 bg-[#254a85] hover:bg-[#2F6690] rounded-xl text-white transition-all duration-100 border-t border-blue-300/30 border-b-[4px] border-blue-950 shadow-[0_0_12px_rgba(47,102,144,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer ml-auto"
+                  className="p-1.5 sm:p-2 bg-[#254a85] hover:bg-[#2F6690] rounded-xl text-white transition-all duration-100 border-t border-blue-300/30 border-b-[4px] border-blue-950 shadow-[0_0_12px_rgba(47,102,144,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer ml-auto"
                 >
                   <IconMenu size={18} />
                 </button>
@@ -385,57 +367,57 @@ export default function SchoolDashboard() {
               {isSidebarOpen && <TransparentSchoolLogo src="/school-logo.png" />}
             </div>
 
-            <nav className="space-y-2 overflow-y-auto max-h-[calc(100vh-220px)] pr-1">
+            <nav className="space-y-1.5 sm:space-y-2 overflow-y-auto max-h-[calc(100vh-200px)] pr-1">
               {menuItems.map((item) => (
                 <button
                   key={item.name}
                   onClick={() => setActiveTab(item.name)}
-                  className={`w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-150 font-bold cursor-pointer border-t border-white/10 border-b-[4px] ${
+                  className={`w-full flex items-center px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl transition-all duration-150 font-bold cursor-pointer border-t border-white/10 border-b-[4px] ${
                     activeTab === item.name
                       ? 'bg-[#2F6690] text-white font-black border-b-[#12283a] border-l-4 border-l-[#C6952C] shadow-[0_0_15px_rgba(47,102,144,0.6)] translate-y-0.5'
                       : 'border-b-transparent hover:bg-[#2F6690]/40 text-slate-200 hover:text-white active:translate-y-1 active:border-b-[1px]'
                   }`}
                 >
                   <div 
-                    className="w-9 h-9 rounded-lg flex items-center justify-center shadow-md shrink-0 transition-transform hover:scale-105 border-b-2 border-black/30"
+                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center shadow-md shrink-0 transition-transform hover:scale-105 border-b-2 border-black/30"
                     style={{ backgroundColor: item.boxColor }}
                   >
-                    <item.icon size={20} style={{ color: item.iconColor }} className="drop-shadow-sm" />
+                    <item.icon size={18} style={{ color: item.iconColor }} className="drop-shadow-sm" />
                   </div>
-                  {isSidebarOpen && <span className="ml-3 text-sm truncate">{item.name}</span>}
+                  {isSidebarOpen && <span className="ml-2.5 sm:ml-3 text-xs sm:text-sm truncate">{item.name}</span>}
                 </button>
               ))}
             </nav>
           </div>
 
           {isSidebarOpen && (
-            <div className="p-3 border-t border-[#2F6690]/40 flex items-center bg-[#1B3A6B] rounded-lg mt-2 shadow-inner">
+            <div className="p-2 sm:p-3 border-t border-[#2F6690]/40 flex items-center bg-[#1B3A6B] rounded-lg mt-2 shadow-inner">
               <div 
-                className="w-9 h-9 rounded-lg shadow-md flex items-center justify-center shrink-0 border-b-2 border-pink-900"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg shadow-md flex items-center justify-center shrink-0 border-b-2 border-pink-900"
                 style={{ backgroundColor: '#EC1E79' }}
               >
                 <IconUser size={18} className="text-white" />
               </div>
-              <div className="ml-3 truncate">
-                <p className="text-sm font-black text-white">School Admin</p>
-                <p className="text-xs text-slate-300 font-bold">Authorized User</p>
+              <div className="ml-2.5 sm:ml-3 truncate">
+                <p className="text-xs sm:text-sm font-black text-white">School Admin</p>
+                <p className="text-[10px] sm:text-xs text-slate-300 font-bold">Authorized User</p>
               </div>
             </div>
           )}
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 flex flex-col min-w-0 bg-[#F5F7FA] relative">
+        <main className="flex-1 flex flex-col min-w-0 bg-[#F5F7FA] relative overflow-y-auto">
           
           {/* Controls Bar */}
-          <div className="py-3.5 px-6 bg-[#FFFFFF] border-b border-slate-200 flex items-center justify-between gap-4 flex-wrap shadow-sm">
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
+          <div className="py-3 px-4 sm:px-6 bg-[#FFFFFF] border-b border-slate-200 flex items-center justify-between gap-3 sm:gap-4 flex-wrap shadow-sm">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-xs sm:text-sm text-[#5C6B7A] font-bold">Session:</span>
                 <select
                   value={activeSession}
                   onChange={(e) => setActiveSession(e.target.value)}
-                  className="bg-[#F5F7FA] text-[#2F6690] text-xs sm:text-sm font-bold border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-[#2F6690] shadow-sm cursor-pointer"
+                  className="bg-[#F5F7FA] text-[#2F6690] text-xs sm:text-sm font-bold border border-slate-300 rounded-md px-2.5 py-1.5 sm:py-2 outline-none focus:border-[#2F6690] shadow-sm cursor-pointer"
                 >
                   {sessionsList.map((session) => (
                     <option key={session} value={session}>
@@ -445,12 +427,12 @@ export default function SchoolDashboard() {
                 </select>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="text-xs sm:text-sm text-[#5C6B7A] font-bold">Class:</span>
                 <select
                   value={selectedClass}
                   onChange={(e) => setSelectedClass(e.target.value)}
-                  className="bg-[#F5F7FA] text-[#2F6690] text-xs sm:text-sm font-bold border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-[#2F6690] shadow-sm cursor-pointer max-w-[180px]"
+                  className="bg-[#F5F7FA] text-[#2F6690] text-xs sm:text-sm font-bold border border-slate-300 rounded-md px-2.5 py-1.5 sm:py-2 outline-none focus:border-[#2F6690] shadow-sm cursor-pointer max-w-[150px] sm:max-w-[180px]"
                 >
                   {classList.map((cls) => (
                     <option key={cls} value={cls}>
@@ -461,7 +443,7 @@ export default function SchoolDashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-xs">
                   <IconSearch size={16} />
@@ -471,13 +453,13 @@ export default function SchoolDashboard() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search student..."
-                  className="bg-[#F5F7FA] text-xs sm:text-sm font-semibold text-[#1A2332] placeholder-slate-400 pl-9 pr-3.5 py-2 rounded-md border border-slate-300 focus:outline-none focus:border-[#2F6690] w-56 shadow-sm"
+                  className="bg-[#F5F7FA] text-xs sm:text-sm font-semibold text-[#1A2332] placeholder-slate-400 pl-9 pr-3 py-1.5 sm:py-2 rounded-md border border-slate-300 focus:outline-none focus:border-[#2F6690] w-44 sm:w-56 shadow-sm"
                 />
               </div>
 
-              {/* Upload from PSP Button with Full Mapping & Duplicate Skip */}
+              {/* Upload from PSP Button with UPSERT */}
               <label 
-                className={`bg-gradient-to-b from-[#FB923C] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] text-white text-xs sm:text-sm px-4.5 py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1.5 border-t border-orange-200/50 border-b-[5px] border-[#9A3412] shadow-[0_0_18px_rgba(249,115,22,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer ${uploadingPsp ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`bg-gradient-to-b from-[#FB923C] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] text-white text-xs sm:text-sm px-3.5 sm:px-4.5 py-1.5 sm:py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1 border-t border-orange-200/50 border-b-[4px] sm:border-b-[5px] border-[#9A3412] shadow-[0_0_18px_rgba(249,115,22,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer ${uploadingPsp ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 <span>📤</span> {uploadingPsp ? 'Uploading...' : 'Upload from PSP'}
                 <input 
@@ -489,6 +471,7 @@ export default function SchoolDashboard() {
                 />
               </label>
 
+              {/* Working Backup Button */}
               <button 
                 onClick={async () => {
                   try {
@@ -507,14 +490,15 @@ export default function SchoolDashboard() {
                     alert('Error creating backup: ' + err.message);
                   }
                 }}
-                className="bg-gradient-to-b from-[#38BDF8] to-[#0284C7] hover:from-[#0284C7] hover:to-[#0369a1] text-white text-xs sm:text-sm px-4.5 py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1.5 border-t border-sky-200/50 border-b-[5px] border-[#075985] shadow-[0_0_18px_rgba(56,189,248,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer"
+                className="bg-gradient-to-b from-[#38BDF8] to-[#0284C7] hover:from-[#0284C7] hover:to-[#0369a1] text-white text-xs sm:text-sm px-3.5 sm:px-4.5 py-1.5 sm:py-2 rounded-xl font-black transition-all duration-150 flex items-center justify-center gap-1 border-t border-sky-200/50 border-b-[4px] sm:border-b-[5px] border-[#075985] shadow-[0_0_18px_rgba(56,189,248,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer"
               >
                 <span>💾</span> Backup
               </button>
 
+              {/* Working Logout Button */}
               <button 
                 onClick={() => router.push('/')} 
-                className="bg-gradient-to-b from-[#F87171] to-[#EF4444] hover:from-[#EF4444] hover:to-[#DC2626] text-white text-xs sm:text-sm px-5 py-2 rounded-xl font-black transition-all duration-150 border-t border-red-200/50 border-b-[5px] border-[#991B1B] shadow-[0_0_18px_rgba(239,68,68,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer"
+                className="bg-gradient-to-b from-[#F87171] to-[#EF4444] hover:from-[#EF4444] hover:to-[#DC2626] text-white text-xs sm:text-sm px-4 sm:px-5 py-1.5 sm:py-2 rounded-xl font-black transition-all duration-150 border-t border-red-200/50 border-b-[4px] sm:border-b-[5px] border-[#991B1B] shadow-[0_0_18px_rgba(239,68,68,0.5)] active:translate-y-1 active:border-b-[1px] cursor-pointer"
               >
                 Logout
               </button>
@@ -522,7 +506,7 @@ export default function SchoolDashboard() {
           </div>
 
           {/* Dynamic Workspace */}
-          <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
+          <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-5">
             {activeTab === 'Dashboard & P/L' && <DashboardAndPL />}
 
             {activeTab === 'Student Hub' && (
@@ -532,7 +516,7 @@ export default function SchoolDashboard() {
                   {/* Card 1: Student Registration */}
                   <button
                     onClick={() => setStudentHubSubTab('Student Registration')}
-                    className={`relative font-black py-4 px-3 sm:px-4 rounded-2xl flex flex-col lg:flex-row items-center justify-center text-center transition-all duration-150 cursor-pointer w-full text-white text-xs sm:text-base border-t border-x border-[#73ffc2]/50 ${
+                    className={`relative font-black py-3.5 sm:py-4 px-3 sm:px-4 rounded-2xl flex flex-col lg:flex-row items-center justify-center text-center transition-all duration-150 cursor-pointer w-full text-white text-xs sm:text-base border-t border-x border-[#73ffc2]/50 ${
                       studentHubSubTab === 'Student Registration'
                         ? 'bg-gradient-to-b from-[#00f098] via-[#00c885] to-[#008f5d] border-b-[6px] border-[#004d2e] shadow-[0_0_22px_rgba(0,200,133,0.65),0_8px_15px_rgba(0,0,0,0.3)] translate-y-0 active:translate-y-1.5 active:border-b-[2px]'
                         : 'bg-gradient-to-b from-emerald-600 to-teal-800 border-b-[6px] border-emerald-950 opacity-80 hover:opacity-100 shadow-[0_0_12px_rgba(0,200,133,0.3)] active:translate-y-1.5 active:border-b-[2px]'
@@ -541,7 +525,6 @@ export default function SchoolDashboard() {
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-1.5 lg:gap-2.5 w-full my-1">
                       <span className="text-lg sm:text-xl drop-shadow-md shrink-0">📋</span>
                       <span className="font-black tracking-wide text-center drop-shadow-md">Student Registration</span>
-                      {/* Active badge: bottom on mobile, inline on laptop */}
                       {studentHubSubTab === 'Student Registration' && (
                         <span className="block lg:inline-flex bg-black/90 text-white text-[9px] lg:text-[10px] font-black px-2.5 py-0.5 rounded-full items-center gap-1 shadow-inner tracking-wider uppercase mt-1 lg:mt-0 lg:ml-1">
                           <span className="text-emerald-400 font-bold">✓</span> ACTIVE
@@ -553,7 +536,7 @@ export default function SchoolDashboard() {
                   {/* Card 2: Students Directory */}
                   <button
                     onClick={() => setStudentHubSubTab('Students Directory')}
-                    className={`relative font-black py-4 px-3 sm:px-4 rounded-2xl flex flex-col lg:flex-row items-center justify-center text-center transition-all duration-150 cursor-pointer w-full text-white text-xs sm:text-base border-t border-x border-[#93c5fd]/50 ${
+                    className={`relative font-black py-3.5 sm:py-4 px-3 sm:px-4 rounded-2xl flex flex-col lg:flex-row items-center justify-center text-center transition-all duration-150 cursor-pointer w-full text-white text-xs sm:text-base border-t border-x border-[#93c5fd]/50 ${
                       studentHubSubTab === 'Students Directory'
                         ? 'bg-gradient-to-b from-[#38bdf8] via-[#0088ff] to-[#0052cc] border-b-[6px] border-[#002b80] shadow-[0_0_22px_rgba(0,136,255,0.65),0_8px_15px_rgba(0,0,0,0.3)] translate-y-0 active:translate-y-1.5 active:border-b-[2px]'
                         : 'bg-gradient-to-b from-blue-600 to-indigo-800 border-b-[6px] border-blue-950 opacity-80 hover:opacity-100 shadow-[0_0_12px_rgba(0,136,255,0.3)] active:translate-y-1.5 active:border-b-[2px]'
@@ -573,7 +556,7 @@ export default function SchoolDashboard() {
                   {/* Card 3: Category & Fee Matrix */}
                   <button
                     onClick={() => setStudentHubSubTab('Category & Fee Matrix')}
-                    className={`col-span-2 lg:col-span-1 relative font-black py-4 px-3 sm:px-4 rounded-2xl flex flex-col lg:flex-row items-center justify-center text-center transition-all duration-150 cursor-pointer w-full text-white text-xs sm:text-base border-t border-x border-[#f5d0fe]/50 ${
+                    className={`col-span-2 lg:col-span-1 relative font-black py-3.5 sm:py-4 px-3 sm:px-4 rounded-2xl flex flex-col lg:flex-row items-center justify-center text-center transition-all duration-150 cursor-pointer w-full text-white text-xs sm:text-base border-t border-x border-[#f5d0fe]/50 ${
                       studentHubSubTab === 'Category & Fee Matrix'
                         ? 'bg-gradient-to-b from-[#e879f9] via-[#c084fc] to-[#8b5cf6] border-b-[6px] border-[#5b21b6] shadow-[0_0_22px_rgba(192,132,252,0.65),0_8px_15px_rgba(0,0,0,0.3)] translate-y-0 active:translate-y-1.5 active:border-b-[2px]'
                         : 'bg-gradient-to-b from-purple-700 to-fuchsia-950 border-b-[6px] border-purple-950 opacity-80 hover:opacity-100 shadow-[0_0_12px_rgba(192,132,252,0.3)] active:translate-y-1.5 active:border-b-[2px]'
