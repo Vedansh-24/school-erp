@@ -15,7 +15,8 @@ import {
   Eye, 
   AlertCircle, 
   Paperclip, 
-  X 
+  X,
+  Users
 } from 'lucide-react';
 import OnlineTestQuiz from '@/components/school-dashboard/parents-dashboard/OnlineTestQuiz';
 
@@ -55,6 +56,10 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
 
+  // Multiple Children States
+  const [childrenList, setChildrenList] = useState([]);
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+
   const [studentInfo, setStudentInfo] = useState({
     id: '',
     name: '',
@@ -79,79 +84,118 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [feeRecordsList, setFeeRecordsList] = useState([]);
 
-  // View Document Modal State for Notices
   const [viewingNotice, setViewingNotice] = useState(null);
 
+  // 1. Step: Pehle Parent ke saare linked children ko fetch karna
   useEffect(() => {
-    async function fetchPortalData() {
+    async function fetchParentChildren() {
+      if (!loggedInParentId) return;
+      try {
+        const cleanParentKey = String(loggedInParentId).trim();
+
+        // Check karein ki loggedInParentId, parent_credentials ki 'id' hai ya 'portal_login_id'
+        let parentCredUuid = cleanParentKey;
+        const { data: credData } = await supabase
+          .from('parent_credentials')
+          .select('id')
+          .or(`id.eq.${cleanParentKey},portal_login_id.eq.${cleanParentKey}`)
+          .limit(1);
+
+        if (credData && credData.length > 0) {
+          parentCredUuid = credData[0].id;
+        }
+
+        // parent_student_mapping se is parent ke sabhi student_id/sr_no nikalein
+        const { data: mappingData, error: mapErr } = await supabase
+          .from('parent_student_mapping')
+          .select('student_id, sr_no')
+          .eq('parent_credential_id', parentCredUuid);
+
+        if (!mapErr && mappingData && mappingData.length > 0) {
+          // Ab students table se un sabhi bachho ki details layein
+          const studentIds = mappingData.map(m => m.student_id).filter(Boolean);
+          const srNos = mappingData.map(m => m.sr_no).filter(Boolean);
+
+          let studentQuery = supabase.from('students').select('*');
+          let queryOr = [];
+          if (studentIds.length > 0) queryOr.push(`student_id.in.(${studentIds.join(',')})`);
+          if (srNos.length > 0) queryOr.push(`sr_no.in.(${srNos.join(',')})`);
+          
+          if (queryOr.length > 0) {
+            studentQuery = studentQuery.or(queryOr.join(','));
+          }
+
+          const { data: studentsData } = await studentQuery;
+          if (studentsData && studentsData.length > 0) {
+            setChildrenList(studentsData);
+            // Default pehla bachha select karein
+            setSelectedStudentId(studentsData[0].student_id || studentsData[0].id || studentsData[0].sr_no);
+            return;
+          }
+        }
+
+        // Fallback: Agar mapping table me entry nahi mili toh direct student table me search karein
+        let directQuery = supabase.from('students').select('*');
+        directQuery = directQuery.or(`sr_no.eq.${cleanParentKey},id.eq.${cleanParentKey},student_id.eq.${cleanParentKey}`);
+        const { data: directSt } = await directQuery;
+
+        if (directSt && directSt.length > 0) {
+          setChildrenList(directSt);
+          setSelectedStudentId(directSt[0].student_id || directSt[0].id || directSt[0].sr_no);
+        }
+
+      } catch (err) {
+        console.error('Error fetching children:', err.message);
+      }
+    }
+
+    fetchParentChildren();
+  }, [loggedInParentId]);
+
+  // 2. Step: Jab bhi Selected Student change ho, uska sara data fetch ho
+  useEffect(() => {
+    if (!selectedStudentId && childrenList.length === 0) return;
+
+    async function fetchStudentPortalData() {
       setLoading(true);
       try {
-        // STEP 1: Student Table se Student ki pehchan karna
-        let studentQuery = supabase.from('students').select('*');
-        let cleanId = '';
-        if (loggedInParentId !== null && loggedInParentId !== undefined) {
-          cleanId = String(loggedInParentId).trim();
-          studentQuery = studentQuery.or(`sr_no.eq.${cleanId},id.eq.${cleanId},student_id.eq.${cleanId}`);
-        }
-        const { data: stData, error: stErr } = await studentQuery.limit(1);
+        const activeStudent = childrenList.find(
+          s => String(s.student_id) === String(selectedStudentId) || 
+               String(s.id) === String(selectedStudentId) || 
+               String(s.sr_no) === String(selectedStudentId)
+        ) || childrenList[0];
 
-        let currentStudentId = null;
-        let currentSrNo = null;
-        let currentStudentName = '';
-        let currentClass = '';
-        let annualFeesNum = 0;
-
-        if (!stErr && stData && stData.length > 0) {
-          const st = stData[0];
-          currentStudentId = String(st.student_id || st.id || '').trim();
-          currentSrNo = String(st.sr_no || '').trim();
-          currentStudentName = st.student_full_name || st.name || '';
-          currentClass = (st.class_name || '').trim();
-          annualFeesNum = Number(st.annual_fees || 0);
-
-          setStudentInfo(prev => ({
-            ...prev,
-            id: currentStudentId,
-            name: currentStudentName,
-            class: currentClass,
-            section: st.section || 'A',
-            rollNo: currentSrNo,
-            admissionNo: currentSrNo ? `SR-${currentSrNo}` : `STU-${currentStudentId}`,
-            fatherName: st.father_name || '',
-            mobile: st.mobile_number || st.whatsapp_number || '',
-            annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0'
-          }));
+        if (!activeStudent) {
+          setLoading(false);
+          return;
         }
 
-        // Attendance के लिए conditions (sr_no या student_id)
-        const attConditions = [];
-        if (currentSrNo) {
-          attConditions.push(`sr_no.eq.${currentSrNo}`);
-        }
-        if (currentStudentId) {
-          attConditions.push(`student_id.eq.${currentStudentId}`);
-        }
-        if (cleanId) {
-          attConditions.push(`sr_no.eq.${cleanId}`);
-          attConditions.push(`student_id.eq.${cleanId}`);
-        }
-        const uniqueAttConditions = [...new Set(attConditions)];
+        const currentStudentId = String(activeStudent.student_id || activeStudent.id || '').trim();
+        const currentSrNo = String(activeStudent.sr_no || '').trim();
+        const currentStudentName = activeStudent.student_full_name || activeStudent.name || '';
+        const currentClass = (activeStudent.class_name || '').trim();
+        const annualFeesNum = Number(activeStudent.annual_fees || 0);
 
-        // Fee Collections के लिए conditions (केवल id या sr_no के आधार पर)
-        const feeConditions = [];
-        if (currentSrNo) {
-          feeConditions.push(`sr_no.eq.${currentSrNo}`);
-        }
-        if (currentStudentId) {
-          feeConditions.push(`id.eq.${currentStudentId}`);
-        }
-        if (cleanId) {
-          feeConditions.push(`sr_no.eq.${cleanId}`);
-          feeConditions.push(`id.eq.${cleanId}`);
-        }
-        const uniqueFeeConditions = [...new Set(feeConditions)];
+        setStudentInfo({
+          id: currentStudentId,
+          name: currentStudentName,
+          class: currentClass,
+          section: activeStudent.section || 'A',
+          rollNo: currentSrNo,
+          admissionNo: currentSrNo ? `SR-${currentSrNo}` : `STU-${currentStudentId}`,
+          fatherName: activeStudent.father_name || '',
+          mobile: activeStudent.mobile_number || activeStudent.whatsapp_number || '',
+          attendanceRate: '0%',
+          totalPresents: '0 Days',
+          totalAbsents: '0 Days',
+          totalLates: '0 Days',
+          annualFee: annualFeesNum > 0 ? `₹ ${annualFeesNum.toLocaleString()}` : '₹ 0',
+          paidFee: '₹ 0',
+          pendingFee: '₹ 0',
+          academicSession: '2026 - 2027'
+        });
 
-        // STEP 2: Student ki Class ke anusaar Daily Homework fetch karna
+        // Homework fetch (Class wise)
         const { data: hwData, error: hwErr } = await supabase
           .from('daily_homework')
           .select('*')
@@ -164,18 +208,19 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // STEP 3: Student ki id/sr_no se Attendance & Remarks table se data fetch karna
-        let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
+        // Attendance fetch
+        let attConditions = [];
+        if (currentSrNo) attConditions.push(`sr_no.eq.${currentSrNo}`);
+        if (currentStudentId) attConditions.push(`student_id.eq.${currentStudentId}`);
         
-        if (uniqueAttConditions.length > 0) {
-          attQuery = attQuery.or(uniqueAttConditions.join(','));
+        let attQuery = supabase.from('attendance').select('*').order('attendance_date', { ascending: false });
+        if (attConditions.length > 0) {
+          attQuery = attQuery.or(attConditions.join(','));
         }
+        const { data: attData } = await attQuery;
 
-        const { data: attData, error: attErr } = await attQuery;
-
-        if (!attErr && attData) {
+        if (attData) {
           setAttendanceRecords(attData);
-
           const dbPresentsOnly = attData.filter(a => a.status?.toLowerCase() === 'present' || a.status?.toLowerCase() === 'p').length;
           const dbLates = attData.filter(a => a.status?.toLowerCase() === 'late' || a.status?.toLowerCase() === 'l').length;
           const dbAbsents = attData.filter(a => a.status?.toLowerCase() === 'absent' || a.status?.toLowerCase() === 'a').length;
@@ -193,13 +238,13 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }));
         }
 
-        // 4. Fetch Notices
-        const { data: noticeData, error: noticeErr } = await supabase
+        // Notices fetch
+        const { data: noticeData } = await supabase
           .from('circulars_and_notices')
           .select('*')
           .order('created_at', { ascending: false });
 
-        if (!noticeErr && noticeData) {
+        if (noticeData) {
           setNoticesList(noticeData.map((n, idx) => ({
             id: n.id || idx + 1,
             date: n.notice_date || (n.created_at ? n.created_at.split('T')[0] : ''),
@@ -213,23 +258,26 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // STEP 5: Fee Collections - id या sr_no के आधार पर फीस रिकॉर्ड फेच करना
+        // Fee Collections fetch
+        let feeConditions = [];
+        if (currentSrNo) feeConditions.push(`sr_no.eq.${currentSrNo}`);
+        if (currentStudentId) feeConditions.push(`student_id.eq.${currentStudentId},id.eq.${currentStudentId}`);
+
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
-        if (uniqueFeeConditions.length > 0) {
-          feeQuery = feeQuery.or(uniqueFeeConditions.join(','));
+        if (feeConditions.length > 0) {
+          feeQuery = feeQuery.or(feeConditions.join(','));
         }
+        const { data: feeData } = await feeQuery;
 
-        const { data: feeData, error: feeErr } = await feeQuery;
-
-        if (!feeErr && feeData) {
+        if (feeData) {
           let totalPaidSum = 0;
           const mappedFees = feeData.map((f, idx) => {
             const paid = Number(f.total_paid || f.fee_paid || 0);
             totalPaidSum += paid;
             return {
               id: f.id ? `TXN-2026-${f.id}` : `TXN-${idx + 1}`,
-              studentName: currentStudentName || 'Student',
-              class: f.class_name || currentClass || '',
+              studentName: currentStudentName,
+              class: f.class_name || currentClass,
               description: f.allocation_month ? `Tuition Fee Allocation (${f.allocation_month})` : 'Fee Payment',
               date: f.receipt_date || (f.created_at ? f.created_at.split('T')[0] : ''),
               receiptNo: f.receipt_no || `REC-${idx + 1}`,
@@ -240,7 +288,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           });
 
           const calculatedPending = Math.max(0, annualFeesNum - totalPaidSum);
-
           setFeeRecordsList(mappedFees);
           setStudentInfo(prev => ({
             ...prev,
@@ -256,19 +303,40 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
       }
     }
 
-    fetchPortalData();
-  }, [loggedInParentId]);
+    fetchStudentPortalData();
+  }, [selectedStudentId, childrenList]);
 
   return (
     <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans">
       
+      {/* 👶 MULTIPLE CHILDREN SELECTOR BAR */}
+      {childrenList.length > 1 && (
+        <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2 font-black text-sm">
+            <Users size={20} />
+            <span>Select Student / Child ({childrenList.length} Children Linked):</span>
+          </div>
+          <select 
+            value={selectedStudentId}
+            onChange={(e) => setSelectedStudentId(e.target.value)}
+            className="bg-white text-slate-900 font-bold text-xs px-4 py-2 rounded-xl outline-none shadow-inner cursor-pointer border-2 border-amber-300 min-w-[240px]"
+          >
+            {childrenList.map((child) => (
+              <option key={child.id || child.student_id} value={child.student_id || child.id || child.sr_no}>
+                {child.student_full_name || child.name} (Class: {child.class_name} | SR: {child.sr_no})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Academy Header Banner */}
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-800 text-white border border-blue-500 rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transform transition-all duration-300">
+      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-800 text-white border border-blue-500 rounded-2xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 text-center md:text-left">
-          <span className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-inner">
+          <span className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
             Parents Portal Overview
           </span>
-          <h1 className="text-[22px] md:text-[28px] font-black tracking-wide pt-1 drop-shadow-md">
+          <h1 className="text-[22px] md:text-[28px] font-black tracking-wide pt-1">
             BLUE HEAVEN KIDS ACADEMY
           </h1>
           <p className="text-[13px] text-sky-100 font-medium">
@@ -296,7 +364,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-2xl p-5 shadow-lg border border-emerald-400 flex flex-col justify-between">
           <div className="text-[11px] uppercase tracking-wider font-extrabold text-emerald-100">Attendance Rate</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.attendanceRate}</div>
+          <div className="text-[24px] font-black tracking-tight my-2">{studentInfo.attendanceRate}</div>
           <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-emerald-50 whitespace-nowrap">
             Presents: {studentInfo.totalPresents} | Absents: {studentInfo.totalAbsents} | Late: {studentInfo.totalLates}
           </div>
@@ -304,7 +372,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         <div className="bg-gradient-to-br from-blue-500 to-sky-700 text-white rounded-2xl p-5 shadow-lg border border-blue-400 flex flex-col justify-between">
           <div className="text-[11px] uppercase tracking-wider font-extrabold text-blue-100">Total Fee Paid</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.paidFee}</div>
+          <div className="text-[24px] font-black tracking-tight my-2">{studentInfo.paidFee}</div>
           <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-blue-50">
             Annual Fee: {studentInfo.annualFee}
           </div>
@@ -312,7 +380,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         <div className="bg-gradient-to-br from-rose-500 to-red-700 text-white rounded-2xl p-5 shadow-lg border border-rose-400 flex flex-col justify-between">
           <div className="text-[11px] uppercase tracking-wider font-extrabold text-rose-100">Pending Dues</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.pendingFee}</div>
+          <div className="text-[24px] font-black tracking-tight my-2">{studentInfo.pendingFee}</div>
           <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-rose-50">
             Current Session
           </div>
@@ -320,7 +388,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl p-5 shadow-lg border border-amber-400 flex flex-col justify-between">
           <div className="text-[11px] uppercase tracking-wider font-extrabold text-amber-100">Academic Session</div>
-          <div className="text-[24px] font-black tracking-tight my-2 drop-shadow">{studentInfo.academicSession}</div>
+          <div className="text-[24px] font-black tracking-tight my-2">{studentInfo.academicSession}</div>
           <div className="text-[11px] bg-white/20 px-2.5 py-1 rounded-md font-bold w-fit text-amber-50">
             Active Status
           </div>
@@ -358,7 +426,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         </div>
       ) : (
         <>
-          {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
@@ -413,7 +480,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* TAB 2: SCHOOL NOTICES */}
           {activeTab === 'notices' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
               <h2 className="text-[18px] font-black text-blue-900">School Notices & Announcements</h2>
@@ -428,140 +494,74 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                             {notice.priority} Priority
                           </div>
                         </div>
-
-                        <h3 className="text-lg font-black text-slate-800 leading-tight mb-2">
-                          {notice.title}
-                        </h3>
-                        
-                        {notice.description && (
-                          <p className="text-slate-600 text-sm font-medium mb-4 whitespace-pre-wrap">
-                            {notice.description}
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-4 text-xs font-bold text-slate-500 bg-white p-3 rounded-xl border border-slate-100 flex-wrap">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar size={14} className="text-slate-400" />
-                            {notice.date ? new Date(notice.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
-                          </div>
-                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                          <div className="flex items-center gap-1.5 text-indigo-600">
-                            <FileText size={14} />
-                            {notice.category}
-                          </div>
-                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
-                          <div className="flex items-center gap-1.5">
-                            <CheckCircle size={14} className="text-slate-400" />
-                            {notice.audience}
-                          </div>
-                        </div>
+                        <h3 className="text-lg font-black text-slate-800 leading-tight mb-2">{notice.title}</h3>
+                        {notice.description && <p className="text-slate-600 text-sm font-medium mb-4 whitespace-pre-wrap">{notice.description}</p>}
                       </div>
-                      
                       {notice.hasAttachment && (
                         <div className="bg-white px-5 py-3 border-t border-slate-200 flex items-center justify-between">
                           <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
                             <Paperclip size={16} className="text-indigo-600" />
                             <span>Attached Document</span>
                           </div>
-                          {notice.attachmentUrl ? (
+                          {notice.attachmentUrl && (
                             <button 
                               onClick={() => setViewingNotice(notice)}
-                              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-gradient-to-r from-indigo-600 to-purple-600 border-t border-indigo-300 border-b-[3px] border-indigo-950 shadow-sm active:translate-y-0.5 active:border-b-[1px] transition-all cursor-pointer"
+                              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-indigo-600 shadow-sm cursor-pointer"
                             >
                               <Eye size={14} /> View File
                             </button>
-                          ) : (
-                            <span className="text-xs text-slate-400 font-semibold">No URL available</span>
                           )}
                         </div>
                       )}
                     </div>
                   ))
                 ) : (
-                  <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
-                    No notices found.
-                  </div>
+                  <div className="col-span-full py-12 text-center text-slate-400 font-bold">No notices found.</div>
                 )}
               </div>
             </div>
           )}
 
-          {/* TAB 3: ATTENDANCE & REMARKS */}
           {activeTab === 'attendance' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <h2 className="text-[16px] font-black text-[#1E293B]">Student Attendance History & Teacher Remarks</h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] bg-emerald-100 text-emerald-800 px-3 py-1 rounded-md font-extrabold">
-                    Overall Status: {studentInfo.attendanceRate}
-                  </span>
-                  <span className="text-[11px] bg-amber-100 text-amber-800 px-3 py-1 rounded-md font-extrabold">
-                    Late Count: {studentInfo.totalLates}
-                  </span>
-                </div>
+              <div className="flex justify-between items-center">
+                <h2 className="text-[16px] font-black text-[#1E293B]">Student Attendance & Remarks ({studentInfo.name})</h2>
+                <span className="text-[11px] bg-emerald-100 text-emerald-800 px-3 py-1 rounded-md font-extrabold">
+                  Status: {studentInfo.attendanceRate}
+                </span>
               </div>
-
-              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm overflow-x-auto">
+              <div className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
-                      <th className="py-3 px-4 min-w-[90px]">SR.NO</th>
-                      <th className="py-3 px-4 min-w-[200px]">Student Name</th>
-                      <th className="py-3 px-4 min-w-[100px]">Class</th>
-                      <th className="py-3 px-4 min-w-[130px]">Attendance Date</th>
-                      <th className="py-3 px-4 min-w-[140px] text-center">Attendance Status</th>
-                      <th className="py-3 px-4 min-w-[240px]">Teacher Remarks / Feedback</th>
+                      <th className="py-3 px-4">SR.NO</th>
+                      <th className="py-3 px-4">Student Name</th>
+                      <th className="py-3 px-4">Class</th>
+                      <th className="py-3 px-4">Date</th>
+                      <th className="py-3 px-4 text-center">Status</th>
+                      <th className="py-3 px-4">Teacher Remarks</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
                     {attendanceRecords.length > 0 ? (
                       attendanceRecords.map((att, idx) => (
-                        <tr key={att.id || idx} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-3.5 px-4">
-                            <span className="shrink-0 px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-black text-xs border border-indigo-100">
-                              {att.sr_no || studentInfo.rollNo || idx + 1}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <p className="font-black text-slate-900 text-sm leading-tight">{studentInfo.name || 'Student'}</p>
-                            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">ID: STU-{studentInfo.id || '01'}</p>
-                          </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-600">
-                            <span className="bg-slate-100 px-2.5 py-1 rounded-lg text-slate-700 font-black border border-slate-200">
-                              {att.class_name || studentInfo.class || 'N/A'}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-600 whitespace-nowrap">
-                            <span className="text-slate-700 font-semibold">
-                              {att.attendance_date || att.date || ''}
-                            </span>
-                          </td>
-                          <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        <tr key={att.id || idx} className="hover:bg-slate-50">
+                          <td className="py-3.5 px-4 font-black">{att.sr_no || studentInfo.rollNo}</td>
+                          <td className="py-3.5 px-4 font-black text-slate-900">{studentInfo.name}</td>
+                          <td className="py-3.5 px-4">{studentInfo.class}</td>
+                          <td className="py-3.5 px-4">{att.attendance_date || att.date}</td>
+                          <td className="py-3.5 px-4 text-center">
                             {att.status?.toLowerCase() === 'present' || att.status?.toLowerCase() === 'p' ? (
-                              <span className="px-3 py-1 rounded-xl text-xs font-black inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                <CheckCircle2 size={13} /> Present
-                              </span>
-                            ) : att.status?.toLowerCase() === 'late' ? (
-                              <span className="px-3 py-1 rounded-xl text-xs font-black inline-flex items-center gap-1 bg-amber-100 text-amber-800 border border-amber-200">
-                                <Clock size={13} /> Late
-                              </span>
+                              <span className="px-3 py-1 rounded-xl text-xs font-black bg-emerald-100 text-emerald-800">Present</span>
                             ) : (
-                              <span className="px-3 py-1 rounded-xl text-xs font-black inline-flex items-center gap-1 bg-rose-100 text-rose-800 border border-rose-200">
-                                <XCircle size={13} /> Absent
-                              </span>
+                              <span className="px-3 py-1 rounded-xl text-xs font-black bg-rose-100 text-rose-800">Absent</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-slate-700 font-medium">
-                            {att.remarks || 'No remarks recorded for this date.'}
-                          </td>
+                          <td className="py-3.5 px-4">{att.remarks || 'No remarks'}</td>
                         </tr>
                       ))
                     ) : (
-                      <tr>
-                        <td colSpan="6" className="py-12 text-center text-slate-400 font-bold">
-                          No attendance records found for {studentInfo.name || 'this student'}.
-                        </td>
-                      </tr>
+                      <tr><td colSpan="6" className="py-12 text-center text-slate-400 font-bold">No attendance records found.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -569,133 +569,62 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* TAB 4: DAILY HOMEWORK */}
           {activeTab === 'homework' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-              <h2 className="text-[18px] font-black text-blue-900 flex justify-between items-center">
-                <span>Daily Class Homework ({studentInfo.class || 'All Classes'})</span>
-                <span className="text-xs bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full">
-                  Total: {rawHomeworkList.length} Tasks
-                </span>
-              </h2>
-
+              <h2 className="text-[18px] font-black text-blue-900">Daily Homework ({studentInfo.class})</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {rawHomeworkList.length > 0 ? (
                   rawHomeworkList.map((hw) => {
-                    const subjectName = hw.subject_name || 'General';
-                    const { dark } = getSubjectStyles(subjectName);
+                    const { dark } = getSubjectStyles(hw.subject_name);
                     return (
-                      <div key={hw.id} className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
-                        <div className={`${dark} px-4 py-2.5 text-xs font-black flex justify-between items-center`}>
-                          <span>📘 {subjectName}</span>
-                          <span>Assigned: {hw.assign_date}</span>
+                      <div key={hw.id} className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                        <div className={`${dark} px-4 py-2.5 text-xs font-black flex justify-between`}>
+                          <span>📘 {hw.subject_name || 'General'}</span>
+                          <span>{hw.assign_date}</span>
                         </div>
-                        <div className="p-4 space-y-2 flex-1">
-                          <h4 className="font-extrabold text-slate-900 text-sm">
-                            {hw.chapter_title ? `Chapter: ${hw.chapter_title}` : 'Homework Instructions'}
-                          </h4>
-                          <p className="text-xs text-slate-700 leading-relaxed font-medium">
-                            {hw.instructions || 'No specific instructions provided.'}
-                          </p>
-                        </div>
-                        <div className="px-4 py-2 bg-slate-100 border-t border-slate-200 text-[11px] font-bold text-slate-600 flex justify-between">
-                          <span>Class: {hw.class_name}</span>
-                          <span>Submission: {hw.submission_date || 'Next Class'}</span>
+                        <div className="p-4 space-y-2">
+                          <h4 className="font-extrabold text-sm">{hw.chapter_title}</h4>
+                          <p className="text-xs text-slate-700">{hw.instructions}</p>
                         </div>
                       </div>
                     );
                   })
                 ) : (
-                  <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
-                    No homework assigned for class {studentInfo.class}.
-                  </div>
+                  <div className="col-span-full py-12 text-center text-slate-400 font-bold">No homework assigned.</div>
                 )}
               </div>
             </div>
           )}
 
-          {/* TAB 5: FEE RECORDS */}
           {activeTab === 'fees' && (
             <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h2 className="text-[16px] font-black text-[#1E293B]">Fee Payment History & Ledger</h2>
-                
-                <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-xl text-xs font-black text-slate-700 shadow-sm">
-                  Annual Fee: <span className="text-emerald-600 font-black">{studentInfo.annualFee}</span> | Paid: <span className="text-blue-600 font-black">{studentInfo.paidFee}</span> | Pending: <span className="text-rose-600 font-black">{studentInfo.pendingFee}</span>
-                </div>
-              </div>
-              
-              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm overflow-x-auto">
+              <h2 className="text-[16px] font-black text-[#1E293B]">Fee Payment Ledger ({studentInfo.name})</h2>
+              <div className="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-wider border-b border-slate-200">
-                      <th className="py-3 px-4 min-w-[150px]">STUDENT DETAILS</th>
-                      <th className="py-3 px-4 min-w-[280px]">DESCRIPTION</th>
-                      <th className="py-3 px-4 min-w-[120px]">DATE</th>
-                      <th className="py-3 px-4 min-w-[130px]">RECEIPT NO</th>
-                      <th className="py-3 px-4 min-w-[110px]">AMOUNT</th>
-                      <th className="py-3 px-4 min-w-[130px]">STATUS</th>
+                    <tr className="bg-slate-50 text-slate-400 font-black text-[11px] uppercase tracking-wider border-b">
+                      <th className="py-3 px-4">Student</th>
+                      <th className="py-3 px-4">Description</th>
+                      <th className="py-3 px-4">Date</th>
+                      <th className="py-3 px-4">Receipt</th>
+                      <th className="py-3 px-4">Amount</th>
+                      <th className="py-3 px-4">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
                     {feeRecordsList.length > 0 ? (
-                      feeRecordsList.key ? feeRecordsList.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-3.5 px-4">
-                            <p className="font-black text-slate-900 text-sm leading-tight">{item.studentName}</p>
-                            <p className="text-[11px] text-indigo-600 font-bold mt-0.5">{item.class}</p>
-                          </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-600">
-                            {item.description}
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <p className="font-black text-slate-800 text-xs">{item.date}</p>
-                            <p className="text-[10px] text-slate-400 font-semibold mt-0.5">{item.id}</p>
-                          </td>
-                          <td className="py-3.5 px-4 font-mono text-slate-600 font-bold">
-                            {item.receiptNo}
-                          </td>
-                          <td className="py-3.5 px-4 font-black text-emerald-600 text-sm whitespace-nowrap">
-                            + {item.amount}
-                          </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap">
-                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-black uppercase shadow-sm">
-                              ✅ {item.mode} ({item.status})
-                            </span>
-                          </td>
-                        </tr>
-                      )) : feeRecordsList.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-3.5 px-4">
-                            <p className="font-black text-slate-900 text-sm leading-tight">{item.studentName}</p>
-                            <p className="text-[11px] text-indigo-600 font-bold mt-0.5">{item.class}</p>
-                          </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-600">
-                            {item.description}
-                          </td>
-                          <td className="py-3.5 px-4">
-                            <p className="font-black text-slate-800 text-xs">{item.date}</p>
-                            <p className="text-[10px] text-slate-400 font-semibold mt-0.5">{item.id}</p>
-                          </td>
-                          <td className="py-3.5 px-4 font-mono text-slate-600 font-bold">
-                            {item.receiptNo}
-                          </td>
-                          <td className="py-3.5 px-4 font-black text-emerald-600 text-sm whitespace-nowrap">
-                            + {item.amount}
-                          </td>
-                          <td className="py-3.5 px-4 whitespace-nowrap">
-                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full text-[11px] font-black uppercase shadow-sm">
-                              ✅ {item.mode} ({item.status})
-                            </span>
-                          </td>
+                      feeRecordsList.map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50">
+                          <td className="py-3.5 px-4 font-black">{item.studentName}</td>
+                          <td className="py-3.5 px-4">{item.description}</td>
+                          <td className="py-3.5 px-4">{item.date}</td>
+                          <td className="py-3.5 px-4 font-mono">{item.receiptNo}</td>
+                          <td className="py-3.5 px-4 font-black text-emerald-600">+ {item.amount}</td>
+                          <td className="py-3.5 px-4"><span className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[11px]">PAID</span></td>
                         </tr>
                       ))
                     ) : (
-                      <tr>
-                        <td colSpan="6" className="py-12 text-center text-slate-400 font-bold">
-                          No fee payment records found for {studentInfo.name || 'this student'}.
-                        </td>
-                      </tr>
+                      <tr><td colSpan="6" className="py-12 text-center text-slate-400 font-bold">No fee records found.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -703,62 +632,21 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             </div>
           )}
 
-          {/* TAB 6: ONLINE TEST / QUIZ */}
           {activeTab === 'quiz' && (
-            <OnlineTestQuiz loggedInParentId={loggedInParentId} />
+            <OnlineTestQuiz loggedInParentId={selectedStudentId} />
           )}
         </>
       )}
 
-      {/* Modal Popup for Notices Attachments */}
       {viewingNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-200">
-            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-              <div>
-                <h3 className="text-lg font-black text-slate-900">{viewingNotice.title}</h3>
-                <p className="text-xs text-slate-500 font-semibold">Document Preview & Download</p>
-              </div>
-              <button 
-                onClick={() => setViewingNotice(null)} 
-                className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 hover:bg-rose-100 hover:text-rose-600 transition-colors cursor-pointer"
-              >
-                <X size={20} />
-              </button>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
+            <div className="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
+              <h3 className="text-lg font-black">{viewingNotice.title}</h3>
+              <button onClick={() => setViewingNotice(null)} className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center cursor-pointer"><X size={20} /></button>
             </div>
-
             <div className="flex-1 bg-slate-100 p-4 overflow-auto flex items-center justify-center">
-              {viewingNotice.attachmentUrl.includes('.pdf') || viewingNotice.attachmentUrl.startsWith('data:application/pdf') ? (
-                <iframe 
-                  src={viewingNotice.attachmentUrl} 
-                  className="w-full h-full rounded-xl border border-slate-300 bg-white shadow-inner"
-                  title="PDF Viewer"
-                />
-              ) : (
-                <img 
-                  src={viewingNotice.attachmentUrl} 
-                  alt="Attachment Preview" 
-                  className="max-w-full max-h-full object-contain rounded-xl shadow-md border border-slate-300 bg-white" 
-                />
-              )}
-            </div>
-
-            <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-white">
-              <button 
-                onClick={() => setViewingNotice(null)}
-                className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 transition-colors cursor-pointer"
-              >
-                Close
-              </button>
-              <a 
-                href={viewingNotice.attachmentUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                download
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-black shadow-md cursor-pointer"
-              >
-                <Download size={18} /> Download File
-              </a>
+              <iframe src={viewingNotice.attachmentUrl} className="w-full h-full rounded-xl bg-white" title="Viewer" />
             </div>
           </div>
         </div>
