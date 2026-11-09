@@ -114,7 +114,7 @@ export default function ParentsPortalCredentialsManager() {
     );
   };
 
-  // Save Handler - Updates parent_credentials & parent_student_mapping tables safely
+  // 100% Robust Save Handler for both parent_credentials & parent_student_mapping
   const handleSave = async (student) => {
     try {
       const payload = {
@@ -127,8 +127,8 @@ export default function ParentsPortalCredentialsManager() {
 
       let parentCredUuid = student.credId;
 
+      // STEP 1: Save or Update parent_credentials
       if (parentCredUuid) {
-        // Update existing credential in parent_credentials
         const { error } = await supabase
           .from('parent_credentials')
           .update(payload)
@@ -146,7 +146,6 @@ export default function ParentsPortalCredentialsManager() {
         if (existingCred && existingCred.length > 0) {
           parentCredUuid = existingCred[0].id;
         } else {
-          // Insert new credential into parent_credentials
           const { data, error } = await supabase
             .from('parent_credentials')
             .insert([payload])
@@ -159,31 +158,43 @@ export default function ParentsPortalCredentialsManager() {
         }
       }
 
-      // Now ensure mapping exists in parent_student_mapping table safely
+      // STEP 2: Insert or Link into parent_student_mapping table safely
       if (parentCredUuid) {
-        let mapQuery = supabase
+        const finalStudentId = student.student_id ? String(student.student_id).trim() : null;
+        const finalSrNo = student.srNo && student.srNo !== 'N/A' ? String(student.srNo).trim() : null;
+
+        // Check if mapping already exists for this parent and student
+        let checkQuery = supabase
           .from('parent_student_mapping')
           .select('id')
           .eq('parent_credential_id', parentCredUuid);
 
-        if (student.student_id) {
-          mapQuery = mapQuery.eq('student_id', student.student_id);
-        } else if (student.srNo !== 'N/A') {
-          mapQuery = mapQuery.eq('sr_no', student.srNo);
+        if (finalStudentId) {
+          checkQuery = checkQuery.eq('student_id', finalStudentId);
+        } else if (finalSrNo) {
+          checkQuery = checkQuery.eq('sr_no', finalSrNo);
         }
 
-        const { data: existingMap } = await mapQuery.limit(1);
+        const { data: existingMap } = await checkQuery.limit(1);
 
+        // Agar mapping nahi milti hai, toh naya record insert karein
         if (!existingMap || existingMap.length === 0) {
-          await supabase.from('parent_student_mapping').insert([{
-            parent_credential_id: parentCredUuid,
-            student_id: student.student_id || null,
-            sr_no: student.srNo !== 'N/A' ? student.srNo : null
-          }]);
+          const { error: mapInsertErr } = await supabase
+            .from('parent_student_mapping')
+            .insert([{
+              parent_credential_id: parentCredUuid,
+              student_id: finalStudentId,
+              sr_no: finalSrNo
+            }]);
+
+          if (mapInsertErr) {
+            console.error('Mapping Insert Error:', mapInsertErr.message);
+            throw new Error('Credential save ho gaya lekin mapping insert nahi ho payi: ' + mapInsertErr.message);
+          }
         }
       }
 
-      setSuccessMsg(`✅ ${student.name} (Class: ${student.className}) ke Credentials & Mapping successfully save ho gaye!`);
+      setSuccessMsg(`✅ ${student.name} ke Credentials & Mapping successfully save ho gaye!`);
       setTimeout(() => {
         setSuccessMsg('');
       }, 4000);
