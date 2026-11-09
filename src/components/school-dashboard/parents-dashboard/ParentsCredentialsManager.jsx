@@ -37,7 +37,6 @@ export default function ParentsPortalCredentialsManager() {
   const fetchStudentsData = async () => {
     setLoading(true);
     try {
-      // Fetch students list from 'students' table
       let query = supabase.from('students').select('*');
       if (filterClass !== 'All Classes') {
         query = query.eq('class_name', filterClass);
@@ -47,22 +46,36 @@ export default function ParentsPortalCredentialsManager() {
       if (studentError) throw studentError;
 
       if (studentsData) {
-        // Fetch parent credentials from 'parent_credentials' table
+        // Fetch parent credentials
         const { data: credsData, error: credsError } = await supabase.from('parent_credentials').select('*');
         if (credsError) throw credsError;
 
-        // Merge student & credentials data cleanly matching student_id, sr_no, or mobile_number
+        // Fetch parent_student_mapping data to check existing links
+        const { data: mappingData, error: mapErr } = await supabase.from('parent_student_mapping').select('*');
+        if (mapErr) console.warn('Mapping fetch warning:', mapErr.message);
+
         const mergedData = studentsData.map((st) => {
           const hasStudentId = st.student_id && String(st.student_id).trim() !== '';
           const activeIdentifier = hasStudentId ? String(st.student_id).trim() : String(st.sr_no || '').trim();
 
-          // Find matching credential row
-          const cred = credsData?.find((c) => 
-            (c.student_id && String(c.student_id).trim() === String(st.student_id || '').trim()) ||
-            (c.student_id && String(c.student_id).trim() === String(st.id || '').trim()) ||
-            (c.sr_no && String(c.sr_no).trim() === String(st.sr_no || '').trim()) ||
-            (c.mobile_number && st.mobile_number && String(c.mobile_number).trim() === String(st.mobile_number).trim())
+          // Check mapping table or credentials table for matching record
+          const mappedRow = mappingData?.find(m => 
+            (st.student_id && String(m.student_id) === String(st.student_id)) ||
+            (st.sr_no && String(m.sr_no) === String(st.sr_no))
           );
+
+          let cred = null;
+          if (mappedRow) {
+            cred = credsData?.find(c => String(c.id) === String(mappedRow.parent_credential_id));
+          }
+
+          if (!cred) {
+            cred = credsData?.find((c) => 
+              (c.student_id && String(c.student_id).trim() === String(st.student_id || '').trim()) ||
+              (c.sr_no && String(c.sr_no).trim() === String(st.sr_no || '').trim()) ||
+              (c.mobile_number && st.mobile_number && String(c.mobile_number).trim() === String(st.mobile_number).trim())
+            );
+          }
 
           return {
             id: st.id,
@@ -101,44 +114,81 @@ export default function ParentsPortalCredentialsManager() {
     );
   };
 
-  // Save Handler - Updates parent_credentials table ensuring student_id, sr_no, and mobile numbers are populated
+  // Save Handler - Updates parent_credentials & parent_student_mapping tables safely
   const handleSave = async (student) => {
     try {
       const payload = {
-        student_id: student.student_id || student.srNo || null,
-        sr_no: student.srNo !== 'N/A' ? student.srNo : null,
-        mobile_number: student.mobile !== 'N/A' ? student.mobile : null,
-        whatsapp_number: student.whatsapp !== 'N/A' ? student.whatsapp : null,
         portal_login_id: student.loginId,
         password: student.password,
+        mobile_number: student.mobile !== 'N/A' ? student.mobile : null,
+        whatsapp_number: student.whatsapp !== 'N/A' ? student.whatsapp : null,
         updated_at: new Date()
       };
 
-      if (student.credId) {
+      let parentCredUuid = student.credId;
+
+      if (parentCredUuid) {
         // Update existing credential in parent_credentials
         const { error } = await supabase
           .from('parent_credentials')
           .update(payload)
-          .eq('id', student.credId);
+          .eq('id', parentCredUuid);
 
         if (error) throw error;
       } else {
-        // Insert new credential into parent_credentials
-        const { data, error } = await supabase
+        // Check if portal_login_id already exists in parent_credentials
+        const { data: existingCred } = await supabase
           .from('parent_credentials')
-          .insert([payload])
-          .select();
+          .select('id')
+          .eq('portal_login_id', student.loginId)
+          .limit(1);
 
-        if (error) throw error;
-        if (data && data[0]) {
-          student.credId = data[0].id;
+        if (existingCred && existingCred.length > 0) {
+          parentCredUuid = existingCred[0].id;
+        } else {
+          // Insert new credential into parent_credentials
+          const { data, error } = await supabase
+            .from('parent_credentials')
+            .insert([payload])
+            .select();
+
+          if (error) throw error;
+          if (data && data[0]) {
+            parentCredUuid = data[0].id;
+          }
         }
       }
 
-      setSuccessMsg(`✅ ${student.name} (Class: ${student.className}) ke Credentials successfully update ho gaye!`);
+      // Now ensure mapping exists in parent_student_mapping table safely
+      if (parentCredUuid) {
+        let mapQuery = supabase
+          .from('parent_student_mapping')
+          .select('id')
+          .eq('parent_credential_id', parentCredUuid);
+
+        if (student.student_id) {
+          mapQuery = mapQuery.eq('student_id', student.student_id);
+        } else if (student.srNo !== 'N/A') {
+          mapQuery = mapQuery.eq('sr_no', student.srNo);
+        }
+
+        const { data: existingMap } = await mapQuery.limit(1);
+
+        if (!existingMap || existingMap.length === 0) {
+          await supabase.from('parent_student_mapping').insert([{
+            parent_credential_id: parentCredUuid,
+            student_id: student.student_id || null,
+            sr_no: student.srNo !== 'N/A' ? student.srNo : null
+          }]);
+        }
+      }
+
+      setSuccessMsg(`✅ ${student.name} (Class: ${student.className}) ke Credentials & Mapping successfully save ho gaye!`);
       setTimeout(() => {
         setSuccessMsg('');
       }, 4000);
+      
+      fetchStudentsData();
     } catch (error) {
       alert('Error saving credentials: ' + error.message);
     }
@@ -158,7 +208,6 @@ export default function ParentsPortalCredentialsManager() {
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 text-slate-800 font-sans">
       
-      {/* Toast Notification for Success */}
       {successMsg && (
         <div className="fixed top-5 right-5 z-50 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black px-6 py-3.5 rounded-2xl shadow-xl border-t border-emerald-300 border-b-[4px] border-emerald-900 animate-bounce flex items-center gap-2">
           <ShieldCheck size={20} /> {successMsg}
@@ -174,15 +223,14 @@ export default function ParentsPortalCredentialsManager() {
               Parents Portal Credentials Manager
             </h1>
             <p className="text-xs sm:text-sm font-semibold text-indigo-100/90 mt-1">
-              Yahan se aap har class ke students ke Parents Portal Login ID aur Passwords edit/update kar sakte hain.
+              Yahan se aap har class ke students ke Parents Portal Login ID aur Passwords edit/update kar sakte hain (Supports Multiple Children Mapping).
             </p>
           </div>
 
-          {/* Header 3D Buttons */}
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
             <button 
               onClick={handleExport}
-              className="flex-1 lg:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-sky-400 via-cyan-500 to-blue-600 hover:from-sky-300 hover:to-blue-700 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider border-t border-sky-200 border-b-[4px] border-blue-950 shadow-[0_0_15px_rgba(56,189,248,0.35)] active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer"
+              className="flex-1 lg:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-sky-400 via-cyan-500 to-blue-600 hover:from-sky-300 hover:to-blue-700 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider border-t border-sky-200 border-b-[4px] border-blue-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer"
             >
               <Download size={16} className="stroke-[3]" /> Export List
             </button>
