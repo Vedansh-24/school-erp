@@ -279,10 +279,14 @@ export default function FeeCollectionReceipt() {
       else if (activeInstalmentGroup === 'inst4') i4 = mainFee;
     }
 
-    // वास्तविक student_id और sr_no निकालने की सुरक्षित व्यवस्था
-    const realStudentIdVal = currentStudent?.student_id 
-      ? String(currentStudent.student_id) 
-      : (currentStudent?.id ? String(currentStudent.id) : String(selectedStudentId));
+    let studentUuid = null;
+    if (isValidUUID(currentStudent?.id)) {
+      studentUuid = currentStudent.id;
+    } else if (isValidUUID(currentStudent?.student_id)) {
+      studentUuid = currentStudent.student_id;
+    } else if (isValidUUID(selectedStudentId)) {
+      studentUuid = selectedStudentId;
+    }
 
     const srNoVal = currentStudent?.sr_no 
       ? String(currentStudent.sr_no) 
@@ -290,8 +294,8 @@ export default function FeeCollectionReceipt() {
 
     const txData = {
       receipt_no: manualReceiptNo || Math.floor(1000 + Math.random() * 9000).toString(),
-      student_id: realStudentIdVal, // वास्तविक student_id (UUID के बजाय)
-      sr_no: srNoVal,               // sr_no सही से रिकॉर्ड होगा
+      student_id: studentUuid,
+      sr_no: srNoVal,
       class_name: selectedClass,
       allocation_month: allocationMonth,
       receipt_date: receiptDate,
