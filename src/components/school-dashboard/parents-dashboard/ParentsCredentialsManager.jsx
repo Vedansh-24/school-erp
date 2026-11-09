@@ -37,7 +37,7 @@ export default function ParentsPortalCredentialsManager() {
   const fetchStudentsData = async () => {
     setLoading(true);
     try {
-      // Fetch students list
+      // Fetch students list from 'students' table
       let query = supabase.from('students').select('*');
       if (filterClass !== 'All Classes') {
         query = query.eq('class_name', filterClass);
@@ -47,22 +47,21 @@ export default function ParentsPortalCredentialsManager() {
       if (studentError) throw studentError;
 
       if (studentsData) {
-        // Fetch parent credentials
+        // Fetch parent credentials from 'parent_credentials' table
         const { data: credsData, error: credsError } = await supabase.from('parent_credentials').select('*');
         if (credsError) throw credsError;
 
-        // Map credentials with respective students based on Student ID (if present) else SR No
+        // Merge student & credentials data cleanly matching student_id, sr_no, or mobile_number
         const mergedData = studentsData.map((st) => {
           const hasStudentId = st.student_id && String(st.student_id).trim() !== '';
-          const activeIdentifier = hasStudentId ? st.student_id : st.sr_no;
+          const activeIdentifier = hasStudentId ? String(st.student_id).trim() : String(st.sr_no || '').trim();
 
-          // Find credential matching student_id or sr_no
+          // Find matching credential row
           const cred = credsData?.find((c) => 
-            String(c.student_id) === String(st.id) || 
-            String(c.student_id) === String(activeIdentifier) ||
-            String(c.student_id) === String(st.student_id) ||
-            String(c.student_id) === String(st.sr_no) ||
-            String(c.sr_no) === String(st.sr_no)
+            (c.student_id && String(c.student_id).trim() === String(st.student_id || '').trim()) ||
+            (c.student_id && String(c.student_id).trim() === String(st.id || '').trim()) ||
+            (c.sr_no && String(c.sr_no).trim() === String(st.sr_no || '').trim()) ||
+            (c.mobile_number && st.mobile_number && String(c.mobile_number).trim() === String(st.mobile_number).trim())
           );
 
           return {
@@ -73,6 +72,7 @@ export default function ParentsPortalCredentialsManager() {
             className: st.class_name || 'Unassigned',
             fatherName: st.father_name || 'N/A',
             mobile: st.mobile_number || st.whatsapp_number || 'N/A',
+            whatsapp: st.whatsapp_number || st.mobile_number || 'N/A',
             loginId: cred ? cred.portal_login_id : (activeIdentifier || ''),
             password: cred ? cred.password : '123456',
             credId: cred ? cred.id : null,
@@ -101,39 +101,32 @@ export default function ParentsPortalCredentialsManager() {
     );
   };
 
-  // Save Handler - Includes sr_no and student_id to satisfy database constraints
+  // Save Handler - Updates parent_credentials table ensuring student_id, sr_no, and mobile numbers are populated
   const handleSave = async (student) => {
     try {
-      const targetIdentifier = (student.student_id && String(student.student_id).trim() !== '') 
-        ? student.student_id 
-        : student.srNo;
+      const payload = {
+        student_id: student.student_id || student.srNo || null,
+        sr_no: student.srNo !== 'N/A' ? student.srNo : null,
+        mobile_number: student.mobile !== 'N/A' ? student.mobile : null,
+        whatsapp_number: student.whatsapp !== 'N/A' ? student.whatsapp : null,
+        portal_login_id: student.loginId,
+        password: student.password,
+        updated_at: new Date()
+      };
 
       if (student.credId) {
-        // Update existing record
+        // Update existing credential in parent_credentials
         const { error } = await supabase
           .from('parent_credentials')
-          .update({
-            student_id: targetIdentifier,
-            sr_no: student.srNo,
-            portal_login_id: student.loginId,
-            password: student.password,
-            updated_at: new Date()
-          })
+          .update(payload)
           .eq('id', student.credId);
 
         if (error) throw error;
       } else {
-        // Insert new record passing both sr_no and student_id
+        // Insert new credential into parent_credentials
         const { data, error } = await supabase
           .from('parent_credentials')
-          .insert([
-            {
-              student_id: student.student_id || null,
-              sr_no: student.srNo,
-              portal_login_id: student.loginId,
-              password: student.password
-            }
-          ])
+          .insert([payload])
           .select();
 
         if (error) throw error;
@@ -181,13 +174,12 @@ export default function ParentsPortalCredentialsManager() {
               Parents Portal Credentials Manager
             </h1>
             <p className="text-xs sm:text-sm font-semibold text-indigo-100/90 mt-1">
-              Yahan से aap har class ke students ke Parents Portal Login ID aur Passwords edit/update kar sakte hain.
+              Yahan se aap har class ke students ke Parents Portal Login ID aur Passwords edit/update kar sakte hain.
             </p>
           </div>
 
           {/* Header 3D Buttons */}
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-            {/* 🌊 3D Sky-Blue Export Button */}
             <button 
               onClick={handleExport}
               className="flex-1 lg:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-sky-400 via-cyan-500 to-blue-600 hover:from-sky-300 hover:to-blue-700 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider border-t border-sky-200 border-b-[4px] border-blue-950 shadow-[0_0_15px_rgba(56,189,248,0.35)] active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer"
@@ -195,7 +187,6 @@ export default function ParentsPortalCredentialsManager() {
               <Download size={16} className="stroke-[3]" /> Export List
             </button>
 
-            {/* 🔮 3D Purple Refresh Button */}
             <button 
               onClick={() => { setFilterClass('All Classes'); fetchStudentsData(); }}
               className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 via-fuchsia-600 to-pink-600 hover:from-purple-400 hover:to-pink-700 text-white px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider border-t border-purple-200 border-b-[4px] border-purple-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer"
@@ -290,7 +281,6 @@ export default function ParentsPortalCredentialsManager() {
                       />
                     </td>
                     <td className="p-4 pr-6 text-center align-middle">
-                      {/* ❇️ 3D EMERALD GRADIENT SAVE BUTTON WITH DABNE WALA EFFECT */}
                       <button 
                         onClick={() => handleSave(student)}
                         className="inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-700 hover:from-emerald-400 hover:to-teal-600 text-white font-black px-5 py-2 rounded-xl text-[12px] uppercase tracking-wider border-t border-emerald-300 border-b-[4px] border-emerald-950 shadow-md active:translate-y-1 active:border-b-[1px] active:shadow-none transition-all cursor-pointer w-full md:w-auto"
@@ -311,7 +301,6 @@ export default function ParentsPortalCredentialsManager() {
           </table>
         </div>
         
-        {/* Footer Space */}
         <div className="bg-slate-50 p-4 border-t-2 border-slate-100 text-center text-xs font-black text-slate-500 uppercase tracking-wider rounded-b-3xl">
           Showing {students.length} Students from Database
         </div>

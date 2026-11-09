@@ -72,7 +72,8 @@ export default function AttendanceHolidays() {
 
   const fetchAllEntities = async () => {
     try {
-      const { data: stData } = await supabase.from('students').select('id, student_full_name, sr_no, class_name').order('student_full_name');
+      // Updated: Fetching student_id along with id, student_full_name, sr_no, class_name
+      const { data: stData } = await supabase.from('students').select('id, student_id, student_full_name, sr_no, class_name').order('student_full_name');
       if (stData) setAllStudentsList(stData);
 
       const { data: sfData } = await supabase.from('staff').select('id, full_name, designation').order('full_name');
@@ -94,9 +95,10 @@ export default function AttendanceHolidays() {
   const fetchStudentsAndAttendance = async () => {
     setLoading(true);
     try {
+      // Updated: Select student_id as well
       const { data: studentData, error: studentErr } = await supabase
         .from('students')
-        .select('id, student_full_name, sr_no')
+        .select('id, student_id, student_full_name, sr_no')
         .eq('class_name', selectedClass);
 
       if (studentErr) throw studentErr;
@@ -113,10 +115,11 @@ export default function AttendanceHolidays() {
       }
 
       const formatted = (studentData || []).map(st => ({
-        id: st.id,
+        id: st.id,              // Internal UUID record reference
+        studentId: st.student_id, // Actual student_id (e.g. 549424034)
         name: st.student_full_name,
         srNo: st.sr_no,
-        status: attMap[st.id] || '-- Not Marked --'
+        status: attMap[st.student_id] || attMap[st.id] || '-- Not Marked --'
       }));
 
       setStudents(formatted);
@@ -188,10 +191,11 @@ export default function AttendanceHolidays() {
   };
 
   const handleSaveStudentAttendance = async () => {
+    // Updated: Now saving actual studentId and sr_no together in attendance table
     const recordsToInsert = students
       .filter(s => s.status !== '-- Not Marked --')
       .map(s => ({
-        student_id: s.id,
+        student_id: s.studentId || s.id, // वास्तविक student_id (या fallback के तौर पर id)
         sr_no: s.srNo,
         class_name: selectedClass,
         attendance_date: attendanceDate,
@@ -200,7 +204,7 @@ export default function AttendanceHolidays() {
       }));
 
     if (recordsToInsert.length === 0) {
-      alert('Kripya kisi student ki attendance choose karein!');
+      alert('Kripya kisi student की attendance choose karein!');
       return;
     }
 
@@ -267,7 +271,10 @@ export default function AttendanceHolidays() {
         .lte('attendance_date', reportToDate);
 
       if (selectEntity !== 'All') {
-        query = query.eq(idColumn, selectEntity);
+        // If selecting a specific student, match by their actual student_id or record id
+        const selectedStudentObj = allStudentsList.find(s => String(s.id) === String(selectEntity));
+        const targetIdToQuery = isStudent && selectedStudentObj ? (selectedStudentObj.student_id || selectedStudentObj.id) : selectEntity;
+        query = query.eq(idColumn, targetIdToQuery);
       } else if (isStudent && reportClassFilter !== 'All') {
         query = query.eq('class_name', reportClassFilter);
       }
@@ -294,8 +301,9 @@ export default function AttendanceHolidays() {
           const customHoliday = getCustomHolidayReason(dateStr);
 
           entities.forEach(entity => {
+            const entityMatchId = isStudent ? (entity.student_id || entity.id) : entity.id;
             const attRecord = (data || []).find(d => 
-              String(d[idColumn]) === String(entity.id) && d.attendance_date === dateStr
+              (String(d[idColumn]) === String(entityMatchId) || String(d[idColumn]) === String(entity.id)) && d.attendance_date === dateStr
             );
 
             let status = attRecord ? attRecord.status : '-- Not Marked --';
@@ -457,7 +465,6 @@ export default function AttendanceHolidays() {
         </h2>
 
         <form onSubmit={handleAddHoliday} className="space-y-4">
-          {/* Row 1: Vacation / Holiday Reason */}
           <div>
             <label className="block text-[12px] font-bold text-slate-700 mb-1">Vacation / Holiday Reason</label>
             <input 
@@ -469,7 +476,6 @@ export default function AttendanceHolidays() {
             />
           </div>
 
-          {/* Row 2: From Date & To Date (2 columns on mobile & laptop) */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[12px] font-bold text-slate-700 mb-1">From Date</label>
@@ -491,7 +497,6 @@ export default function AttendanceHolidays() {
             </div>
           </div>
 
-          {/* Row 3: Add Button */}
           <div>
             <button 
               type="submit"
