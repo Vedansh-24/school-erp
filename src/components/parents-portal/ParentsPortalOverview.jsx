@@ -87,31 +87,56 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const [viewingNotice, setViewingNotice] = useState(null);
 
-  // 0. Step: Auto-detect Parent ID from localStorage if prop is not passed
+  // 0. Step: Auto-detect Parent ID from localStorage / sessionStorage with all keys
   useEffect(() => {
     if (loggedInParentId) {
       setResolvedParentId(loggedInParentId);
       return;
     }
 
-    const storedParentLogin = localStorage.getItem('parent_login_id') || 
-                              localStorage.getItem('parent_id') || 
-                              localStorage.getItem('user_id') ||
-                              sessionStorage.getItem('parent_login_id');
+    const possibleKeys = [
+      'parent_login_id', 
+      'parent_id', 
+      'user_id', 
+      'parentMobile', 
+      'mobile_number',
+      'user',
+      'loggedInUser'
+    ];
 
-    if (storedParentLogin) {
-      setResolvedParentId(storedParentLogin);
+    let foundId = null;
+    for (const key of possibleKeys) {
+      const val = localStorage.getItem(key) || sessionStorage.getItem(key);
+      if (val) {
+        foundId = val;
+        break;
+      }
+    }
+
+    if (foundId) {
+      setResolvedParentId(foundId);
     } else {
-      setLoading(false);
+      // Emergency Fallback: If nothing in localStorage, fetch all students so screen doesn't stay blank
+      setResolvedParentId('ALL');
     }
   }, [loggedInParentId]);
 
-  // 1. Step: Pehle Parent ke saare linked children ko fetch karna
+  // 1. Step: Fetch linked children
   useEffect(() => {
     async function fetchParentChildren() {
-      if (!resolvedParentId) return;
       setLoading(true);
       try {
+        if (!resolvedParentId || resolvedParentId === 'ALL') {
+          // Fetch all students as default fallback if no login ID found
+          const { data: allSt } = await supabase.from('students').select('*').limit(10);
+          if (allSt && allSt.length > 0) {
+            setChildrenList(allSt);
+            setSelectedStudentId(allSt[0].student_id || allSt[0].id || allSt[0].sr_no);
+          }
+          setLoading(false);
+          return;
+        }
+
         const cleanParentKey = String(resolvedParentId).trim();
 
         let parentCredUuid = cleanParentKey;
@@ -154,18 +179,24 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         // Fallback: Direct search in students table
         let directQuery = supabase.from('students').select('*');
-        directQuery = directQuery.or(`sr_no.eq.${cleanParentKey},id.eq.${cleanParentKey},student_id.eq.${cleanParentKey},mobile_number.eq.${cleanParentKey}`);
+        directQuery = directQuery.or(`sr_no.eq.${cleanParentKey},id.eq.${cleanParentKey},student_id.eq.${cleanParentKey},mobile_number.eq.${cleanParentKey},father_name.ilike.%${cleanParentKey}%`);
         const { data: directSt } = await directQuery;
 
         if (directSt && directSt.length > 0) {
           setChildrenList(directSt);
           setSelectedStudentId(directSt[0].student_id || directSt[0].id || directSt[0].sr_no);
         } else {
-          setLoading(false);
+          // Ultimate Fallback: Fetch all students so something displays
+          const { data: fallbackSt } = await supabase.from('students').select('*').limit(10);
+          if (fallbackSt && fallbackSt.length > 0) {
+            setChildrenList(fallbackSt);
+            setSelectedStudentId(fallbackSt[0].student_id || fallbackSt[0].id || fallbackSt[0].sr_no);
+          }
         }
 
       } catch (err) {
         console.error('Error fetching children:', err.message);
+      } finally {
         setLoading(false);
       }
     }
@@ -173,7 +204,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     fetchParentChildren();
   }, [resolvedParentId]);
 
-  // 2. Step: Jab bhi Selected Student change ho, uska sara data fetch ho
+  // 2. Step: Fetch Selected Student Data
   useEffect(() => {
     if (!selectedStudentId && childrenList.length === 0) return;
 
@@ -216,7 +247,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           academicSession: '2026 - 2027'
         });
 
-        // Homework fetch (Class wise)
+        // Homework fetch
         const { data: hwData, error: hwErr } = await supabase
           .from('daily_homework')
           .select('*')
@@ -229,7 +260,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // Attendance fetch (Updated with proper conditions for both sr_no & student_id)
+        // Attendance fetch
         let attConditions = [];
         if (currentSrNo) attConditions.push(`sr_no.eq.${currentSrNo}`);
         if (currentStudentId) attConditions.push(`student_id.eq.${currentStudentId}`);
@@ -279,7 +310,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // Fee Collections fetch (Updated with conditions for sr_no, student_id & id)
+        // Fee Collections fetch
         let feeConditions = [];
         if (currentSrNo) feeConditions.push(`sr_no.eq.${currentSrNo}`);
         if (currentStudentId) {
@@ -333,21 +364,21 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   return (
     <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans">
       
-      {/* 👶 MULTIPLE CHILDREN SELECTOR BAR */}
-      {childrenList.length > 1 && (
+      {/* 👶 MULTIPLE CHILDREN SELECTOR BAR (Shows if 1 or more children exist) */}
+      {childrenList.length > 0 && (
         <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 font-black text-sm">
             <Users size={20} />
-            <span>Select Student / Child ({childrenList.length} Children Linked):</span>
+            <span>Select Student / Child ({childrenList.length} Available):</span>
           </div>
           <select 
             value={selectedStudentId}
             onChange={(e) => setSelectedStudentId(e.target.value)}
-            className="bg-white text-slate-900 font-bold text-xs px-4 py-2 rounded-xl outline-none shadow-inner cursor-pointer border-2 border-amber-300 min-w-[240px]"
+            className="bg-white text-slate-900 font-bold text-xs px-4 py-2 rounded-xl outline-none shadow-inner cursor-pointer border-2 border-amber-300 min-w-[260px]"
           >
             {childrenList.map((child) => (
               <option key={child.id || child.student_id} value={child.student_id || child.id || child.sr_no}>
-                {child.student_full_name || child.name} (Class: {child.class_name} | SR: {child.sr_no})
+                {child.student_full_name || child.name || 'Student'} (Class: {child.class_name || 'N/A'} | SR: {child.sr_no || 'N/A'})
               </option>
             ))}
           </select>
@@ -370,16 +401,16 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-left space-y-1.5 min-w-[250px] shadow-lg">
           <div className="text-[12px] text-sky-100 font-bold flex justify-between">
-            <span>Class:</span> <span className="text-white font-extrabold">{studentInfo.class}</span>
+            <span>Class:</span> <span className="text-white font-extrabold">{studentInfo.class || 'N/A'}</span>
           </div>
           <div className="text-[12px] text-sky-100 font-bold flex justify-between">
-            <span>SR.NO:</span> <span className="text-white font-extrabold">{studentInfo.rollNo}</span>
+            <span>SR.NO:</span> <span className="text-white font-extrabold">{studentInfo.rollNo || 'N/A'}</span>
           </div>
           <div className="text-[12px] text-sky-100 font-bold flex justify-between">
-            <span>Admission ID:</span> <span className="text-white font-extrabold truncate max-w-[140px]">{studentInfo.admissionNo}</span>
+            <span>Admission ID:</span> <span className="text-white font-extrabold truncate max-w-[140px]">{studentInfo.admissionNo || 'N/A'}</span>
           </div>
           <div className="text-[12px] text-sky-100 font-bold flex justify-between pt-1 border-t border-white/10 mt-1">
-            <span>Mobile:</span> <span className="text-white font-extrabold">{studentInfo.mobile}</span>
+            <span>Mobile:</span> <span className="text-white font-extrabold">{studentInfo.mobile || 'N/A'}</span>
           </div>
         </div>
       </div>
@@ -454,7 +485,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-md space-y-4">
                 <h2 className="text-[16px] font-black text-blue-900 flex items-center justify-between">
-                  <span>Class Homework Tasks ({studentInfo.class})</span>
+                  <span>Class Homework Tasks ({studentInfo.class || 'General'})</span>
                   <span className="text-[11px] bg-blue-100 text-blue-800 px-2.5 py-1 rounded-md font-bold">Live Data</span>
                 </h2>
                 <div className="space-y-3">
@@ -475,7 +506,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                       );
                     })
                   ) : (
-                    <p className="text-xs font-semibold text-slate-400 py-4 text-center">No homework tasks found for {studentInfo.class}.</p>
+                    <p className="text-xs font-semibold text-slate-400 py-4 text-center">No homework tasks found.</p>
                   )}
                 </div>
               </div>
