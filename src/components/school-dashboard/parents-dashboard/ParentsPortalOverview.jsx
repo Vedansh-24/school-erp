@@ -87,7 +87,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const [viewingNotice, setViewingNotice] = useState(null);
 
-  // 0. Step: Auto-detect Parent ID from localStorage / sessionStorage with all keys
+  // 0. Auto-detect Parent ID from localStorage / sessionStorage
   useEffect(() => {
     if (loggedInParentId) {
       setResolvedParentId(loggedInParentId);
@@ -120,7 +120,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     }
   }, [loggedInParentId]);
 
-  // 1. Step: Fetch linked children
+  // 1. Fetch all linked children based on parent credentials & mapping
   useEffect(() => {
     async function fetchParentChildren() {
       setLoading(true);
@@ -177,7 +177,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
         // Fallback: Direct search in students table
         let directQuery = supabase.from('students').select('*');
-        directQuery = directQuery.or(`sr_no.eq.${cleanParentKey},id.eq.${cleanParentKey},student_id.eq.${cleanParentKey},mobile_number.eq.${cleanParentKey},father_name.ilike.%${cleanParentKey}%`);
+        directQuery = directQuery.or(`sr_no.eq.${cleanParentKey},id.eq.${cleanParentKey},student_id.eq.${cleanParentKey},mobile_number.eq.${cleanParentKey}`);
         const { data: directSt } = await directQuery;
 
         if (directSt && directSt.length > 0) {
@@ -201,7 +201,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     fetchParentChildren();
   }, [resolvedParentId]);
 
-  // 2. Step: Fetch Selected Student Data
+  // 2. Fetch Active Student Data (Homework, Attendance, Fees, Notices)
   useEffect(() => {
     if (!selectedStudentId && childrenList.length === 0) return;
 
@@ -244,7 +244,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           academicSession: '2026 - 2027'
         });
 
-        // Homework fetch
+        // Homework fetch (Class wise)
         const { data: hwData, error: hwErr } = await supabase
           .from('daily_homework')
           .select('*')
@@ -583,14 +583,12 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                           </div>
                           {notice.attachmentUrl ? (
                             <div className="flex items-center gap-2">
-                              {/* 👁️ VIEW BUTTON (Image 1 Type) */}
                               <button 
                                 onClick={() => setViewingNotice(notice)}
                                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black text-white bg-indigo-600 hover:bg-indigo-700 shadow-md transition-all cursor-pointer"
                               >
                                 <Eye size={15} /> View
                               </button>
-                              {/* 📥 DOWNLOAD BUTTON (Image 1 Type) */}
                               <a 
                                 href={notice.attachmentUrl} 
                                 target="_blank" 
@@ -733,7 +731,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         </>
       )}
 
-      {/* Modal Popup for Notices Attachments (Image 2 Type: Close & Download File Buttons) */}
+      {/* Modal Popup for Notices Attachments */}
       {viewingNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-200">
@@ -766,7 +764,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
               )}
             </div>
 
-            {/* Footer Buttons exactly like Image 2 */}
             <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-white">
               <button 
                 onClick={() => setViewingNotice(null)}
