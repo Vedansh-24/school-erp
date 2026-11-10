@@ -59,6 +59,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   // Multiple Children States
   const [childrenList, setChildrenList] = useState([]);
   const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [resolvedParentId, setResolvedParentId] = useState(loggedInParentId);
 
   const [studentInfo, setStudentInfo] = useState({
     id: '',
@@ -86,33 +87,50 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const [viewingNotice, setViewingNotice] = useState(null);
 
+  // 0. Step: Auto-detect Parent ID from localStorage if prop is not passed
+  useEffect(() => {
+    if (loggedInParentId) {
+      setResolvedParentId(loggedInParentId);
+      return;
+    }
+
+    const storedParentLogin = localStorage.getItem('parent_login_id') || 
+                              localStorage.getItem('parent_id') || 
+                              localStorage.getItem('user_id') ||
+                              sessionStorage.getItem('parent_login_id');
+
+    if (storedParentLogin) {
+      setResolvedParentId(storedParentLogin);
+    } else {
+      setLoading(false);
+    }
+  }, [loggedInParentId]);
+
   // 1. Step: Pehle Parent ke saare linked children ko fetch karna
   useEffect(() => {
     async function fetchParentChildren() {
-      if (!loggedInParentId) return;
+      if (!resolvedParentId) return;
+      setLoading(true);
       try {
-        const cleanParentKey = String(loggedInParentId).trim();
+        const cleanParentKey = String(resolvedParentId).trim();
 
-        // Check karein ki loggedInParentId, parent_credentials ki 'id' hai ya 'portal_login_id'
         let parentCredUuid = cleanParentKey;
         const { data: credData } = await supabase
           .from('parent_credentials')
           .select('id')
-          .or(`id.eq.${cleanParentKey},portal_login_id.eq.${cleanParentKey}`)
+          .or(`id.eq.${cleanParentKey},portal_login_id.eq.${cleanParentKey},mobile_number.eq.${cleanParentKey}`)
           .limit(1);
 
         if (credData && credData.length > 0) {
           parentCredUuid = credData[0].id;
         }
 
-        // parent_student_mapping se is parent ke sabhi student_id/sr_no nikalein
         const { data: mappingData, error: mapErr } = await supabase
           .from('parent_student_mapping')
           .select('student_id, sr_no')
           .eq('parent_credential_id', parentCredUuid);
 
         if (!mapErr && mappingData && mappingData.length > 0) {
-          // Ab students table se un sabhi bachho ki details layein
           const studentIds = mappingData.map(m => m.student_id).filter(Boolean);
           const srNos = mappingData.map(m => m.sr_no).filter(Boolean);
 
@@ -128,29 +146,32 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           const { data: studentsData } = await studentQuery;
           if (studentsData && studentsData.length > 0) {
             setChildrenList(studentsData);
-            // Default pehla bachha select karein
             setSelectedStudentId(studentsData[0].student_id || studentsData[0].id || studentsData[0].sr_no);
+            setLoading(false);
             return;
           }
         }
 
-        // Fallback: Agar mapping table me entry nahi mili toh direct student table me search karein
+        // Fallback: Direct search in students table
         let directQuery = supabase.from('students').select('*');
-        directQuery = directQuery.or(`sr_no.eq.${cleanParentKey},id.eq.${cleanParentKey},student_id.eq.${cleanParentKey}`);
+        directQuery = directQuery.or(`sr_no.eq.${cleanParentKey},id.eq.${cleanParentKey},student_id.eq.${cleanParentKey},mobile_number.eq.${cleanParentKey}`);
         const { data: directSt } = await directQuery;
 
         if (directSt && directSt.length > 0) {
           setChildrenList(directSt);
           setSelectedStudentId(directSt[0].student_id || directSt[0].id || directSt[0].sr_no);
+        } else {
+          setLoading(false);
         }
 
       } catch (err) {
         console.error('Error fetching children:', err.message);
+        setLoading(false);
       }
     }
 
     fetchParentChildren();
-  }, [loggedInParentId]);
+  }, [resolvedParentId]);
 
   // 2. Step: Jab bhi Selected Student change ho, uska sara data fetch ho
   useEffect(() => {
