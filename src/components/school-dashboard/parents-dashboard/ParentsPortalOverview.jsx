@@ -87,7 +87,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const [viewingNotice, setViewingNotice] = useState(null);
 
-  // 0. Step: Auto-detect Parent ID from localStorage
+  // 0. Step: Auto-detect Parent ID from localStorage if prop is not passed
   useEffect(() => {
     if (loggedInParentId) {
       setResolvedParentId(loggedInParentId);
@@ -106,7 +106,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     }
   }, [loggedInParentId]);
 
-  // 1. Step: Fetch Parent's linked children
+  // 1. Step: Pehle Parent ke saare linked children ko fetch karna
   useEffect(() => {
     async function fetchParentChildren() {
       if (!resolvedParentId) return;
@@ -152,6 +152,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }
         }
 
+        // Fallback: Direct search in students table
         let directQuery = supabase.from('students').select('*');
         directQuery = directQuery.or(`sr_no.eq.${cleanParentKey},id.eq.${cleanParentKey},student_id.eq.${cleanParentKey},mobile_number.eq.${cleanParentKey}`);
         const { data: directSt } = await directQuery;
@@ -172,7 +173,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     fetchParentChildren();
   }, [resolvedParentId]);
 
-  // 2. Step: Fetch student live records on selection change
+  // 2. Step: Jab bhi Selected Student change ho, uska sara data fetch ho
   useEffect(() => {
     if (!selectedStudentId && childrenList.length === 0) return;
 
@@ -215,7 +216,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           academicSession: '2026 - 2027'
         });
 
-        // Homework fetch
+        // Homework fetch (Class wise)
         const { data: hwData, error: hwErr } = await supabase
           .from('daily_homework')
           .select('*')
@@ -278,7 +279,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // Fee fetch
+        // Fee Collections fetch
         let feeConditions = [];
         if (currentSrNo) feeConditions.push(`sr_no.eq.${currentSrNo}`);
         if (currentStudentId) feeConditions.push(`student_id.eq.${currentStudentId},id.eq.${currentStudentId}`);
@@ -327,7 +328,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   }, [selectedStudentId, childrenList]);
 
   return (
-    <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-4 sm:p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans">
+    <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans">
       
       {/* 👶 MULTIPLE CHILDREN SELECTOR BAR */}
       {childrenList.length > 1 && (
@@ -339,7 +340,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           <select 
             value={selectedStudentId}
             onChange={(e) => setSelectedStudentId(e.target.value)}
-            className="bg-white text-slate-900 font-bold text-xs px-4 py-2 rounded-xl outline-none shadow-inner cursor-pointer border-2 border-amber-300 w-full sm:w-auto min-w-[240px]"
+            className="bg-white text-slate-900 font-bold text-xs px-4 py-2 rounded-xl outline-none shadow-inner cursor-pointer border-2 border-amber-300 min-w-[240px]"
           >
             {childrenList.map((child) => (
               <option key={child.id || child.student_id} value={child.student_id || child.id || child.sr_no}>
@@ -356,7 +357,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           <span className="bg-white/20 backdrop-blur-md text-white border border-white/30 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
             Parents Portal Overview
           </span>
-          <h1 className="text-[20px] sm:text-[22px] md:text-[28px] font-black tracking-wide pt-1">
+          <h1 className="text-[22px] md:text-[28px] font-black tracking-wide pt-1">
             BLUE HEAVEN KIDS ACADEMY
           </h1>
           <p className="text-[13px] text-sky-100 font-medium">
@@ -364,7 +365,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           </p>
         </div>
 
-        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-left space-y-1.5 w-full md:min-w-[250px] shadow-lg">
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 text-left space-y-1.5 min-w-[250px] shadow-lg">
           <div className="text-[12px] text-sky-100 font-bold flex justify-between">
             <span>Class:</span> <span className="text-white font-extrabold">{studentInfo.class}</span>
           </div>
@@ -416,11 +417,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 sm:gap-3 border-b-2 border-slate-200 pb-4">
+      <div className="flex flex-wrap gap-3 border-b-2 border-slate-200 pb-4">
         {[
           { key: 'overview', label: '📊 Dashboard Overview' },
           { key: 'notices', label: '📢 School Notices' },
-          { key: 'attendance', label: '📅 Student Attendance' },
+          { key: 'attendance', label: '📅 Student Attendance & Remarks' },
           { key: 'homework', label: '📚 Daily Homework' },
           { key: 'fees', label: '💳 Fee Records' },
           { key: 'quiz', label: '📝 Online Test / Quiz' },
@@ -428,7 +429,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`text-[12px] sm:text-[13px] font-extrabold px-4 sm:px-5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer shadow-md ${
+            className={`text-[13px] font-extrabold px-5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer shadow-md ${
               activeTab === tab.key
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white border-b-4 border-blue-900'
                 : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100'
