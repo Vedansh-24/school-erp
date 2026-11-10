@@ -85,7 +85,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [feeRecordsList, setFeeRecordsList] = useState([]);
 
-  // View Document Modal State for Notices
   const [viewingNotice, setViewingNotice] = useState(null);
 
   // 0. Step: Auto-detect Parent ID from localStorage / sessionStorage with all keys
@@ -539,7 +538,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                 {noticesList.length > 0 ? (
                   noticesList.map((notice) => (
-                    <div key={notice.id} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
+                    <div key={notice.id} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                       <div className="p-5">
                         <div className="flex justify-between items-start mb-3">
                           <div className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wide border ${getPriorityColor(notice.priority)} flex items-center gap-1.5`}>
@@ -584,22 +583,22 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                           </div>
                           {notice.attachmentUrl ? (
                             <div className="flex items-center gap-2">
-                              {/* 👁️ VIEW BUTTON */}
+                              {/* 👁️ VIEW BUTTON (Image 1 Type) */}
                               <button 
                                 onClick={() => setViewingNotice(notice)}
-                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all cursor-pointer"
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black text-white bg-indigo-600 hover:bg-indigo-700 shadow-md transition-all cursor-pointer"
                               >
-                                <Eye size={14} /> View
+                                <Eye size={15} /> View
                               </button>
-                              {/* 📥 DOWNLOAD BUTTON */}
+                              {/* 📥 DOWNLOAD BUTTON (Image 1 Type) */}
                               <a 
                                 href={notice.attachmentUrl} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 download
-                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all cursor-pointer"
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-md transition-all cursor-pointer"
                               >
-                                <Download size={14} /> Download
+                                <Download size={15} /> Download
                               </a>
                             </div>
                           ) : (
@@ -734,7 +733,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         </>
       )}
 
-      {/* Modal Popup for Notices Attachments (View & Download) */}
+      {/* Modal Popup for Notices Attachments (Image 2 Type: Close & Download File Buttons) */}
       {viewingNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-200">
@@ -767,6 +766,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
               )}
             </div>
 
+            {/* Footer Buttons exactly like Image 2 */}
             <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-white">
               <button 
                 onClick={() => setViewingNotice(null)}
