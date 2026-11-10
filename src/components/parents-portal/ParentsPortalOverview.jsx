@@ -229,7 +229,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setRawHomeworkList(classFilteredHW);
         }
 
-        // Attendance fetch
+        // Attendance fetch (Updated with proper conditions for both sr_no & student_id)
         let attConditions = [];
         if (currentSrNo) attConditions.push(`sr_no.eq.${currentSrNo}`);
         if (currentStudentId) attConditions.push(`student_id.eq.${currentStudentId}`);
@@ -279,10 +279,13 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           })));
         }
 
-        // Fee Collections fetch
+        // Fee Collections fetch (Updated with conditions for sr_no, student_id & id)
         let feeConditions = [];
         if (currentSrNo) feeConditions.push(`sr_no.eq.${currentSrNo}`);
-        if (currentStudentId) feeConditions.push(`student_id.eq.${currentStudentId},id.eq.${currentStudentId}`);
+        if (currentStudentId) {
+          feeConditions.push(`student_id.eq.${currentStudentId}`);
+          feeConditions.push(`id.eq.${currentStudentId}`);
+        }
 
         let feeQuery = supabase.from('fee_collections').select('*').order('receipt_date', { ascending: false });
         if (feeConditions.length > 0) {
