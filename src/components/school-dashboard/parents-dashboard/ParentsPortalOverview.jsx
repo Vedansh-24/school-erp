@@ -85,6 +85,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [feeRecordsList, setFeeRecordsList] = useState([]);
 
+  // View Document Modal State for Notices
   const [viewingNotice, setViewingNotice] = useState(null);
 
   // 0. Step: Auto-detect Parent ID from localStorage / sessionStorage with all keys
@@ -116,7 +117,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     if (foundId) {
       setResolvedParentId(foundId);
     } else {
-      // Emergency Fallback: If nothing in localStorage, fetch all students so screen doesn't stay blank
       setResolvedParentId('ALL');
     }
   }, [loggedInParentId]);
@@ -127,7 +127,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
       setLoading(true);
       try {
         if (!resolvedParentId || resolvedParentId === 'ALL') {
-          // Fetch all students as default fallback if no login ID found
           const { data: allSt } = await supabase.from('students').select('*').limit(10);
           if (allSt && allSt.length > 0) {
             setChildrenList(allSt);
@@ -186,7 +185,6 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setChildrenList(directSt);
           setSelectedStudentId(directSt[0].student_id || directSt[0].id || directSt[0].sr_no);
         } else {
-          // Ultimate Fallback: Fetch all students so something displays
           const { data: fallbackSt } = await supabase.from('students').select('*').limit(10);
           if (fallbackSt && fallbackSt.length > 0) {
             setChildrenList(fallbackSt);
@@ -364,7 +362,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   return (
     <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans">
       
-      {/* 👶 MULTIPLE CHILDREN SELECTOR BAR (Shows if 1 or more children exist) */}
+      {/* 👶 MULTIPLE CHILDREN SELECTOR BAR */}
       {childrenList.length > 0 && (
         <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 rounded-2xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 font-black text-sm">
@@ -549,29 +547,72 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                             {notice.priority} Priority
                           </div>
                         </div>
-                        <h3 className="text-lg font-black text-slate-800 leading-tight mb-2">{notice.title}</h3>
-                        {notice.description && <p className="text-slate-600 text-sm font-medium mb-4 whitespace-pre-wrap">{notice.description}</p>}
+
+                        <h3 className="text-lg font-black text-slate-800 leading-tight mb-2">
+                          {notice.title}
+                        </h3>
+                        
+                        {notice.description && (
+                          <p className="text-slate-600 text-sm font-medium mb-4 whitespace-pre-wrap">
+                            {notice.description}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-4 text-xs font-bold text-slate-500 bg-white p-3 rounded-xl border border-slate-100 flex-wrap">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar size={14} className="text-slate-400" />
+                            {notice.date ? new Date(notice.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
+                          </div>
+                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                          <div className="flex items-center gap-1.5 text-indigo-600">
+                            <FileText size={14} />
+                            {notice.category}
+                          </div>
+                          <div className="w-1 h-1 bg-slate-300 rounded-full"></div>
+                          <div className="flex items-center gap-1.5">
+                            <CheckCircle size={14} className="text-slate-400" />
+                            {notice.audience}
+                          </div>
+                        </div>
                       </div>
+                      
                       {notice.hasAttachment && (
                         <div className="bg-white px-5 py-3 border-t border-slate-200 flex items-center justify-between">
                           <div className="flex items-center gap-2 text-sm font-bold text-slate-600">
                             <Paperclip size={16} className="text-indigo-600" />
                             <span>Attached Document</span>
                           </div>
-                          {notice.attachmentUrl && (
-                            <button 
-                              onClick={() => setViewingNotice(notice)}
-                              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-black text-white bg-indigo-600 shadow-sm cursor-pointer"
-                            >
-                              <Eye size={14} /> View File
-                            </button>
+                          {notice.attachmentUrl ? (
+                            <div className="flex items-center gap-2">
+                              {/* 👁️ VIEW BUTTON */}
+                              <button 
+                                onClick={() => setViewingNotice(notice)}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all cursor-pointer"
+                              >
+                                <Eye size={14} /> View
+                              </button>
+                              {/* 📥 DOWNLOAD BUTTON */}
+                              <a 
+                                href={notice.attachmentUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                download
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm transition-all cursor-pointer"
+                              >
+                                <Download size={14} /> Download
+                              </a>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-semibold">No URL available</span>
                           )}
                         </div>
                       )}
                     </div>
                   ))
                 ) : (
-                  <div className="col-span-full py-12 text-center text-slate-400 font-bold">No notices found.</div>
+                  <div className="col-span-full py-12 text-center text-slate-400 font-bold bg-slate-50 rounded-2xl border border-slate-200">
+                    No notices found.
+                  </div>
                 )}
               </div>
             </div>
@@ -693,15 +734,55 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         </>
       )}
 
+      {/* Modal Popup for Notices Attachments (View & Download) */}
       {viewingNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden">
-            <div className="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
-              <h3 className="text-lg font-black">{viewingNotice.title}</h3>
-              <button onClick={() => setViewingNotice(null)} className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center cursor-pointer"><X size={20} /></button>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden border border-slate-200">
+            <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+              <div>
+                <h3 className="text-lg font-black text-slate-900">{viewingNotice.title}</h3>
+                <p className="text-xs text-slate-500 font-semibold">Document Preview & Download</p>
+              </div>
+              <button 
+                onClick={() => setViewingNotice(null)} 
+                className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 hover:bg-rose-100 hover:text-rose-600 transition-colors cursor-pointer"
+              >
+                <X size={20} />
+              </button>
             </div>
+
             <div className="flex-1 bg-slate-100 p-4 overflow-auto flex items-center justify-center">
-              <iframe src={viewingNotice.attachmentUrl} className="w-full h-full rounded-xl bg-white" title="Viewer" />
+              {viewingNotice.attachmentUrl.includes('.pdf') || viewingNotice.attachmentUrl.startsWith('data:application/pdf') ? (
+                <iframe 
+                  src={viewingNotice.attachmentUrl} 
+                  className="w-full h-full rounded-xl border border-slate-300 bg-white shadow-inner"
+                  title="PDF Viewer"
+                />
+              ) : (
+                <img 
+                  src={viewingNotice.attachmentUrl} 
+                  alt="Attachment Preview" 
+                  className="max-w-full max-h-full object-contain rounded-xl shadow-md border border-slate-300 bg-white" 
+                />
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-white">
+              <button 
+                onClick={() => setViewingNotice(null)}
+                className="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+              <a 
+                href={viewingNotice.attachmentUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                download
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-black shadow-md cursor-pointer"
+              >
+                <Download size={18} /> Download File
+              </a>
             </div>
           </div>
         </div>
