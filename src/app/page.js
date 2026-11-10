@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase'; // 👈 Path sahi kar diya gaya hai
+import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -73,7 +73,7 @@ export default function LoginPage() {
       return;
     }
 
-    // 👨‍💼 3. Staff Dashboard Login (Database Verified from staff table using username & password columns)
+    // 👨‍💼 3. Staff Dashboard Login
     if (selectedRole === 'Staff Dashboard') {
       try {
         const { data: staffData, error: staffError } = await supabase
@@ -97,7 +97,7 @@ export default function LoginPage() {
       return;
     }
 
-    // 👨‍👩‍👧 4. Parents Dashboard Login (Database Verified from parent_credentials table using portal_login_id & password)
+    // 👨‍👩‍👧 4. Parents Dashboard Login
     if (selectedRole === 'Parents Dashboard') {
       try {
         const { data: parentData, error: parentError } = await supabase
@@ -114,8 +114,6 @@ export default function LoginPage() {
 
         localStorage.setItem('userRole', 'parent');
         localStorage.setItem('parentInfo', JSON.stringify(parentData));
-        
-        // 🟢 Added: Parent login ID save in localStorage for ParentsPortalOverview auto-detection
         localStorage.setItem('parent_login_id', parentData.portal_login_id);
 
         router.push('/parents-dashboard');
@@ -126,7 +124,6 @@ export default function LoginPage() {
     }
   };
 
-  // 🚀 Supabase me Username aur Password ke sath Data Save karne ka Logic
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -134,7 +131,6 @@ export default function LoginPage() {
     try {
       let uploadedLogoUrl = null;
 
-      // 1. Agar logo upload kiya hai to Storage Bucket me save kare
       if (logoFile) {
         const fileExt = logoFile.name.split('.').pop();
         const fileName = `${Date.now()}_${regData.schoolCode}.${fileExt}`;
@@ -143,9 +139,7 @@ export default function LoginPage() {
           .from('school-logos')
           .upload(fileName, logoFile);
 
-        if (uploadError) {
-          console.error("Storage Error:", uploadError);
-        } else {
+        if (!uploadError) {
           const { data: publicUrlData } = supabase.storage
             .from('school-logos')
             .getPublicUrl(fileName);
@@ -154,7 +148,6 @@ export default function LoginPage() {
         }
       }
 
-      // 2. Supabase ki 'schools' table me Username aur Password ke sath data save kare
       const { error: insertError } = await supabase
         .from('schools')
         .insert([
@@ -194,11 +187,11 @@ export default function LoginPage() {
       <div className="absolute -bottom-20 -right-20 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-pink-400/60 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[100px]"></div>
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-sky-400/50 rounded-full mix-blend-multiply filter blur-[90px] sm:blur-[120px]"></div>
 
-      {/* Main Glassmorphism Card (Mobile & Laptop Friendly) */}
+      {/* Main Glassmorphism Card */}
       <div 
         className="w-full max-w-md p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] relative z-10 overflow-hidden flex flex-col justify-between backdrop-blur-3xl my-auto shadow-2xl"
         style={{ 
-          backgroundColor: 'rgba(255, 255, 255, 0.8)', 
+          backgroundColor: 'rgba(255, 255, 255, 0.85)', 
           borderTop: '5px solid #FF6B8B',
           borderRight: '5px solid #00C9A7',
           borderBottom: '5px solid #FFB800',
@@ -238,7 +231,7 @@ export default function LoginPage() {
             <p className="text-[11px] sm:text-xs text-slate-600 font-medium">Select your workspace context to continue</p>
           </div>
 
-          {/* Portal Selection Dropdown */}
+          {/* Portal Selection Dropdown (Fixed for Mobile & Laptop Single Line Display) */}
           <div className="space-y-1">
             <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase">
               Select Dashboard
@@ -247,7 +240,7 @@ export default function LoginPage() {
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
-                className="w-full px-3 py-3 rounded-xl text-xs sm:text-sm font-bold text-[#004D61] bg-white/90 border-2 border-pink-300/80 outline-none appearance-none cursor-pointer shadow-sm focus:border-cyan-500 focus:bg-white transition-all"
+                className="w-full px-3 py-3 rounded-xl text-xs sm:text-sm font-bold text-[#004D61] bg-white/95 border-2 border-pink-300/80 outline-none appearance-none cursor-pointer shadow-sm focus:border-cyan-500 focus:bg-white transition-all truncate pr-8"
               >
                 <option value="School Dashboard">🏫 School Admin Dashboard</option>
                 <option value="Super Admin Dashboard">👑 Super Admin Dashboard</option>
@@ -341,14 +334,14 @@ export default function LoginPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 🏫 REGISTER NEW SCHOOL MODAL (Mobile & Laptop Optimized) */}
+      {/* 🏫 REGISTER NEW SCHOOL MODAL */}
       {/* ========================================================================= */}
       {isRegisterOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/30 backdrop-blur-md">
           <div 
             className="w-full max-w-md p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] relative z-20 overflow-y-auto max-h-[90vh] backdrop-blur-3xl shadow-2xl"
             style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.85)', 
+              backgroundColor: 'rgba(255, 255, 255, 0.9)', 
               borderTop: '5px solid #FF6B8B',
               borderRight: '5px solid #00C9A7',
               borderBottom: '5px solid #FFB800',
@@ -364,7 +357,6 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleRegisterSubmit} className="space-y-3">
-              {/* School Code */}
               <div>
                 <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
                   School Code
@@ -378,7 +370,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* School Name */}
               <div>
                 <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
                   School Name
@@ -392,7 +383,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* School Address */}
               <div>
                 <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
                   School Address
@@ -405,7 +395,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Contact Number */}
               <div>
                 <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
                   Contact Number
@@ -419,7 +408,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Upload Logo */}
               <div>
                 <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
                   Upload Logo
@@ -432,7 +420,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Username / Email */}
               <div>
                 <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
                   Username (e.g. bhka-101)
@@ -447,7 +434,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Password */}
               <div>
                 <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
                   Password
@@ -461,7 +447,6 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Modal Buttons */}
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="submit"
