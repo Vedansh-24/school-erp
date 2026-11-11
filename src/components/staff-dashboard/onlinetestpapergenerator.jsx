@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, PlusCircle, Send, BookOpen, Layers, CheckCircle2, Trash2, Database, Shuffle, CheckSquare } from 'lucide-react';
+import { Loader2, PlusCircle, Send, BookOpen, Layers, CheckCircle2, Trash2, Database, Shuffle, CheckSquare, Filter } from 'lucide-react';
 
 export default function TeacherDashboard() {
   const [quizTitle, setQuizTitle] = useState('');
@@ -18,12 +18,21 @@ export default function TeacherDashboard() {
     { question_text: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A' }
   ]);
 
-  // Question Bank states
+  // Question Bank & Filter states
   const [bankQuestions, setBankQuestions] = useState([]);
   const [selectedBankIds, setSelectedBankIds] = useState([]);
   const [randomCount, setRandomCount] = useState(5);
   const [bankLoading, setBankLoading] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // नए एडवांस्ड फिल्टर्स स्टेट (Chapter, Question Type, Medium)
+  const [filterMedium, setFilterMedium] = useState('All');
+  const [filterChapter, setFilterChapter] = useState('All');
+  const [filterQType, setFilterQType] = useState('All');
+
+  // डायनामिक लिस्ट्स जो डेटाबेस से फेच होंगी
+  const [availableChapters, setAvailableChapters] = useState([]);
+  const [availableQTypes, setAvailableQTypes] = useState([]);
 
   const classOptions = [
     'PP.3+', 'PP.4+', 'PP.5+', 'First', 'Second', 'Third', 'Fourth', 'Fifth',
@@ -37,9 +46,9 @@ export default function TeacherDashboard() {
     'Sanskrit', 'Computer', 'G.K.', 'Physics', 'Chemistry', 'Biology', 'Accountancy', 'Business Studies'
   ];
 
-  // जब भी Class या Subject बदले और मोड 'picker' हो, तो Question Bank से प्रश्न फेच करें
+  // जब क्लास या सब्जेक्ट बदले, तो Question Bank से डेटा फेच करें
   useEffect(() => {
-    if (addMode === 'picker') {
+    if (addMode === 'picker' || addMode === 'random') {
       fetchQuestionBank();
     }
   }, [className, subjectName, addMode]);
@@ -47,20 +56,44 @@ export default function TeacherDashboard() {
   const fetchQuestionBank = async () => {
     setBankLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('question_bank')
         .select('*')
         .ilike('class_name', className)
         .ilike('subject_name', subjectName);
 
+      const { data, error } = await query;
+
       if (error) throw error;
-      setBankQuestions(data || []);
+      const rawData = data || [];
+      setBankQuestions(rawData);
+
+      //यूनिक चैप्टर्स और प्रश्न प्रकार (Question Types) निकालें ताकि ड्रॉपडाउन में दिखे
+      const chapters = [...new Set(rawData.map(q => q.chapter_name).filter(Boolean))];
+      const qTypes = [...new Set(rawData.map(q => q.question_type).filter(Boolean))];
+
+      setAvailableChapters(chapters);
+      setAvailableQTypes(qTypes);
     } catch (err) {
       console.error('Error fetching question bank:', err.message);
     } finally {
       setBankLoading(false);
     }
   };
+
+  // फ़िल्टर करने का लॉजिक
+  const filteredBankQuestions = bankQuestions.filter(q => {
+    if (filterMedium !== 'All' && q.medium && q.medium.toLowerCase() !== filterMedium.toLowerCase()) {
+      return false;
+    }
+    if (filterChapter !== 'All' && q.chapter_name !== filterChapter) {
+      return false;
+    }
+    if (filterQType !== 'All' && q.question_type !== filterQType) {
+      return false;
+    }
+    return true;
+  });
 
   const addQuestionField = () => {
     setQuestions([
@@ -95,7 +128,7 @@ export default function TeacherDashboard() {
     const selectedItems = bankQuestions
       .filter(q => selectedBankIds.includes(q.id))
       .map(q => ({
-        question_text: q.question_text || '',
+        question_text: q.question_text || q.question_text_hi || '',
         option_a: q.option_a || '',
         option_b: q.option_b || '',
         option_c: q.option_c || '',
@@ -115,48 +148,32 @@ export default function TeacherDashboard() {
   };
 
   const handleAddRandomFromBank = async () => {
-    setBankLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('question_bank')
-        .select('*')
-        .ilike('class_name', className)
-        .ilike('subject_name', subjectName);
-
-      if (error) throw error;
-
-      if (!data || data.length === 0) {
-        alert("इस क्लास और सब्जेक्ट के लिए Question Bank में कोई प्रश्न उपलब्ध नहीं है!");
-        setBankLoading(false);
-        return;
-      }
-
-      // रैंडम शफल करें
-      const shuffled = [...data].sort(() => 0.5 - Math.random());
-      const selectedRandom = shuffled.slice(0, parseInt(randomCount));
-
-      const randomItems = selectedRandom.map(q => ({
-        question_text: q.question_text || '',
-        option_a: q.option_a || '',
-        option_b: q.option_b || '',
-        option_c: q.option_c || '',
-        option_d: q.option_d || '',
-        correct_option: q.correct_answer || q.correct_option || 'A'
-      }));
-
-      if (questions.length === 1 && !questions[0].question_text.trim()) {
-        setQuestions(randomItems);
-      } else {
-        setQuestions([...questions, ...randomItems]);
-      }
-
-      alert(`🎉 रैंडमली ${randomItems.length} प्रश्न जोड़ दिए गए हैं!`);
-      setAddMode('manual');
-    } catch (err) {
-      alert("रैंडम प्रश्न जोड़ने में त्रुटि: " + err.message);
-    } finally {
-      setBankLoading(false);
+    if (filteredBankQuestions.length === 0) {
+      alert("चयनित फ़िल्टर के आधार पर कोई प्रश्न उपलब्ध नहीं है!");
+      return;
     }
+
+    // फ़िल्टर किए गए डेटा से रैंडम शफल करें
+    const shuffled = [...filteredBankQuestions].sort(() => 0.5 - Math.random());
+    const selectedRandom = shuffled.slice(0, parseInt(randomCount));
+
+    const randomItems = selectedRandom.map(q => ({
+      question_text: q.question_text || q.question_text_hi || '',
+      option_a: q.option_a || '',
+      option_b: q.option_b || '',
+      option_c: q.option_c || '',
+      option_d: q.option_d || '',
+      correct_option: q.correct_answer || q.correct_option || 'A'
+    }));
+
+    if (questions.length === 1 && !questions[0].question_text.trim()) {
+      setQuestions(randomItems);
+    } else {
+      setQuestions([...questions, ...randomItems]);
+    }
+
+    alert(`🎉 फ़िल्टर्ड डेटा से रैंडमली ${randomItems.length} प्रश्न जोड़ दिए गए हैं!`);
+    setAddMode('manual');
   };
 
   const handlePublish = async () => {
@@ -174,7 +191,6 @@ export default function TeacherDashboard() {
 
     setLoading(true);
     try {
-      // 1. Quizzes टेबल में डेटा इंसर्ट करें
       const { data: quizInsertData, error: quizError } = await supabase
         .from('quizzes')
         .insert([
@@ -193,7 +209,6 @@ export default function TeacherDashboard() {
       if (quizInsertData && quizInsertData.length > 0) {
         const newQuizId = quizInsertData[0].id;
 
-        // 2. Quiz Questions टेबल में सभी प्रश्न डालें
         const questionsPayload = questions.map((q) => ({
           quiz_id: newQuizId,
           question_text: q.question_text,
@@ -237,16 +252,16 @@ export default function TeacherDashboard() {
             </span>
           </div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight flex items-center gap-3">
-            <Layers className="text-indigo-400" size={28} /> Online Question Paper Creator
+            <Layers className="text-indigo-400" size={28} /> Advanced Online Question Paper Creator
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-            Create assessment papers via Manual Typing, Question Bank Picker, or Random Generator.
+            Create assessment papers via Chapter-wise, Question Type-wise, and Medium-wise filtering.
           </p>
         </div>
 
         <div className="p-6 sm:p-8 space-y-8">
           
-          {/* सेक्शन 1: सामान्य परीक्षा विवरण */}
+          {/* सामान्य परीक्षा विवरण */}
           <div className="bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200 space-y-4">
             <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">
               1. General Examination Configuration
@@ -310,14 +325,13 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* सेक्शन 2: प्रश्न जोड़ने के 3 तरीके (Mode Selector Tabs) */}
+          {/* प्रश्न जोड़ने के मोड्स */}
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 pb-3 gap-3">
               <h2 className="text-xs font-black uppercase tracking-wider text-slate-500">
                 2. Question Set ({questions.length} Items Configured)
               </h2>
 
-              {/* मोड स्विचिंग टैब्स */}
               <div className="flex items-center gap-1.5 bg-slate-200/80 p-1 rounded-xl">
                 <button
                   onClick={() => setAddMode('manual')}
@@ -346,7 +360,7 @@ export default function TeacherDashboard() {
               </div>
             </div>
 
-            {/* मोड 1: मैनुअल टाइपिंग फॉर्म */}
+            {/* मैनुअल टाइपिंग फॉर्म */}
             {addMode === 'manual' && (
               <div className="space-y-4">
                 {questions.map((q, index) => (
@@ -430,12 +444,12 @@ export default function TeacherDashboard() {
               </div>
             )}
 
-            {/* मोड 2: क्वेश्चन बैंक पिकर (Manual Picker) */}
+            {/* क्वेश्चन बैंक पिकर (Chapter, Type, Medium Filters के साथ) */}
             {addMode === 'picker' && (
               <div className="p-5 border border-slate-300 rounded-2xl bg-indigo-50/40 space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                   <div>
-                    <h3 className="text-sm font-black text-indigo-900">Select Questions from Question Bank</h3>
+                    <h3 className="text-sm font-black text-indigo-900">Select Questions with Advanced Filters</h3>
                     <p className="text-xs text-slate-500">Class: <strong>{className}</strong> | Subject: <strong>{subjectName}</strong></p>
                   </div>
                   <button
@@ -446,13 +460,58 @@ export default function TeacherDashboard() {
                   </button>
                 </div>
 
+                {/* एडवांस्ड फ़िल्टर बार (Chapter, Medium, QType) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3 rounded-xl border border-slate-200">
+                  <div>
+                    <label className="block text-[11px] font-extrabold text-slate-600 mb-1">Filter by Medium</label>
+                    <select
+                      value={filterMedium}
+                      onChange={(e) => setFilterMedium(e.target.value)}
+                      className="w-full p-2 border rounded-lg text-xs font-bold outline-none"
+                    >
+                      <option value="All">All Mediums</option>
+                      <option value="English">English</option>
+                      <option value="Hindi">Hindi</option>
+                      <option value="Both">Both</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-extrabold text-slate-600 mb-1">Filter by Chapter</label>
+                    <select
+                      value={filterChapter}
+                      onChange={(e) => setFilterChapter(e.target.value)}
+                      className="w-full p-2 border rounded-lg text-xs font-bold outline-none"
+                    >
+                      <option value="All">All Chapters</option>
+                      {availableChapters.map(chap => (
+                        <option key={chap} value={chap}>{chap}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-extrabold text-slate-600 mb-1">Filter by Question Type</label>
+                    <select
+                      value={filterQType}
+                      onChange={(e) => setFilterQType(e.target.value)}
+                      className="w-full p-2 border rounded-lg text-xs font-bold outline-none"
+                    >
+                      <option value="All">All Question Types</option>
+                      {availableQTypes.map(qt => (
+                        <option key={qt} value={qt}>{qt}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 {bankLoading ? (
                   <div className="py-12 text-center text-slate-500 font-bold flex items-center justify-center gap-2">
                     <Loader2 className="animate-spin text-indigo-600" size={20} /> Loading Question Bank...
                   </div>
-                ) : bankQuestions.length > 0 ? (
+                ) : filteredBankQuestions.length > 0 ? (
                   <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-2">
-                    {bankQuestions.map((bq) => {
+                    {filteredBankQuestions.map((bq) => {
                       const isChecked = selectedBankIds.includes(bq.id);
                       return (
                         <div
@@ -468,8 +527,13 @@ export default function TeacherDashboard() {
                             onChange={() => {}}
                             className="mt-1 h-4 w-4 text-indigo-600 rounded cursor-pointer"
                           />
-                          <div className="text-xs sm:text-sm font-semibold text-slate-800">
-                            <p>{bq.question_text}</p>
+                          <div className="text-xs sm:text-sm font-semibold text-slate-800 w-full">
+                            <div className="flex justify-between items-center text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded w-fit mb-1">
+                              <span>Chapter: {bq.chapter_name || 'General'}</span>
+                              <span className="ml-2">Type: {bq.question_type || 'MCQ'}</span>
+                              <span className="ml-2">Medium: {bq.medium || 'English'}</span>
+                            </div>
+                            <p>{bq.question_text || bq.question_text_hi}</p>
                             <div className="text-[11px] text-slate-500 mt-1 flex gap-3">
                               <span>(A) {bq.option_a}</span>
                               <span>(B) {bq.option_b}</span>
@@ -482,19 +546,19 @@ export default function TeacherDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-12 text-slate-400 font-bold text-xs bg-white rounded-xl border border-dashed border-slate-300">
-                    इस क्लास ({className}) और सब्जेक्ट ({subjectName}) के लिए Question Bank में कोई प्रश्न नहीं मिला।
+                    चयनित फ़िल्टर के अनुसार कोई प्रश्न उपलब्ध नहीं है।
                   </div>
                 )}
               </div>
             )}
 
-            {/* मोड 3: रैंडम क्वेश्चन जनरेटर */}
+            {/* रैंडम क्वेश्चन जनरेटर (फिल्टर्ड डेटा के साथ) */}
             {addMode === 'random' && (
               <div className="p-6 border border-slate-300 rounded-2xl bg-indigo-50/40 space-y-4 max-w-xl mx-auto text-center">
                 <Shuffle className="mx-auto text-indigo-600" size={32} />
-                <h3 className="text-base font-black text-indigo-900">Random Question Generator</h3>
+                <h3 className="text-base font-black text-indigo-900">Advanced Random Generator</h3>
                 <p className="text-xs text-slate-500">
-                  Select how many random questions you want to pull from the <strong>{subjectName} ({className})</strong> Question Bank.
+                  First filter your desired Chapter, Medium, or Type above, then pick random questions.
                 </p>
 
                 <div className="flex items-center justify-center gap-3 pt-2">
@@ -515,7 +579,7 @@ export default function TeacherDashboard() {
                   className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 hover:opacity-95 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg transition cursor-pointer flex items-center justify-center gap-2 mx-auto disabled:opacity-50"
                 >
                   {bankLoading ? <Loader2 className="animate-spin" size={16} /> : <Shuffle size={16} />}
-                  Generate & Add Random Questions
+                  Generate & Add Filtered Random Questions
                 </button>
               </div>
             )}
