@@ -39,7 +39,7 @@ export default function LoginPage() {
       return;
     }
 
-    // 🏫 2. School Dashboard Login (Database Verified & Approval Check)
+    // 🏫 2. School Dashboard Login
     if (selectedRole === 'School Dashboard') {
       try {
         const { data: school, error } = await supabase
@@ -97,24 +97,47 @@ export default function LoginPage() {
       return;
     }
 
-    // 👨‍👩‍👧 4. Parents Dashboard Login
+    // 👨‍👩‍👧 4. Parents Dashboard Login (Supports portal_login_id, mobile_number, sr_no, student_id)
     if (selectedRole === 'Parents Dashboard') {
       try {
-        const { data: parentData, error: parentError } = await supabase
+        const cleanInput = username.trim();
+
+        // Step A: Check in parent_credentials by portal_login_id or mobile_number
+        let { data: parentData, error: parentError } = await supabase
           .from('parent_credentials')
           .select('*')
-          .eq('portal_login_id', username)
-          .eq('password', password)
+          .or(`portal_login_id.eq.${cleanInput},mobile_number.eq.${cleanInput}`)
           .single();
 
+        // Step B: If not found directly, check via parent_student_mapping using student's sr_no or student_id
         if (parentError || !parentData) {
-          alert('Galat Parents Portal Login ID ya Password hai! Kripya dobara koshish kare.');
+          const { data: mapData } = await supabase
+            .from('parent_student_mapping')
+            .select('parent_credential_id')
+            .or(`sr_no.eq.${cleanInput},student_id.eq.${cleanInput}`)
+            .limit(1);
+
+          if (mapData && mapData.length > 0) {
+            const { data: credByMap } = await supabase
+              .from('parent_credentials')
+              .select('*')
+              .eq('id', mapData[0].parent_credential_id)
+              .single();
+
+            if (credByMap) {
+              parentData = credByMap;
+            }
+          }
+        }
+
+        if (!parentData || parentData.password !== password) {
+          alert('Galat Parents Portal Login ID, Mobile No., SR No. ya Password hai!');
           return;
         }
 
         localStorage.setItem('userRole', 'parent');
         localStorage.setItem('parentInfo', JSON.stringify(parentData));
-        localStorage.setItem('parent_login_id', parentData.portal_login_id);
+        localStorage.setItem('parent_login_id', parentData.portal_login_id || parentData.mobile_number);
 
         router.push('/parents-dashboard');
       } catch (err) {
@@ -182,12 +205,9 @@ export default function LoginPage() {
         background: 'linear-gradient(135deg, #FFB6C1 0%, #FFFACD 33%, #D3D3D3 66%, #87CEEB 100%)'
       }}
     >
-      {/* Background Glow Orbs */}
       <div className="absolute -top-20 -left-20 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-yellow-300/70 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[100px] animate-pulse"></div>
       <div className="absolute -bottom-20 -right-20 w-[300px] sm:w-[600px] h-[300px] sm:h-[600px] bg-pink-400/60 rounded-full mix-blend-multiply filter blur-[80px] sm:blur-[100px]"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] sm:w-[500px] h-[250px] sm:h-[500px] bg-sky-400/50 rounded-full mix-blend-multiply filter blur-[90px] sm:blur-[120px]"></div>
 
-      {/* Main Glassmorphism Card */}
       <div 
         className="w-full max-w-md p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] relative z-10 overflow-hidden flex flex-col justify-between backdrop-blur-3xl my-auto shadow-2xl"
         style={{ 
@@ -201,7 +221,6 @@ export default function LoginPage() {
       >
         <form onSubmit={handleLogin} className="space-y-3.5 sm:space-y-4 flex-1 flex flex-col justify-center">
           
-          {/* Educator / Graduation Cap Icon */}
           <div className="flex justify-center mb-1">
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-pink-500 via-amber-400 to-cyan-400 p-0.5 shadow-xl flex items-center justify-center animate-bounce">
               <div className="w-full h-full bg-white/90 rounded-[14px] flex items-center justify-center shadow-inner">
@@ -213,16 +232,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Top Stars */}
-          <div className="flex justify-center items-center gap-2 mb-1">
-            <span className="text-lg sm:text-xl text-rose-500 drop-shadow-md">★</span>
-            <span className="text-xl sm:text-2xl text-amber-500 drop-shadow-md">★</span>
-            <span className="text-lg sm:text-xl text-sky-500 drop-shadow-md">★</span>
-          </div>
-
-          {/* Header Titles */}
           <div className="text-center space-y-1 mb-1 sm:mb-2">
-            <h1 className="text-lg sm:text-2xl font-black tracking-wider sm:tracking-widest uppercase font-serif text-[#004D61] drop-shadow-sm">
+            <h1 className="text-lg sm:text-2xl font-black tracking-wider sm:tracking-widest uppercase font-serif text-[#004D61]">
               SCHOOL ERP SYSTEM
             </h1>
             <h2 className="text-xs sm:text-base font-extrabold tracking-wide text-[#003B46]">
@@ -231,7 +242,6 @@ export default function LoginPage() {
             <p className="text-[11px] sm:text-xs text-slate-600 font-medium">Select your workspace context to continue</p>
           </div>
 
-          {/* Portal Selection Dropdown (Fixed for Mobile & Laptop Single Line Display) */}
           <div className="space-y-1">
             <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase">
               Select Dashboard
@@ -240,88 +250,53 @@ export default function LoginPage() {
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
-                className="w-full px-3 py-3 rounded-xl text-xs sm:text-sm font-bold text-[#004D61] bg-white/95 border-2 border-pink-300/80 outline-none appearance-none cursor-pointer shadow-sm focus:border-cyan-500 focus:bg-white transition-all truncate pr-8"
+                className="w-full px-3 py-3 rounded-xl text-xs sm:text-sm font-bold text-[#004D61] bg-white/95 border-2 border-pink-300/80 outline-none appearance-none cursor-pointer shadow-sm pr-8"
               >
                 <option value="School Dashboard">🏫 School Admin Dashboard</option>
                 <option value="Super Admin Dashboard">👑 Super Admin Dashboard</option>
                 <option value="Staff Dashboard">👨‍💼 Staff Dashboard</option>
                 <option value="Parents Dashboard">👨‍👩‍👧 Parents Dashboard</option>
               </select>
-
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-500">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </div>
             </div>
           </div>
 
-          {/* Username / ID Input */}
           <div className="space-y-1">
             <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase">
-              Username / Account ID / S.R. No. / Mobile
+              Username / Portal ID / S.R. No. / Mobile
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-rose-400">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-              </div>
-              <input
-                type="text"
-                value={username}
-                placeholder="Enter Username"
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-9 pr-3 py-3 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-pink-300/80 outline-none font-bold shadow-sm focus:border-rose-400 focus:bg-white transition-all"
-                required
-              />
-            </div>
+            <input
+              type="text"
+              value={username}
+              placeholder="Enter ID, SR No. or Mobile"
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-3 py-3 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-pink-300/80 outline-none font-bold shadow-sm"
+              required
+            />
           </div>
 
-          {/* Password Input */}
           <div className="space-y-1">
             <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase">
               Password / Passcode
             </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-cyan-500">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-              </div>
-              <input
-                type="password"
-                value={password}
-                placeholder="Enter Password"
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-9 pr-3 py-3 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-cyan-300/80 outline-none font-bold shadow-sm focus:border-cyan-400 focus:bg-white transition-all"
-                required
-              />
-            </div>
+            <input
+              type="password"
+              value={password}
+              placeholder="Enter Password"
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-3 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-cyan-300/80 outline-none font-bold shadow-sm"
+              required
+            />
           </div>
 
-          {/* Secure Cloud Session & Forgot Password Row */}
-          <div className="flex items-center justify-between text-[11px] pt-1 px-1 font-medium">
-            <div className="flex items-center gap-2 text-slate-700 font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Secure Cloud Session</span>
-            </div>
-            <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Password reset link sent.'); }} className="text-[#005B60] hover:underline font-extrabold">
-              Forgot Password?
-            </a>
-          </div>
-
-          {/* Login Button */}
           <button
             type="submit"
-            className="w-full py-3.5 rounded-xl font-black text-xs sm:text-sm text-white tracking-wider shadow-lg hover:opacity-95 transition-all flex items-center justify-center gap-2 uppercase"
-            style={{ 
-              background: 'linear-gradient(90deg, #FF6B8B 0%, #FF8E53 50%, #00C9A7 100%)',
-              boxShadow: '0 8px 20px rgba(255, 107, 139, 0.35)'
-            }}
+            className="w-full py-3.5 rounded-xl font-black text-xs sm:text-sm text-white tracking-wider shadow-lg uppercase"
+            style={{ background: 'linear-gradient(90deg, #FF6B8B 0%, #FF8E53 50%, #00C9A7 100%)' }}
           >
             Login to Dashboard
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
         </form>
 
-        {/* Bottom Register Link */}
         <div className="text-center pt-3 border-t border-slate-300/60 mt-2">
           <button 
             type="button"
@@ -333,143 +308,21 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 🏫 REGISTER NEW SCHOOL MODAL */}
-      {/* ========================================================================= */}
       {isRegisterOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/30 backdrop-blur-md">
-          <div 
-            className="w-full max-w-md p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] relative z-20 overflow-y-auto max-h-[90vh] backdrop-blur-3xl shadow-2xl"
-            style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-              borderTop: '5px solid #FF6B8B',
-              borderRight: '5px solid #00C9A7',
-              borderBottom: '5px solid #FFB800',
-              borderLeft: '5px solid #9D4EDD',
-              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.2), 0 0 30px rgba(255, 107, 139, 0.25), inset 0 0 35px rgba(255, 255, 255, 0.95)',
-            }}
-          >
-            <div className="text-center mb-3 sm:mb-4">
-              <h2 className="text-base sm:text-xl font-black text-[#004D61] uppercase tracking-wider font-serif">
-                School Online Registration
-              </h2>
-              <p className="text-xs text-slate-600 font-medium mt-1">Fill details to register your institution</p>
-            </div>
-
+          <div className="w-full max-w-md p-5 sm:p-8 rounded-[2rem] relative z-20 overflow-y-auto max-h-[90vh] bg-white/95 shadow-2xl">
+            <h2 className="text-base sm:text-xl font-black text-[#004D61] uppercase mb-4 text-center">School Registration</h2>
             <form onSubmit={handleRegisterSubmit} className="space-y-3">
-              <div>
-                <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
-                  School Code
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. SCH-101"
-                  className="w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-pink-300/80 outline-none font-bold shadow-sm focus:border-rose-400 focus:bg-white transition-all"
-                  onChange={(e) => setRegData({ ...regData, schoolCode: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
-                  School Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Enter School Name"
-                  className="w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-pink-300/80 outline-none font-bold shadow-sm focus:border-rose-400 focus:bg-white transition-all"
-                  onChange={(e) => setRegData({ ...regData, schoolName: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
-                  School Address
-                </label>
-                <input
-                  type="text"
-                  placeholder="Enter Address"
-                  className="w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-pink-300/80 outline-none font-bold shadow-sm focus:border-rose-400 focus:bg-white transition-all"
-                  onChange={(e) => setRegData({ ...regData, schoolAddress: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
-                  Contact Number
-                </label>
-                <input
-                  type="tel"
-                  required
-                  placeholder="Enter Contact Number"
-                  className="w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-pink-300/80 outline-none font-bold shadow-sm focus:border-rose-400 focus:bg-white transition-all"
-                  onChange={(e) => setRegData({ ...regData, contactNumber: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
-                  Upload Logo
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setLogoFile(e.target.files[0])}
-                  className="w-full text-xs text-slate-700 font-bold file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-pink-100 file:text-pink-700 file:font-black hover:file:bg-pink-200 cursor-pointer"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
-                  Username (e.g. bhka-101)
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. bhka-101 (No spaces)"
-                  value={regData.username}
-                  className="w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-cyan-300/80 outline-none font-bold shadow-sm focus:border-cyan-400 focus:bg-white transition-all"
-                  onChange={(e) => setRegData({ ...regData, username: e.target.value.toLowerCase().replace(/\s+/g, '') })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold tracking-wider text-slate-700 uppercase mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  className="w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm text-slate-900 bg-white/90 border-2 border-cyan-300/80 outline-none font-bold shadow-sm focus:border-cyan-400 focus:bg-white transition-all"
-                  onChange={(e) => setRegData({ ...regData, password: e.target.value })}
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 py-3 rounded-xl font-black text-xs sm:text-sm text-white tracking-wider shadow-lg hover:opacity-95 transition-all uppercase disabled:opacity-50"
-                  style={{ 
-                    background: 'linear-gradient(90deg, #FF6B8B 0%, #FF8E53 50%, #00C9A7 100%)',
-                    boxShadow: '0 8px 20px rgba(255, 107, 139, 0.35)'
-                  }}
-                >
-                  {loading ? 'Submitting...' : 'Submit'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsRegisterOpen(false)}
-                  className="flex-1 py-3 rounded-xl font-black text-xs sm:text-sm text-white tracking-wider shadow-lg hover:opacity-95 transition-all uppercase"
-                  style={{ 
-                    background: 'linear-gradient(90deg, #FF4D4D 0%, #DC2626 100%)',
-                    boxShadow: '0 8px 20px rgba(220, 38, 38, 0.35)'
-                  }}
-                >
-                  Cancel
-                </button>
+              <input type="text" required placeholder="School Code" className="w-full p-2.5 border rounded-xl text-xs" onChange={(e) => setRegData({ ...regData, schoolCode: e.target.value })} />
+              <input type="text" required placeholder="School Name" className="w-full p-2.5 border rounded-xl text-xs" onChange={(e) => setRegData({ ...regData, schoolName: e.target.value })} />
+              <input type="text" placeholder="Address" className="w-full p-2.5 border rounded-xl text-xs" onChange={(e) => setRegData({ ...regData, schoolAddress: e.target.value })} />
+              <input type="tel" required placeholder="Contact Number" className="w-full p-2.5 border rounded-xl text-xs" onChange={(e) => setRegData({ ...regData, contactNumber: e.target.value })} />
+              <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files[0])} className="w-full text-xs" />
+              <input type="text" required placeholder="Username" className="w-full p-2.5 border rounded-xl text-xs" onChange={(e) => setRegData({ ...regData, username: e.target.value })} />
+              <input type="password" required placeholder="Password" className="w-full p-2.5 border rounded-xl text-xs" onChange={(e) => setRegData({ ...regData, password: e.target.value })} />
+              <div className="flex gap-2 pt-2">
+                <button type="submit" disabled={loading} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-xs uppercase">Submit</button>
+                <button type="button" onClick={() => setIsRegisterOpen(false)} className="flex-1 py-2.5 bg-rose-600 text-white rounded-xl font-bold text-xs uppercase">Cancel</button>
               </div>
             </form>
           </div>
