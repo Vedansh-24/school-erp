@@ -1,8 +1,8 @@
 // Filename: TeacherDashboard.jsx
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, PlusCircle, Send, BookOpen, Layers, CheckCircle2, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, Send, BookOpen, Layers, CheckCircle2, Trash2, Database, Shuffle, CheckSquare } from 'lucide-react';
 
 export default function TeacherDashboard() {
   const [quizTitle, setQuizTitle] = useState('');
@@ -10,9 +10,19 @@ export default function TeacherDashboard() {
   const [subjectName, setSubjectName] = useState('Mathematics');
   const [session, setSession] = useState('2026 - 2027');
   
+  // प्रश्न जोड़ने के 3 तरीके: 'manual' | 'picker' | 'random'
+  const [addMode, setAddMode] = useState('manual');
+
+  // Manual questions state
   const [questions, setQuestions] = useState([
     { question_text: '', option_a: '', option_b: '', option_c: '', option_d: '', correct_option: 'A' }
   ]);
+
+  // Question Bank states
+  const [bankQuestions, setBankQuestions] = useState([]);
+  const [selectedBankIds, setSelectedBankIds] = useState([]);
+  const [randomCount, setRandomCount] = useState(5);
+  const [bankLoading, setBankLoading] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const classOptions = [
@@ -26,6 +36,31 @@ export default function TeacherDashboard() {
     'Mathematics', 'Science', 'English', 'Hindi', 'Social Science', 
     'Sanskrit', 'Computer', 'G.K.', 'Physics', 'Chemistry', 'Biology', 'Accountancy', 'Business Studies'
   ];
+
+  // जब भी Class या Subject बदले और मोड 'picker' हो, तो Question Bank से प्रश्न फेच करें
+  useEffect(() => {
+    if (addMode === 'picker') {
+      fetchQuestionBank();
+    }
+  }, [className, subjectName, addMode]);
+
+  const fetchQuestionBank = async () => {
+    setBankLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('question_bank')
+        .select('*')
+        .ilike('class_name', className)
+        .ilike('subject_name', subjectName);
+
+      if (error) throw error;
+      setBankQuestions(data || []);
+    } catch (err) {
+      console.error('Error fetching question bank:', err.message);
+    } finally {
+      setBankLoading(false);
+    }
+  };
 
   const addQuestionField = () => {
     setQuestions([
@@ -43,6 +78,87 @@ export default function TeacherDashboard() {
     setQuestions(updated);
   };
 
+  const handleToggleBankQuestion = (qId) => {
+    if (selectedBankIds.includes(qId)) {
+      setSelectedBankIds(selectedBankIds.filter(id => id !== qId));
+    } else {
+      setSelectedBankIds([...selectedBankIds, qId]);
+    }
+  };
+
+  const handleAddSelectedFromBank = () => {
+    if (selectedBankIds.length === 0) {
+      alert("कृपया कम से कम एक प्रश्न चुनें!");
+      return;
+    }
+
+    const selectedItems = bankQuestions
+      .filter(q => selectedBankIds.includes(q.id))
+      .map(q => ({
+        question_text: q.question_text || '',
+        option_a: q.option_a || '',
+        option_b: q.option_b || '',
+        option_c: q.option_c || '',
+        option_d: q.option_d || '',
+        correct_option: q.correct_answer || q.correct_option || 'A'
+      }));
+
+    if (questions.length === 1 && !questions[0].question_text.trim()) {
+      setQuestions(selectedItems);
+    } else {
+      setQuestions([...questions, ...selectedItems]);
+    }
+
+    alert(`🎉 ${selectedItems.length} प्रश्न सफलतापूर्वक जोड़ दिए गए हैं!`);
+    setAddMode('manual');
+    setSelectedBankIds([]);
+  };
+
+  const handleAddRandomFromBank = async () => {
+    setBankLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('question_bank')
+        .select('*')
+        .ilike('class_name', className)
+        .ilike('subject_name', subjectName);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        alert("इस क्लास और सब्जेक्ट के लिए Question Bank में कोई प्रश्न उपलब्ध नहीं है!");
+        setBankLoading(false);
+        return;
+      }
+
+      // रैंडम शफल करें
+      const shuffled = [...data].sort(() => 0.5 - Math.random());
+      const selectedRandom = shuffled.slice(0, parseInt(randomCount));
+
+      const randomItems = selectedRandom.map(q => ({
+        question_text: q.question_text || '',
+        option_a: q.option_a || '',
+        option_b: q.option_b || '',
+        option_c: q.option_c || '',
+        option_d: q.option_d || '',
+        correct_option: q.correct_answer || q.correct_option || 'A'
+      }));
+
+      if (questions.length === 1 && !questions[0].question_text.trim()) {
+        setQuestions(randomItems);
+      } else {
+        setQuestions([...questions, ...randomItems]);
+      }
+
+      alert(`🎉 रैंडमली ${randomItems.length} प्रश्न जोड़ दिए गए हैं!`);
+      setAddMode('manual');
+    } catch (err) {
+      alert("रैंडम प्रश्न जोड़ने में त्रुटि: " + err.message);
+    } finally {
+      setBankLoading(false);
+    }
+  };
+
   const handlePublish = async () => {
     if (!quizTitle.trim()) {
       alert("कृपया क्विज़/पेपर का शीर्षक (Title) दर्ज करें।");
@@ -58,6 +174,7 @@ export default function TeacherDashboard() {
 
     setLoading(true);
     try {
+      // 1. Quizzes टेबल में डेटा इंसर्ट करें
       const { data: quizInsertData, error: quizError } = await supabase
         .from('quizzes')
         .insert([
@@ -76,6 +193,7 @@ export default function TeacherDashboard() {
       if (quizInsertData && quizInsertData.length > 0) {
         const newQuizId = quizInsertData[0].id;
 
+        // 2. Quiz Questions टेबल में सभी प्रश्न डालें
         const questionsPayload = questions.map((q) => ({
           quiz_id: newQuizId,
           question_text: q.question_text,
@@ -111,7 +229,7 @@ export default function TeacherDashboard() {
     <div className="max-w-5xl mx-auto p-4 sm:p-8 bg-slate-100 min-h-screen font-sans text-slate-900">
       <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
         
-        {/* मानक प्रोफेशनल हेडर (Header Banner) */}
+        {/* हेडर बैनर */}
         <div className="bg-gradient-to-r from-indigo-700 via-indigo-800 to-slate-900 p-6 sm:p-8 text-white">
           <div className="flex items-center gap-3 mb-2">
             <span className="bg-indigo-500/30 text-indigo-200 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-indigo-400/30">
@@ -122,13 +240,13 @@ export default function TeacherDashboard() {
             <Layers className="text-indigo-400" size={28} /> Online Question Paper Creator
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
-            Create standard, class-wise & subject-wise multiple choice assessment papers.
+            Create assessment papers via Manual Typing, Question Bank Picker, or Random Generator.
           </p>
         </div>
 
         <div className="p-6 sm:p-8 space-y-8">
           
-          {/* सेक्शन 1: परीक्षा सामान्य विवरण (Exam Metadata Controls) */}
+          {/* सेक्शन 1: सामान्य परीक्षा विवरण */}
           <div className="bg-slate-50 p-5 sm:p-6 rounded-2xl border border-slate-200 space-y-4">
             <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 border-b border-slate-200 pb-2">
               1. General Examination Configuration
@@ -142,7 +260,7 @@ export default function TeacherDashboard() {
                 <select
                   value={className}
                   onChange={(e) => setClassName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-600 cursor-pointer shadow-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
                 >
                   {classOptions.map((cls) => (
                     <option key={cls} value={cls}>{cls}</option>
@@ -157,7 +275,7 @@ export default function TeacherDashboard() {
                 <select
                   value={subjectName}
                   onChange={(e) => setSubjectName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-600 cursor-pointer shadow-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer shadow-sm"
                 >
                   {subjectOptions.map((sub) => (
                     <option key={sub} value={sub}>{sub}</option>
@@ -187,105 +305,229 @@ export default function TeacherDashboard() {
                 placeholder="e.g., Chapter 1: Real Numbers - Unit Evaluation Test"
                 value={quizTitle}
                 onChange={(e) => setQuizTitle(e.target.value)}
-                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm placeholder:font-normal placeholder:text-slate-400"
+                className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
               />
             </div>
           </div>
 
-          {/* सेक्शन 2: प्रश्न सेटिंग्स (Questions Management) */}
+          {/* सेक्शन 2: प्रश्न जोड़ने के 3 तरीके (Mode Selector Tabs) */}
           <div className="space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-200 pb-3 gap-3">
               <h2 className="text-xs font-black uppercase tracking-wider text-slate-500">
                 2. Question Set ({questions.length} Items Configured)
               </h2>
+
+              {/* मोड स्विचिंग टैब्स */}
+              <div className="flex items-center gap-1.5 bg-slate-200/80 p-1 rounded-xl">
+                <button
+                  onClick={() => setAddMode('manual')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                    addMode === 'manual' ? 'bg-indigo-600 text-white shadow' : 'text-slate-700 hover:text-slate-900'
+                  }`}
+                >
+                  <PlusCircle size={14} /> Manual Type
+                </button>
+                <button
+                  onClick={() => setAddMode('picker')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                    addMode === 'picker' ? 'bg-indigo-600 text-white shadow' : 'text-slate-700 hover:text-slate-900'
+                  }`}
+                >
+                  <Database size={14} /> Question Bank Picker
+                </button>
+                <button
+                  onClick={() => setAddMode('random')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                    addMode === 'random' ? 'bg-indigo-600 text-white shadow' : 'text-slate-700 hover:text-slate-900'
+                  }`}
+                >
+                  <Shuffle size={14} /> Random Generator
+                </button>
+              </div>
             </div>
 
-            {questions.map((q, index) => (
-              <div key={index} className="p-5 border border-slate-200 rounded-2xl bg-white shadow-sm hover:border-indigo-200 transition-all space-y-4">
+            {/* मोड 1: मैनुअल टाइपिंग फॉर्म */}
+            {addMode === 'manual' && (
+              <div className="space-y-4">
+                {questions.map((q, index) => (
+                  <div key={index} className="p-5 border border-slate-200 rounded-2xl bg-white shadow-sm hover:border-indigo-200 transition-all space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-black text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-md">
+                        Question No. {index + 1}
+                      </span>
+                      {questions.length > 1 && (
+                        <button
+                          onClick={() => removeQuestionField(index)}
+                          className="text-xs font-extrabold text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 size={14} /> Delete Question
+                        </button>
+                      )}
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        placeholder={`Enter Question ${index + 1} text here...`}
+                        value={q.question_text}
+                        onChange={(e) => {
+                          const newQ = [...questions];
+                          newQ[index].question_text = e.target.value;
+                          setQuestions(newQ);
+                        }}
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xl bg-slate-50/50 outline-none text-sm font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 shadow-inner"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {['A', 'B', 'C', 'D'].map((opt) => (
+                        <div key={opt} className="flex items-center gap-2">
+                          <span className="text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-2 w-9 text-center">
+                            {opt}
+                          </span>
+                          <input
+                            type="text"
+                            placeholder={`Option ${opt} text`}
+                            value={q[`option_${opt.toLowerCase()}`]}
+                            onChange={(e) => {
+                              const newQ = [...questions];
+                              newQ[index][`option_${opt.toLowerCase()}`] = e.target.value;
+                              setQuestions(newQ);
+                            }}
+                            className="w-full px-3.5 py-2 border border-slate-300 rounded-xl bg-white outline-none text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-3 border-t border-slate-100 bg-slate-50/60 p-3 rounded-xl">
+                      <CheckCircle2 size={16} className="text-emerald-600" />
+                      <label className="text-xs font-black text-slate-700 uppercase">Correct Answer Key:</label>
+                      <select
+                        value={q.correct_option}
+                        onChange={(e) => {
+                          const newQ = [...questions];
+                          newQ[index].correct_option = e.target.value;
+                          setQuestions(newQ);
+                        }}
+                        className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-extrabold text-slate-900 bg-white outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                      >
+                        <option value="A">Option A</option>
+                        <option value="B">Option B</option>
+                        <option value="C">Option C</option>
+                        <option value="D">Option D</option>
+                      </select>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  onClick={addQuestionField}
+                  className="w-full sm:w-auto px-5 py-3 border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <PlusCircle size={16} /> Add Next Question Manually
+                </button>
+              </div>
+            )}
+
+            {/* मोड 2: क्वेश्चन बैंक पिकर (Manual Picker) */}
+            {addMode === 'picker' && (
+              <div className="p-5 border border-slate-300 rounded-2xl bg-indigo-50/40 space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-black text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-md">
-                    Question No. {index + 1}
-                  </span>
-                  {questions.length > 1 && (
-                    <button
-                      onClick={() => removeQuestionField(index)}
-                      className="text-xs font-extrabold text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer transition-colors"
-                    >
-                      <Trash2 size={14} /> Delete Question
-                    </button>
-                  )}
+                  <div>
+                    <h3 className="text-sm font-black text-indigo-900">Select Questions from Question Bank</h3>
+                    <p className="text-xs text-slate-500">Class: <strong>{className}</strong> | Subject: <strong>{subjectName}</strong></p>
+                  </div>
+                  <button
+                    onClick={handleAddSelectedFromBank}
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase shadow transition cursor-pointer flex items-center gap-1.5"
+                  >
+                    <CheckSquare size={16} /> Add Selected ({selectedBankIds.length})
+                  </button>
                 </div>
 
-                <div>
+                {bankLoading ? (
+                  <div className="py-12 text-center text-slate-500 font-bold flex items-center justify-center gap-2">
+                    <Loader2 className="animate-spin text-indigo-600" size={20} /> Loading Question Bank...
+                  </div>
+                ) : bankQuestions.length > 0 ? (
+                  <div className="space-y-2.5 max-h-[400px] overflow-y-auto pr-2">
+                    {bankQuestions.map((bq) => {
+                      const isChecked = selectedBankIds.includes(bq.id);
+                      return (
+                        <div
+                          key={bq.id}
+                          onClick={() => handleToggleBankQuestion(bq.id)}
+                          className={`p-3.5 rounded-xl border cursor-pointer transition flex items-start gap-3 ${
+                            isChecked ? 'border-indigo-600 bg-indigo-50 shadow-sm' : 'border-slate-200 bg-white hover:bg-slate-50'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {}}
+                            className="mt-1 h-4 w-4 text-indigo-600 rounded cursor-pointer"
+                          />
+                          <div className="text-xs sm:text-sm font-semibold text-slate-800">
+                            <p>{bq.question_text}</p>
+                            <div className="text-[11px] text-slate-500 mt-1 flex gap-3">
+                              <span>(A) {bq.option_a}</span>
+                              <span>(B) {bq.option_b}</span>
+                              <span className="font-bold text-emerald-600">Ans: {bq.correct_answer || bq.correct_option}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-slate-400 font-bold text-xs bg-white rounded-xl border border-dashed border-slate-300">
+                    इस क्लास ({className}) और सब्जेक्ट ({subjectName}) के लिए Question Bank में कोई प्रश्न नहीं मिला।
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* मोड 3: रैंडम क्वेश्चन जनरेटर */}
+            {addMode === 'random' && (
+              <div className="p-6 border border-slate-300 rounded-2xl bg-indigo-50/40 space-y-4 max-w-xl mx-auto text-center">
+                <Shuffle className="mx-auto text-indigo-600" size={32} />
+                <h3 className="text-base font-black text-indigo-900">Random Question Generator</h3>
+                <p className="text-xs text-slate-500">
+                  Select how many random questions you want to pull from the <strong>{subjectName} ({className})</strong> Question Bank.
+                </p>
+
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <label className="text-xs font-bold text-slate-700">Number of Questions:</label>
                   <input
-                    type="text"
-                    placeholder={`Enter Question ${index + 1} text here...`}
-                    value={q.question_text}
-                    onChange={(e) => {
-                      const newQ = [...questions];
-                      newQ[index].question_text = e.target.value;
-                      setQuestions(newQ);
-                    }}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-xl bg-slate-50/50 outline-none text-sm font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 shadow-inner"
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={randomCount}
+                    onChange={(e) => setRandomCount(e.target.value)}
+                    className="w-20 px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm font-bold text-center outline-none shadow-inner"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {['A', 'B', 'C', 'D'].map((opt) => (
-                    <div key={opt} className="flex items-center gap-2">
-                      <span className="text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-2 w-9 text-center">
-                        {opt}
-                      </span>
-                      <input
-                        type="text"
-                        placeholder={`Option ${opt} text`}
-                        value={q[`option_${opt.toLowerCase()}`]}
-                        onChange={(e) => {
-                          const newQ = [...questions];
-                          newQ[index][`option_${opt.toLowerCase()}`] = e.target.value;
-                          setQuestions(newQ);
-                        }}
-                        className="w-full px-3.5 py-2 border border-slate-300 rounded-xl bg-white outline-none text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 shadow-sm"
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-3 pt-3 border-t border-slate-100 bg-slate-50/60 p-3 rounded-xl">
-                  <CheckCircle2 size={16} className="text-emerald-600" />
-                  <label className="text-xs font-black text-slate-700 uppercase">Correct Answer Key:</label>
-                  <select
-                    value={q.correct_option}
-                    onChange={(e) => {
-                      const newQ = [...questions];
-                      newQ[index].correct_option = e.target.value;
-                      setQuestions(newQ);
-                    }}
-                    className="px-3 py-1.5 border border-slate-300 rounded-lg text-xs font-extrabold text-slate-900 bg-white outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
-                  >
-                    <option value="A">Option A</option>
-                    <option value="B">Option B</option>
-                    <option value="C">Option C</option>
-                    <option value="D">Option D</option>
-                  </select>
-                </div>
+                <button
+                  onClick={handleAddRandomFromBank}
+                  disabled={bankLoading}
+                  className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-700 hover:opacity-95 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg transition cursor-pointer flex items-center justify-center gap-2 mx-auto disabled:opacity-50"
+                >
+                  {bankLoading ? <Loader2 className="animate-spin" size={16} /> : <Shuffle size={16} />}
+                  Generate & Add Random Questions
+                </button>
               </div>
-            ))}
+            )}
+
           </div>
 
-          {/* सेक्शन 3: बॉटम एक्शन (Standard Action Buttons) */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-slate-200">
-            <button
-              onClick={addQuestionField}
-              className="w-full sm:w-auto px-5 py-3 border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-2"
-            >
-              <PlusCircle size={16} /> Add Next Question
-            </button>
-            
+          {/* बॉटम पब्लिश बटन */}
+          <div className="flex justify-end pt-6 border-t border-slate-200">
             <button
               onClick={handlePublish}
               disabled={loading}
-              className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg transition cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-700 text-white rounded-2xl font-black text-xs uppercase tracking-wider shadow-xl transition cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
               {loading ? 'Publishing Paper...' : 'Publish Examination Paper'}
