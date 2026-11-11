@@ -2,12 +2,16 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Award, BookOpen, Layers, Clock, FileText, CheckCircle } from 'lucide-react';
+import { Loader2, Award, BookOpen, Layers, Clock, FileText, CheckCircle, Globe } from 'lucide-react';
 
 export default function OnlineTestQuiz({ loggedInParentId }) {
   const [loading, setLoading] = useState(true);
   const [availableQuizzes, setAvailableQuizzes] = useState([]);
   const [selectedQuizId, setSelectedQuizId] = useState('');
+  
+  // नया मीडियम स्टेट (जैसे: 'All', 'English', 'Hindi', 'Both')
+  const [selectedMedium, setSelectedMedium] = useState('All');
+  
   const [quizData, setQuizData] = useState({ title: 'Online Evaluation Test', subjectName: '', className: '', questions: [] });
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -32,6 +36,7 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
           }
         }
 
+        // quizzes टेबल से डेटा फेच करना
         let quizQuery = supabase.from('quizzes').select('*').order('created_at', { ascending: false });
         
         if (studentClass) {
@@ -65,10 +70,17 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
       try {
         const currentQuiz = availableQuizzes.find(q => q.id === selectedQuizId);
 
-        const { data: questionsData, error: qErr } = await supabase
+        // quiz_questions टेबल से प्रश्न फेच करना (Medium फ़िल्टर के साथ)
+        let query = supabase
           .from('quiz_questions')
           .select('*')
           .eq('quiz_id', selectedQuizId);
+
+        if (selectedMedium !== 'All') {
+          query = query.ilike('medium', selectedMedium);
+        }
+
+        const { data: questionsData, error: qErr } = await query;
 
         if (qErr) throw qErr;
 
@@ -90,7 +102,7 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
     }
 
     fetchQuizQuestions();
-  }, [selectedQuizId, availableQuizzes]);
+  }, [selectedQuizId, selectedMedium, availableQuizzes]);
 
   const handleSelectOption = (qId, option) => {
     setSelectedAnswers({ ...selectedAnswers, [qId]: option });
@@ -109,6 +121,7 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
     setSubmitting(true);
 
     try {
+      // quiz_submissions टेबल में डेटा इंसर्ट करना
       const { error } = await supabase
         .from('quiz_submissions')
         .insert([
@@ -142,26 +155,45 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-slate-50 min-h-screen font-sans text-slate-900">
       
-      {/* 1. टेस्ट/पेपर सिलेक्शन बार (Multiple Tests Dropdown) */}
-      {availableQuizzes.length > 1 && (
-        <div className="mb-6 p-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 font-black text-xs uppercase tracking-wider">
-            <Layers size={18} className="text-amber-400" />
-            <span>Select Available Examination Paper:</span>
-          </div>
-          <select
-            value={selectedQuizId}
-            onChange={(e) => setSelectedQuizId(e.target.value)}
-            className="bg-white text-slate-900 font-bold text-xs px-4 py-2.5 rounded-xl border border-amber-400 outline-none cursor-pointer shadow-inner w-full sm:w-auto min-w-[260px]"
-          >
-            {availableQuizzes.map((q) => (
-              <option key={q.id} value={q.id}>
-                {q.title} ({q.subject_name || 'General'})
-              </option>
-            ))}
-          </select>
+      {/* 1. टेस्ट/पेपर सिलेक्शन बार एवं मीडियम चयन (Quiz & Medium Selector Bar) */}
+      <div className="mb-6 p-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2 font-black text-xs uppercase tracking-wider w-full sm:w-auto">
+          <Layers size={18} className="text-amber-400 shrink-0" />
+          <span>Select Examination Paper:</span>
         </div>
-      )}
+
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+          {/* मीडियम ड्रॉपडाउन */}
+          <div className="flex items-center gap-1.5 bg-slate-800 px-3 py-2 rounded-xl border border-slate-700 w-full sm:w-auto">
+            <Globe size={14} className="text-indigo-400" />
+            <select
+              value={selectedMedium}
+              onChange={(e) => setSelectedMedium(e.target.value)}
+              className="bg-transparent text-white font-bold text-xs outline-none cursor-pointer"
+            >
+              <option value="All" className="text-slate-900">All Mediums</option>
+              <option value="English" className="text-slate-900">English</option>
+              <option value="Hindi" className="text-slate-900">Hindi</option>
+              <option value="Both" className="text-slate-900">Both</option>
+            </select>
+          </div>
+
+          {/* क्विज़ ड्रॉपडाउन */}
+          {availableQuizzes.length > 0 && (
+            <select
+              value={selectedQuizId}
+              onChange={(e) => setSelectedQuizId(e.target.value)}
+              className="bg-white text-slate-900 font-bold text-xs px-4 py-2.5 rounded-xl border border-amber-400 outline-none cursor-pointer shadow-inner w-full sm:w-auto min-w-[220px]"
+            >
+              {availableQuizzes.map((q) => (
+                <option key={q.id} value={q.id}>
+                  {q.title} ({q.subject_name || 'General'})
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      </div>
 
       {/* 2. स्टैंडर्ड स्कूल एग्जाम शीट कार्ड (Standard School Exam Layout) */}
       <div className="bg-white rounded-3xl shadow-xl border border-slate-300 overflow-hidden">
@@ -169,7 +201,7 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
         {/* स्कूल एवं पेपर आधिकारिक हेडर (Official Exam Header) */}
         <div className="p-6 sm:p-8 border-b-2 border-slate-200 bg-gradient-to-b from-slate-50 to-white text-center space-y-2">
           <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
-            Official Online Assessment Paper
+            Official Online Assessment Paper ({selectedMedium} Medium)
           </span>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-wide uppercase pt-1">
             BLUE HEAVEN KIDS ACADEMY
@@ -204,6 +236,25 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
                   {quizData.questions.map((q, qIndex) => (
                     <div key={q.id || qIndex} className="p-5 border border-slate-200 rounded-2xl bg-slate-50/50 shadow-sm hover:bg-white transition-all space-y-4">
                       
+                      {/* चैप्टर और मीडियम टैग (Chapter & Medium Badge) */}
+                      <div className="flex flex-wrap items-center gap-2">
+                        {q.chapter_name && (
+                          <span className="bg-slate-200 text-slate-700 text-[10px] font-black px-2 py-0.5 rounded uppercase">
+                            {q.chapter_name}
+                          </span>
+                        )}
+                        {q.question_type && (
+                          <span className="bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-0.5 rounded uppercase">
+                            {q.question_type}
+                          </span>
+                        )}
+                        {q.medium && (
+                          <span className="bg-emerald-100 text-emerald-700 text-[10px] font-black px-2 py-0.5 rounded uppercase">
+                            {q.medium} Medium
+                          </span>
+                        )}
+                      </div>
+
                       {/* प्रश्न संख्या एवं विवरण (Standard Question Text) */}
                       <p className="font-extrabold text-slate-900 text-sm sm:text-base leading-relaxed flex items-start gap-2">
                         <span className="bg-indigo-600 text-white rounded-lg px-2 py-0.5 text-xs font-black min-w-[28px] text-center mt-0.5">
@@ -257,7 +308,7 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
                 </div>
               ) : (
                 <div className="text-center py-16 text-slate-400 font-extrabold text-sm border-2 border-dashed border-slate-200 rounded-2xl">
-                  इस समय इस कक्षा और विषय के लिए कोई भी परीक्षा पत्र उपलब्ध नहीं है।
+                  इस चयनित मीडियम के लिए इस परीक्षा पत्र में कोई भी प्रश्न उपलब्ध नहीं है।
                 </div>
               )}
             </div>
