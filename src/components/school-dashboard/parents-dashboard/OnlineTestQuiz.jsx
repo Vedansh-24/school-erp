@@ -9,7 +9,7 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
   const [availableQuizzes, setAvailableQuizzes] = useState([]);
   const [selectedQuizId, setSelectedQuizId] = useState('');
   
-  // नया मीडियम स्टेट (जैसे: 'All', 'English', 'Hindi', 'Both')
+  // मीडियम स्टेट (जैसे: 'All', 'English', 'Hindi', 'Both')
   const [selectedMedium, setSelectedMedium] = useState('All');
   
   const [quizData, setQuizData] = useState({ title: 'Online Evaluation Test', subjectName: '', className: '', questions: [] });
@@ -110,9 +110,19 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
 
   const handleSubmitQuiz = async () => {
     let currentScore = 0;
+    
     quizData.questions.forEach((q) => {
-      if (selectedAnswers[q.id] === q.correct_option) {
-        currentScore += 1;
+      const studentAns = selectedAnswers[q.id]?.trim().toUpperCase();
+      
+      // डेटाबेस में सही उत्तर 'correct_option' या 'correct_answer' किसी भी नाम से हो सकता है
+      const rawCorrect = q.correct_option || q.correct_answer || '';
+      const correctAns = rawCorrect.trim().toUpperCase();
+
+      // यदि छात्र का चुना हुआ उत्तर (जैसे 'A') डेटाबेस के सही उत्तर से मेल खाता है
+      if (studentAns && correctAns) {
+        if (studentAns === correctAns || correctAns.includes(studentAns)) {
+          currentScore += 1;
+        }
       }
     });
 
@@ -155,7 +165,7 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-slate-50 min-h-screen font-sans text-slate-900">
       
-      {/* 1. टेस्ट/पेपर सिलेक्शन बार एवं मीडियम चयन (Quiz & Medium Selector Bar) */}
+      {/* 1. टेस्ट/पेपर सिलेक्शन बार एवं मीडियम चयन */}
       <div className="mb-6 p-4 bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl shadow-md flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2 font-black text-xs uppercase tracking-wider w-full sm:w-auto">
           <Layers size={18} className="text-amber-400 shrink-0" />
@@ -195,10 +205,9 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
         </div>
       </div>
 
-      {/* 2. स्टैंडर्ड स्कूल एग्जाम शीट कार्ड (Standard School Exam Layout) */}
+      {/* 2. स्टैंडर्ड स्कूल एग्जाम शीट कार्ड */}
       <div className="bg-white rounded-3xl shadow-xl border border-slate-300 overflow-hidden">
         
-        {/* स्कूल एवं पेपर आधिकारिक हेडर (Official Exam Header) */}
         <div className="p-6 sm:p-8 border-b-2 border-slate-200 bg-gradient-to-b from-slate-50 to-white text-center space-y-2">
           <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">
             Official Online Assessment Paper ({selectedMedium} Medium)
@@ -210,7 +219,6 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
             {quizData.title}
           </h2>
           
-          {/* मानक पेपर मेटा-डेटा ग्रिड (Class, Subject, Marks & Time) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-4 max-w-2xl mx-auto text-xs font-bold text-slate-700 bg-slate-100/80 p-3 rounded-2xl border border-slate-200">
             <div className="flex items-center justify-center gap-1.5 border-r border-slate-300">
               <BookOpen size={14} className="text-indigo-600" /> Subject: <span className="text-slate-900 font-black">{quizData.subjectName}</span>
@@ -227,7 +235,7 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
           </div>
         </div>
 
-        {/* 3. प्रश्न एवं विकल्प (Questions & Options) */}
+        {/* 3. प्रश्न एवं विकल्प */}
         <div className="p-6 sm:p-8 space-y-6">
           {!submitted ? (
             <div>
@@ -236,7 +244,6 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
                   {quizData.questions.map((q, qIndex) => (
                     <div key={q.id || qIndex} className="p-5 border border-slate-200 rounded-2xl bg-slate-50/50 shadow-sm hover:bg-white transition-all space-y-4">
                       
-                      {/* चैप्टर और मीडियम टैग (Chapter & Medium Badge) */}
                       <div className="flex flex-wrap items-center gap-2">
                         {q.chapter_name && (
                           <span className="bg-slate-200 text-slate-700 text-[10px] font-black px-2 py-0.5 rounded uppercase">
@@ -255,7 +262,6 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
                         )}
                       </div>
 
-                      {/* प्रश्न संख्या एवं विवरण (Standard Question Text) */}
                       <p className="font-extrabold text-slate-900 text-sm sm:text-base leading-relaxed flex items-start gap-2">
                         <span className="bg-indigo-600 text-white rounded-lg px-2 py-0.5 text-xs font-black min-w-[28px] text-center mt-0.5">
                           Q{qIndex + 1}
@@ -263,7 +269,6 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
                         <span>{q.question_text}</span>
                       </p>
 
-                      {/* 4 विकल्प (A, B, C, D Grid) */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-9">
                         {['A', 'B', 'C', 'D'].map((opt) => {
                           const optionKey = `option_${opt.toLowerCase()}`;
@@ -298,7 +303,6 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
                     </div>
                   ))}
 
-                  {/* सबमिट बटन (Standard Submit Button) */}
                   <button
                     onClick={handleSubmitQuiz}
                     className="w-full py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white rounded-2xl font-black text-sm uppercase tracking-wider shadow-lg hover:opacity-95 transition cursor-pointer mt-6 flex items-center justify-center gap-2"
@@ -314,7 +318,6 @@ export default function OnlineTestQuiz({ loggedInParentId }) {
             </div>
           ) : (
             
-            /* 4. ऑटोमेटेड रिजल्ट कार्ड (Automated Score Sheet) */
             <div className="text-center py-12 space-y-5 bg-slate-50/80 p-6 rounded-3xl border border-slate-200">
               <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner border border-emerald-300">
                 <Award size={44} />
