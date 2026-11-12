@@ -1,3 +1,4 @@
+// Filename: src/app/staff-dashboard/page.js
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -19,6 +20,7 @@ import NoticesView from '@/components/staff-dashboard/notices';
 import OnlineTestPaperGenerator from '@/components/staff-dashboard/onlinetestpapergenerator';
 import SmartAnalytics from '@/components/staff-dashboard/SmartAnalytics';
 import BehaviorLog from '@/components/staff-dashboard/behaviorlog';
+import DigitalResourcesAndStudyMaterial from '@/components/staff-dashboard/DigitalResourcesAndStudyMaterial';
 
 // Correct path and lowercase matching the actual filename staffgatepass.jsx
 import StaffGatePass from '@/components/staff-dashboard/staffgatepass';
@@ -80,6 +82,7 @@ export default function StaffDashboard() {
     'Marks Entry',
     'Question Paper Generator',
     'Online Test Paper Generator',
+    'Digital Resources & Study Material',
     'Smart Analytics',
     'Student Behavior Log',
     'Staff Gate Pass',
@@ -294,6 +297,8 @@ export default function StaffDashboard() {
 
             {activeTab === 'Online Test Paper Generator' && <OnlineTestPaperGenerator />}
 
+            {activeTab === 'Digital Resources & Study Material' && <DigitalResourcesAndStudyMaterial />}
+
             {activeTab === 'Smart Analytics' && <SmartAnalytics />}
 
             {activeTab === 'Student Behavior Log' && <BehaviorLog />}
@@ -318,6 +323,7 @@ export default function StaffDashboard() {
               activeTab !== 'Marks Entry' &&
               activeTab !== 'Question Paper Generator' &&
               activeTab !== 'Online Test Paper Generator' &&
+              activeTab !== 'Digital Resources & Study Material' &&
               activeTab !== 'Smart Analytics' &&
               activeTab !== 'Student Behavior Log' &&
               activeTab !== 'Staff Gate Pass' &&
