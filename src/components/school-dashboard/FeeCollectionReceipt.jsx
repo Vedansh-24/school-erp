@@ -7,6 +7,7 @@ export default function FeeCollectionReceipt() {
   const [students, setStudents] = useState([]);
   const [filteredStudents, setFilteredStudents] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [allStudentTransactions, setAllStudentTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Active Receipt Modal State
@@ -32,9 +33,10 @@ export default function FeeCollectionReceipt() {
     'December': false, 'January': false, 'February': false, 'March': false,
   });
 
-  // Single Fee Amount & Penalty State
+  // Fee Amount, Penalty Imposed & Penalty Paid State
   const [feeAmount, setFeeAmount] = useState('1000');
   const [penaltyAmount, setPenaltyAmount] = useState('15');
+  const [penaltyPaidAmount, setPenaltyPaidAmount] = useState('15');
   
   const [filterDate, setFilterDate] = useState('');
 
@@ -62,29 +64,109 @@ export default function FeeCollectionReceipt() {
     return dateStr;
   };
 
-  // Helper function to accurately get Student Details
+  // Helper function to accurately get Student Details & Annual Fees
   const getStudentDetails = (tx) => {
-    if (!tx) return { name: 'N/A', father: 'N/A', sr: 'N/A' };
+    if (!tx) return { name: 'N/A', father: 'N/A', sr: 'N/A', annualFees: 0, matchedStudent: null };
     
     const matched = students.find(s => 
-      (s.id && String(s.id) === String(tx.student_id)) ||
-      (s.student_id && String(s.student_id) === String(tx.student_id)) ||
-      (s.sr_no && String(s.sr_no) === String(tx.sr_no)) ||
-      (s.sr_no && String(s.sr_no) === String(tx.student_id)) ||
-      (s.id && String(s.id) === String(tx.sr_no))
+      (s.id && tx.student_id && String(s.id) === String(tx.student_id)) ||
+      (s.student_id && tx.student_id && String(s.student_id) === String(tx.student_id)) ||
+      (s.sr_no && tx.sr_no && String(s.sr_no) === String(tx.sr_no)) ||
+      (s.sr_no && tx.student_id && String(s.sr_no) === String(tx.student_id)) ||
+      (s.id && tx.sr_no && String(s.id) === String(tx.sr_no))
     );
 
     const name = matched
-      ? (matched.student_full_name || matched.student_name || matched.name || matched.full_name)
-      : (tx.student_name || tx.student_full_name || 'Student');
+      ? (matched.student_full_name || 'Student')
+      : 'Student';
 
     const father = matched
-      ? (matched.father_name || matched.father_full_name || matched.father_name_en)
+      ? (matched.father_name || 'N/A')
       : 'N/A';
 
     const sr = matched?.sr_no || tx.sr_no || 'N/A';
+    const annualFees = parseFloat(matched?.annual_fees) || 0;
 
-    return { name, father, sr };
+    return { name, father, sr, annualFees, matchedStudent: matched };
+  };
+
+  // Helper function to filter all fee_collections entries for a student up to tx.receipt_date
+  const getStudentTransactionsUpToDate = (tx) => {
+    if (!tx) return [];
+    const { matchedStudent } = getStudentDetails(tx);
+    const targetDate = tx.receipt_date || '';
+    const targetSession = tx.session || matchedStudent?.session || '2026-2027';
+
+    return allStudentTransactions.filter(item => {
+      const isSameStudent = 
+        (matchedStudent?.id && item.student_id && String(item.student_id) === String(matchedStudent.id)) ||
+        (matchedStudent?.student_id && item.student_id && String(item.student_id) === String(matchedStudent.student_id)) ||
+        (matchedStudent?.sr_no && item.sr_no && String(item.sr_no) === String(matchedStudent.sr_no)) ||
+        (tx.student_id && item.student_id && String(item.student_id) === String(tx.student_id)) ||
+        (tx.sr_no && item.sr_no && String(item.sr_no) === String(tx.sr_no));
+
+      if (!isSameStudent) return false;
+
+      if (item.session && targetSession && String(item.session) !== String(targetSession)) {
+        return false;
+      }
+
+      if (targetDate && item.receipt_date) {
+        if (item.receipt_date < targetDate) return true;
+        if (item.receipt_date === targetDate) {
+          if (item.created_at && tx.created_at) {
+            return item.created_at <= tx.created_at;
+          }
+          return true;
+        }
+        return false;
+      }
+      return true;
+    });
+  };
+
+  // 1. Remaining Tuition Fee Due Calculation up to receipt_date:
+  // Formula: students.annual_fees - SUM(fee_collections.fee_paid where student matches & receipt_date <= tx.receipt_date)
+  const calculateRemainingDue = (tx) => {
+    if (!tx) return 0;
+    const { annualFees } = getStudentDetails(tx);
+    if (!annualFees) return 0;
+
+    const studentTxsUpToDate = getStudentTransactionsUpToDate(tx);
+
+    const totalFeePaidTillDate = studentTxsUpToDate.reduce((sum, item) => {
+      const paid = item.fee_paid !== null && item.fee_paid !== undefined
+        ? parseFloat(item.fee_paid) || 0
+        : (
+            (parseFloat(item.tuition_fee_amount) || 0) +
+            (parseFloat(item.installment_1_amount) || 0) +
+            (parseFloat(item.installment_2_amount) || 0) +
+            (parseFloat(item.installment_3_amount) || 0) +
+            (parseFloat(item.installment_4_amount) || 0)
+          );
+      return sum + paid;
+    }, 0);
+
+    const remaining = annualFees - totalFeePaidTillDate;
+    return remaining > 0 ? remaining : 0;
+  };
+
+  // 2. Remaining Penalty Due Calculation up to receipt_date:
+  // Formula: SUM(fee_collections.penalty_amount) - SUM(fee_collections.penalty_paid) up to tx.receipt_date
+  const calculatePenaltyDue = (tx) => {
+    if (!tx) return 0;
+    const studentTxsUpToDate = getStudentTransactionsUpToDate(tx);
+
+    const totalPenaltyImposed = studentTxsUpToDate.reduce((sum, item) => {
+      return sum + (parseFloat(item.penalty_amount) || 0);
+    }, 0);
+
+    const totalPenaltyPaid = studentTxsUpToDate.reduce((sum, item) => {
+      return sum + (parseFloat(item.penalty_paid) || 0);
+    }, 0);
+
+    const penaltyDue = totalPenaltyImposed - totalPenaltyPaid;
+    return penaltyDue > 0 ? penaltyDue : 0;
   };
 
   const getAllocationMonthsList = () => {
@@ -204,18 +286,63 @@ export default function FeeCollectionReceipt() {
     calculateFees(updatedMonths);
   };
 
-  const calculateFees = (monthsObj) => {
+  const calculateFees = (monthsObj, studentObj = null) => {
     const activeCount = Object.values(monthsObj).filter(Boolean).length;
-    let basePerMonthFee = 1000;
-    let calculatedAmount = activeCount * basePerMonthFee;
+    const targetStudent = studentObj || students.find(s => 
+      String(s.id) === String(selectedStudentId) || 
+      String(s.student_id) === String(selectedStudentId) || 
+      String(s.sr_no) === String(selectedStudentId)
+    );
     
-    setPenaltyAmount((activeCount * 15).toString());
+    const annualFeeVal = parseFloat(targetStudent?.annual_fees) || 0;
+    const basePerMonthFee = annualFeeVal > 0 ? Math.round(annualFeeVal / 12) : 1000;
+    const calculatedAmount = activeCount * basePerMonthFee;
+    const defaultPenalty = (activeCount * 15).toString();
+    
+    setPenaltyAmount(defaultPenalty);
+    setPenaltyPaidAmount(defaultPenalty);
     setFeeAmount(calculatedAmount.toString());
   };
 
+  // Fetching exact columns from students table
   const fetchStudents = async () => {
     try {
-      const { data, error } = await supabase.from('students').select('*');
+      const { data, error } = await supabase
+        .from('students')
+        .select(`
+          id,
+          sr_no,
+          student_id,
+          student_full_name,
+          father_name,
+          mother_name,
+          dob,
+          gender,
+          category,
+          religion,
+          aadhaar_no,
+          address,
+          class_name,
+          admission_date,
+          rte_status,
+          bpl_status,
+          minority_status,
+          cwsn_type,
+          medium_of_instruction,
+          previous_class,
+          previous_percentage,
+          transport_facility,
+          hostel_facility,
+          mobile_number,
+          email,
+          session,
+          status,
+          created_at,
+          photo_url,
+          admission_type,
+          annual_fees,
+          whatsapp_number
+        `);
       if (error) throw error;
       setStudents(data || []);
     } catch (err) {
@@ -223,10 +350,45 @@ export default function FeeCollectionReceipt() {
     }
   };
 
+  // Fetching exact columns from fee_collections table
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      let query = supabase.from('fee_collections').select('*').order('created_at', { ascending: false });
+      const feeColumns = `
+        id,
+        receipt_no,
+        student_id,
+        class_name,
+        allocation_month,
+        receipt_date,
+        payment_mode,
+        tuition_fee_amount,
+        penalty_amount,
+        total_paid,
+        session,
+        created_at,
+        installment_1_amount,
+        installment_2_amount,
+        installment_3_amount,
+        installment_4_amount,
+        sr_no,
+        penalty_paid,
+        fee_paid
+      `;
+
+      const { data: allData, error: allErr } = await supabase
+        .from('fee_collections')
+        .select(feeColumns)
+        .order('receipt_date', { ascending: true })
+        .order('created_at', { ascending: true });
+
+      if (allErr) throw allErr;
+      setAllStudentTransactions(allData || []);
+
+      let query = supabase
+        .from('fee_collections')
+        .select(feeColumns)
+        .order('created_at', { ascending: false });
       
       if (filterDate) {
         query = query.eq('receipt_date', filterDate);
@@ -246,10 +408,27 @@ export default function FeeCollectionReceipt() {
     setSelectedClass(cls);
     setSelectedStudentId('');
     const filtered = students.filter(s => {
-      const studentClass = s.class_name || s.class || s.student_class || '';
+      const studentClass = s.class_name || '';
       return studentClass.toString().trim().toLowerCase() === cls.trim().toLowerCase();
     });
     setFilteredStudents(filtered);
+  };
+
+  const handleStudentSelect = (val) => {
+    setSelectedStudentId(val);
+    const stu = students.find(s => 
+      String(s.id) === String(val) || 
+      String(s.student_id) === String(val) || 
+      String(s.sr_no) === String(val)
+    );
+    if (stu) {
+      calculateFees(selectedMonths, stu);
+    }
+  };
+
+  const handlePenaltyImposedChange = (val) => {
+    setPenaltyAmount(val);
+    setPenaltyPaidAmount(val);
   };
 
   const handleSaveReceipt = async (e) => {
@@ -266,8 +445,9 @@ export default function FeeCollectionReceipt() {
     );
     
     const mainFee = parseFloat(feeAmount) || 0;
-    const pAmount = parseFloat(penaltyAmount) || 0;
-    const totalPaidVal = mainFee + pAmount;
+    const pImposed = parseFloat(penaltyAmount) || 0;
+    const pPaid = parseFloat(penaltyPaidAmount) || 0;
+    const totalPaidVal = mainFee + pPaid;
 
     let tuitionVal = 0, i1 = 0, i2 = 0, i3 = 0, i4 = 0;
     if (feePlanType === 'monthly' || feePlanType === 'yearly') {
@@ -279,31 +459,36 @@ export default function FeeCollectionReceipt() {
       else if (activeInstalmentGroup === 'inst4') i4 = mainFee;
     }
 
-    // वास्तविक student_id और sr_no निकालने की सुरक्षित व्यवस्था
-    const realStudentIdVal = currentStudent?.student_id 
-      ? String(currentStudent.student_id) 
-      : (currentStudent?.id ? String(currentStudent.id) : String(selectedStudentId));
+    let studentUuid = null;
+    if (isValidUUID(currentStudent?.id)) {
+      studentUuid = currentStudent.id;
+    } else if (isValidUUID(currentStudent?.student_id)) {
+      studentUuid = currentStudent.student_id;
+    } else if (isValidUUID(selectedStudentId)) {
+      studentUuid = selectedStudentId;
+    }
 
     const srNoVal = currentStudent?.sr_no 
       ? String(currentStudent.sr_no) 
       : (!isValidUUID(selectedStudentId) ? String(selectedStudentId) : null);
 
+    // Exact columns of fee_collections table
     const txData = {
       receipt_no: manualReceiptNo || Math.floor(1000 + Math.random() * 9000).toString(),
-      student_id: realStudentIdVal, // वास्तविक student_id (UUID के बजाय)
-      sr_no: srNoVal,               // sr_no सही से रिकॉर्ड होगा
+      student_id: studentUuid,
+      sr_no: srNoVal,
       class_name: selectedClass,
       allocation_month: allocationMonth,
       receipt_date: receiptDate,
       payment_mode: paymentMode,
       tuition_fee_amount: tuitionVal,
-      penalty_amount: pAmount,
+      penalty_amount: pImposed,
       installment_1_amount: i1,
       installment_2_amount: i2,
       installment_3_amount: i3,
       installment_4_amount: i4,
       fee_paid: mainFee,
-      penalty_paid: pAmount,
+      penalty_paid: pPaid,
       total_paid: totalPaidVal,
       session: currentStudent?.session || '2026-2027'
     };
@@ -322,6 +507,7 @@ export default function FeeCollectionReceipt() {
       
       setFeeAmount('1000');
       setPenaltyAmount('15');
+      setPenaltyPaidAmount('15');
       setManualReceiptNo('');
       setSelectedStudentId('');
       fetchTransactions();
@@ -336,7 +522,7 @@ export default function FeeCollectionReceipt() {
     setSelectedClass(tx.class_name);
     
     const filtered = students.filter(s => {
-      const studentClass = s.class_name || s.class || s.student_class || '';
+      const studentClass = s.class_name || '';
       return studentClass.toString().trim().toLowerCase() === tx.class_name.trim().toLowerCase();
     });
     setFilteredStudents(filtered);
@@ -353,10 +539,12 @@ export default function FeeCollectionReceipt() {
                             (tx.installment_2_amount || 0) + 
                             (tx.installment_3_amount || 0) + 
                             (tx.installment_4_amount || 0));
-    const existingPenalty = tx.penalty_paid ?? tx.penalty_amount ?? 0;
+    const existingPenaltyImposed = tx.penalty_amount ?? 0;
+    const existingPenaltyPaid = tx.penalty_paid ?? tx.penalty_amount ?? 0;
 
     setFeeAmount(existingMainFee.toString());
-    setPenaltyAmount(existingPenalty.toString());
+    setPenaltyAmount(existingPenaltyImposed.toString());
+    setPenaltyPaidAmount(existingPenaltyPaid.toString());
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -378,7 +566,7 @@ export default function FeeCollectionReceipt() {
   };
 
   const handleWhatsAppShare = (tx) => {
-    const { name, father, sr } = getStudentDetails(tx);
+    const { name, father, sr, annualFees } = getStudentDetails(tx);
     const formattedDate = formatDate(tx.receipt_date);
     
     const tuitionPaid = tx.fee_paid ?? (
@@ -387,7 +575,9 @@ export default function FeeCollectionReceipt() {
                         (tx.installment_2_amount || 0) + 
                         (tx.installment_3_amount || 0) + 
                         (tx.installment_4_amount || 0));
-    const penaltyPaid = tx.penalty_paid ?? tx.penalty_amount ?? 0;
+    const penaltyPaid = tx.penalty_paid ?? 0;
+    const remainingDue = calculateRemainingDue(tx);
+    const penaltyDue = calculatePenaltyDue(tx);
     const modeDisplay = tx.payment_mode === 'Cash' ? 'Cash (नकद)' : tx.payment_mode;
 
     const msg = `🧾 *BLUE HEAVEN KIDS ACADEMY*
@@ -400,12 +590,14 @@ _________________________________________
 • *Class:* ${tx.class_name} | *SR No:* ${sr}
 _________________________________________
 *Fee Details:*
-• Tuition / Instalment Fee: ₹${tuitionPaid}
-• Late Fine / Penalty: ₹${penaltyPaid}
+• Annual Tuition Fee: ₹${annualFees}
+• Tuition / Instalment Fee Paid: ₹${tuitionPaid}
+• Late Fine / Penalty Paid: ₹${penaltyPaid}
 • *Payment Mode:* ${modeDisplay}
 _________________________________________
 *TOTAL AMOUNT RECEIVED:* ₹${tx.total_paid}
-*REMAINING DUE:* ₹0
+*REMAINING TUITION FEE DUE:* ₹${remainingDue}
+*PENALTY DUE:* ₹${penaltyDue}
 _________________________________________
 Thank you!
 *Blue Heaven Kids Academy, Jaipur*`;
@@ -418,12 +610,12 @@ Thank you!
   };
 
   const getFeeLabel = () => {
-    if (feePlanType === 'monthly' || feePlanType === 'yearly') return 'Tuition Fee Amount (₹)';
-    if (activeInstalmentGroup === 'inst1') return '1st Instalment Amount (₹)';
-    if (activeInstalmentGroup === 'inst2') return '2nd Instalment Amount (₹)';
-    if (activeInstalmentGroup === 'inst3') return '3rd Instalment Amount (₹)';
-    if (activeInstalmentGroup === 'inst4') return '4th Instalment Amount (₹)';
-    return 'Fee Amount (₹)';
+    if (feePlanType === 'monthly' || feePlanType === 'yearly') return 'Tuition Fee Paid (₹)';
+    if (activeInstalmentGroup === 'inst1') return '1st Instalment Paid (₹)';
+    if (activeInstalmentGroup === 'inst2') return '2nd Instalment Paid (₹)';
+    if (activeInstalmentGroup === 'inst3') return '3rd Instalment Paid (₹)';
+    if (activeInstalmentGroup === 'inst4') return '4th Instalment Paid (₹)';
+    return 'Fee Paid Amount (₹)';
   };
 
   return (
@@ -470,6 +662,7 @@ Thank you!
                 setFeePlanType('monthly');
                 setFeeAmount('1000'); 
                 setPenaltyAmount('15');
+                setPenaltyPaidAmount('15');
                 setSelectedStudentId(''); 
               }}
               className="text-[13px] bg-slate-200 hover:bg-slate-300 active:translate-y-0.5 text-slate-700 px-4 py-1 rounded-xl cursor-pointer font-bold shadow-sm transition-all self-start lg:self-auto"
@@ -544,7 +737,6 @@ Thank you!
             <p className="text-[13px] font-extrabold text-slate-700 mb-2.5 text-center lg:text-left">
               {feePlanType === 'monthly' ? 'Click on the exact month you want to collect fee for:' : feePlanType === 'yearly' ? 'All months selected for Annual/Yearly Plan:' : 'Auto-selected months based on chosen instalment:'}
             </p>
-            {/* Mobile screen par ek row me keval 2 months show honge (grid-cols-2), jabki laptop par 6 columns (lg:grid-cols-6) */}
             <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
               {Object.keys(selectedMonths).map((mKey) => (
                 <label key={mKey} onClick={() => handleMonthCheckboxToggle(mKey)} className={`flex items-center space-x-2.5 bg-white border-2 px-3 py-2 rounded-xl text-[13px] font-bold shadow-sm transition ${feePlanType === 'monthly' ? 'cursor-pointer hover:border-sky-500 hover:bg-sky-50/50' : 'cursor-default opacity-90 border-slate-200'}`}>
@@ -585,18 +777,19 @@ Thank you!
             </label>
             <select 
               value={selectedStudentId} 
-              onChange={(e) => setSelectedStudentId(e.target.value)}
+              onChange={(e) => handleStudentSelect(e.target.value)}
               className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-2 text-[14px] text-slate-800 outline-none focus:border-sky-500 shadow-sm font-bold cursor-pointer"
               required
             >
               <option value="">-- Select Student --</option>
               {filteredStudents.map((s) => {
                 const sId = s.id || s.student_id || s.sr_no;
-                const sName = s.student_full_name || s.student_name || s.name || s.full_name || 'Student Name';
+                const sName = s.student_full_name || 'Student Name';
                 const sSr = s.sr_no || s.student_id || 'N/A';
+                const sAnnual = s.annual_fees ? ` | Annual: ₹${s.annual_fees}` : '';
                 return (
                   <option key={sId} value={sId}>
-                    {sName} (SR: {sSr})
+                    {sName} (SR: {sSr}{sAnnual})
                   </option>
                 );
               })}
@@ -666,27 +859,47 @@ Thank you!
             <input 
               type="number" 
               value={penaltyAmount}
-              onChange={(e) => setPenaltyAmount(e.target.value)}
+              onChange={(e) => handlePenaltyImposedChange(e.target.value)}
               className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-2 text-[14px] text-slate-800 placeholder-slate-400 outline-none focus:border-sky-500 shadow-sm font-bold"
             />
           </div>
 
-          <div className="col-span-1 sm:col-span-2 lg:col-span-1">
-            <label className="block text-[13px] font-extrabold text-emerald-800 mb-1.5">Total Payable (₹)</label>
+          <div>
+            <label className="block text-[13px] font-extrabold text-amber-800 mb-1.5">Penalty Paid (₹)</label>
             <input 
               type="number" 
-              value={(parseFloat(feeAmount) || 0) + (parseFloat(penaltyAmount) || 0)}
+              value={penaltyPaidAmount}
+              onChange={(e) => setPenaltyPaidAmount(e.target.value)}
+              className="w-full bg-amber-50/60 border-2 border-amber-300 rounded-xl px-4 py-2 text-[14px] text-slate-800 placeholder-slate-400 outline-none focus:border-amber-500 shadow-sm font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[13px] font-extrabold text-rose-700 mb-1.5">Current Penalty Due (₹)</label>
+            <input 
+              type="number" 
+              value={Math.max(0, (parseFloat(penaltyAmount) || 0) - (parseFloat(penaltyPaidAmount) || 0))}
+              disabled
+              className="w-full bg-rose-50 border-2 border-rose-200 rounded-xl px-4 py-2 text-[14px] text-rose-800 font-extrabold outline-none shadow-sm cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[13px] font-extrabold text-emerald-800 mb-1.5">Total Paid Today (₹)</label>
+            <input 
+              type="number" 
+              value={(parseFloat(feeAmount) || 0) + (parseFloat(penaltyPaidAmount) || 0)}
               disabled
               className="w-full bg-emerald-50 border-2 border-emerald-300 rounded-xl px-4 py-2 text-[15px] text-emerald-900 font-extrabold outline-none shadow-sm cursor-not-allowed"
             />
           </div>
 
-          <div className="sm:col-span-2 lg:col-span-3 pt-3 flex justify-end">
+          <div className="pt-3 flex justify-end">
             <button 
               type="submit"
-              className="w-full lg:w-auto bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-extrabold rounded-2xl px-10 py-3 text-[15px] shadow-[0_4px_0_#065f46] active:translate-y-[3px] active:shadow-none transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white font-extrabold rounded-2xl px-6 py-2.5 text-[14px] shadow-[0_4px_0_#065f46] active:translate-y-[3px] active:shadow-none transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <span className="text-lg">💾</span> {editingId ? 'Update Receipt' : 'Save & Generate Receipt'}
+              <span className="text-lg">💾</span> {editingId ? 'Update Receipt' : 'Save & Generate'}
             </button>
           </div>
 
@@ -726,7 +939,7 @@ Thank you!
         </div>
 
         <div className="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
-          <table className="w-full text-left text-[14px] border-collapse min-w-[1000px]">
+          <table className="w-full text-left text-[14px] border-collapse min-w-[1180px]">
             <thead>
               <tr className="border-b-2 border-slate-200 bg-slate-100 text-slate-900 font-extrabold">
                 <th className="p-3.5">Receipt No</th>
@@ -737,19 +950,21 @@ Thank you!
                 <th className="p-3.5">Mode</th>
                 <th className="p-3.5">Fee Breakup</th>
                 <th className="p-3.5">Total Paid</th>
+                <th className="p-3.5">Remaining Due</th>
+                <th className="p-3.5">Penalty Due</th>
                 <th className="p-3.5 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {loading ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-8 text-slate-500 font-bold text-[15px]">
+                  <td colSpan={11} className="text-center py-8 text-slate-500 font-bold text-[15px]">
                     Loading transactions...
                   </td>
                 </tr>
               ) : transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-8 text-slate-400 font-bold text-[15px]">
+                  <td colSpan={11} className="text-center py-8 text-slate-400 font-bold text-[15px]">
                     No fee records found.
                   </td>
                 </tr>
@@ -762,7 +977,9 @@ Thank you!
                                  (tx.installment_2_amount || 0) + 
                                  (tx.installment_3_amount || 0) + 
                                  (tx.installment_4_amount || 0));
-                  const penaltyAmt = tx.penalty_paid ?? tx.penalty_amount ?? 0;
+                  const penaltyPaidAmt = tx.penalty_paid ?? 0;
+                  const remDue = calculateRemainingDue(tx);
+                  const penDue = calculatePenaltyDue(tx);
 
                   return (
                     <tr key={tx.id} className="hover:bg-slate-50/80 transition">
@@ -779,10 +996,12 @@ Thank you!
                         </span>
                       </td>
                       <td className="p-3.5 text-indigo-800 font-bold text-[12px]">
-                        <div>Fee Amount: ₹{feeAmt}</div>
-                        {penaltyAmt > 0 && <div className="text-rose-600">Penalty: ₹{penaltyAmt}</div>}
+                        <div>Fee Paid: ₹{feeAmt}</div>
+                        <div className="text-amber-700">Penalty Paid: ₹{penaltyPaidAmt}</div>
                       </td>
                       <td className="p-3.5 font-extrabold text-emerald-600 text-[15px]">₹{tx.total_paid}</td>
+                      <td className="p-3.5 font-extrabold text-rose-600 text-[14px]">₹{remDue}</td>
+                      <td className="p-3.5 font-extrabold text-amber-700 text-[14px]">₹{penDue}</td>
                       
                       <td className="p-3.5">
                         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-center gap-2">
@@ -826,7 +1045,7 @@ Thank you!
 
       {/* Official Fee Receipt Popup Modal */}
       {selectedReceiptTx && (() => {
-        const { name, father, sr } = getStudentDetails(selectedReceiptTx);
+        const { name, father, sr, annualFees } = getStudentDetails(selectedReceiptTx);
 
         const tuitionPaid = selectedReceiptTx.fee_paid ?? (
                             (selectedReceiptTx.tuition_fee_amount || 0) + 
@@ -834,8 +1053,10 @@ Thank you!
                             (selectedReceiptTx.installment_2_amount || 0) + 
                             (selectedReceiptTx.installment_3_amount || 0) + 
                             (selectedReceiptTx.installment_4_amount || 0));
-        const penaltyPaid = selectedReceiptTx.penalty_paid ?? selectedReceiptTx.penalty_amount ?? 0;
+        const penaltyPaid = selectedReceiptTx.penalty_paid ?? 0;
         const totalReceived = selectedReceiptTx.total_paid || (tuitionPaid + penaltyPaid);
+        const remainingTuitionDue = calculateRemainingDue(selectedReceiptTx);
+        const penaltyDue = calculatePenaltyDue(selectedReceiptTx);
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto">
@@ -877,8 +1098,11 @@ Thank you!
                   <div>
                     SR. No: <span className="font-black text-slate-950">{sr}</span>
                   </div>
-                  <div className="col-span-1 sm:col-span-2 pt-1 border-t border-slate-300 mt-1">
+                  <div className="pt-1 border-t border-slate-300 mt-1">
                     Payment Mode: <span className="font-black text-slate-950">{selectedReceiptTx.payment_mode}</span>
+                  </div>
+                  <div className="pt-1 border-t border-slate-300 mt-1">
+                    Annual Tuition Fee: <span className="font-black text-slate-950">₹{annualFees}</span>
                   </div>
                 </div>
 
@@ -904,8 +1128,12 @@ Thank you!
                         <td className="p-3 text-right text-emerald-900 font-black text-[16px]">₹{totalReceived}</td>
                       </tr>
                       <tr className="bg-slate-100 font-black text-[14px]">
-                        <td className="p-3 border-r-2 border-slate-800">REMAINING TUITION FEE DUE:</td>
-                        <td className="p-3 text-right text-rose-700 font-black">₹0</td>
+                        <td className="p-3 border-r-2 border-slate-800">REMAINING TUITION FEE DUE (Till {formatDate(selectedReceiptTx.receipt_date)}):</td>
+                        <td className="p-3 text-right text-rose-700 font-black text-[15px]">₹{remainingTuitionDue}</td>
+                      </tr>
+                      <tr className="bg-amber-50 font-black text-[14px]">
+                        <td className="p-3 border-r-2 border-slate-800">PENALTY DUE (Till {formatDate(selectedReceiptTx.receipt_date)}):</td>
+                        <td className="p-3 text-right text-amber-800 font-black text-[15px]">₹{penaltyDue}</td>
                       </tr>
                     </tbody>
                   </table>
