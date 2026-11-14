@@ -66,6 +66,8 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const [noticesList, setNoticesList] = useState([]);
   const [rawHomeworkList, setRawHomeworkList] = useState([]);
+  // 📅 By default current date set ki gayi hai
+  const [homeworkFilterDate, setHomeworkFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [feeRecordsList, setFeeRecordsList] = useState([]);
   const [viewingNotice, setViewingNotice] = useState(null);
@@ -309,6 +311,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     fetchStudentData();
   }, [selectedStudentId, childrenList]);
 
+  // Filtered homework list based on selected date
+  const filteredHomeworkList = homeworkFilterDate 
+    ? rawHomeworkList.filter(hw => hw.assign_date === homeworkFilterDate)
+    : rawHomeworkList;
+
   return (
     <div className="w-full bg-[#F8FAFC] border border-slate-300 rounded-2xl p-6 md:p-8 shadow-md space-y-6 text-slate-900 font-sans">
       
@@ -491,10 +498,37 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           )}
 
           {activeTab === 'homework' && (
-            <div className="bg-white border rounded-2xl p-6 shadow-md space-y-4">
-              <h2 className="text-[18px] font-black text-blue-900">Class Homework ({studentInfo.class})</h2>
+            <div className="bg-white border rounded-2xl p-6 shadow-md space-y-6">
+              {/* Header & Date Filter Bar */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+                <h2 className="text-[18px] font-black text-blue-900">
+                  Class Homework ({studentInfo.class})
+                </h2>
+                
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-black uppercase text-slate-600">Filter by Date:</label>
+                    <input 
+                      type="date"
+                      value={homeworkFilterDate}
+                      onChange={(e) => setHomeworkFilterDate(e.target.value)}
+                      className="bg-slate-50 border-2 border-slate-300 text-xs font-bold text-slate-800 rounded-xl px-3 py-2 outline-none focus:border-indigo-600 cursor-pointer shadow-inner"
+                    />
+                  </div>
+                  {homeworkFilterDate && (
+                    <button
+                      onClick={() => setHomeworkFilterDate('')}
+                      className="bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-extrabold px-3 py-2 rounded-xl transition-all cursor-pointer"
+                    >
+                      Clear Filter
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Homework Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {rawHomeworkList.length > 0 ? rawHomeworkList.map((hw) => {
+                {filteredHomeworkList.length > 0 ? filteredHomeworkList.map((hw) => {
                   const { dark } = getSubjectStyles(hw.subject_name);
                   return (
                     <div key={hw.id} className="bg-white border rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
@@ -512,7 +546,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                       </div>
                     </div>
                   );
-                }) : <p className="text-xs text-slate-400">No homework assigned.</p>}
+                }) : (
+                  <div className="col-span-full py-12 text-center text-slate-400 font-semibold italic bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                    {homeworkFilterDate ? `इस तारीख (${homeworkFilterDate}) का कोई होमवर्क नहीं मिला।` : 'No homework assigned.'}
+                  </div>
+                )}
               </div>
             </div>
           )}
