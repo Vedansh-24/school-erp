@@ -109,7 +109,7 @@ export default function SchoolDashboard() {
   const sessionsList = ['2025-2026', '2026-2027', '2027-2028', '2028-2029', '2029-2030'];
   const classList = [
     'All Classes', 'PP.3+', 'PP.4+', 'PP.5+', 'First', 'Second', 'Third', 'Fourth', 'Fifth', 
-    'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth', 
+    'Sixth', 'Seventh', 'Eight', 'Ninth', 'Tenth', 
     'Eleventh (Arts)', 'Eleventh (Commerce)', 'Eleventh (Science)', 
     'Twelfth (Arts)', 'Twelfth (Commerce)', 'Twelfth (Science)'
   ];
