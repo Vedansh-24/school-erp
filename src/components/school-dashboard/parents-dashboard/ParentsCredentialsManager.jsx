@@ -7,7 +7,7 @@ import { Save, Download, RefreshCw, ShieldCheck, Filter, UserCheck, Loader2 } fr
 export default function ParentsPortalCredentialsManager() {
   const classOptions = [
     'PP.3+', 'PP.4+', 'PP.5+', 'First', 'Second', 'Third', 'Fourth', 'Fifth',
-    'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth',
+    'Sixth', 'Seventh', 'Eight', 'Ninth', 'Tenth',
     'Eleventh(Arts)', 'Eleventh(Commerce)', 'Eleventh(Science)',
     'Twelfth(Arts)', 'Twelfth(Commerce)', 'Twelfth(Science)',
   ];
