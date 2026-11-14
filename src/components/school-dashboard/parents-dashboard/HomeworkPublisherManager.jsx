@@ -439,7 +439,7 @@ export default function HomeworkPublisherManager() {
           </div>
         </div>
 
-        {/* Dynamic Subject Homework Entry Boxes Grid - Mobile par ek ke niche ek (grid-cols-1), laptop par 2 ya 3 */}
+        {/* Dynamic Subject Homework Entry Boxes Grid */}
         <div className="space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="text-base font-bold text-slate-700">
@@ -456,7 +456,7 @@ export default function HomeworkPublisherManager() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
             {currentSubjects.map((subject) => {
               const subData = homeworkInputs[subject] || {};
               const isFilled = (subData.title && subData.title.trim() !== '') || (subData.description && subData.description.trim() !== '');
@@ -613,8 +613,8 @@ export default function HomeworkPublisherManager() {
         {loading ? (
           <div className="text-center py-10 text-slate-500 font-bold">Loading homework data from Supabase...</div>
         ) : historyFilterClass !== 'All' ? (
-          /* VIEW 1: Consolidated Subject-wise View - Mobile par single column (grid-cols-1) */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+          /* VIEW 1: Consolidated Subject-wise View */
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
             {Object.keys(subjectWiseConsolidatedData).map((subject) => {
               const entriesList = subjectWiseConsolidatedData[subject];
               const { dark } = getSubjectStyles(subject);
@@ -691,8 +691,7 @@ export default function HomeworkPublisherManager() {
                     </div>
                   </div>
 
-                  {/* Mobile par ek ke niche ek (grid-cols-1) */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
                     {Object.entries(item.entries).map(([sub, work]) => {
                       const { dark } = getSubjectStyles(sub);
                       
