@@ -29,7 +29,7 @@ export default function StudentAnalyticsRTE() {
   const classList = useMemo(() => [
     'PP.3+', 'PP.4+', 'PP.5+',
     'First', 'Second', 'Third', 'Fourth', 'Fifth',
-    'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth',
+    'Sixth', 'Seventh', 'Eight', 'Ninth', 'Tenth',
     'Eleventh', 'Twelfth'
   ], []);
 
