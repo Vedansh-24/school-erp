@@ -98,6 +98,25 @@ const normalizeSubject = (sub) => {
   return sub.toLowerCase().replace(/[^a-z0-9]/g, '');
 };
 
+// 📋 Standard Class Order (Seventh ke thik bad Eight)
+const CLASS_ORDER = [
+  'PP.3+', 'PP.4+', 'PP.5+',
+  'First', 'Second', 'Third', 'Fourth', 'Fifth',
+  'Sixth', 'Seventh', 'Eight', 'Ninth', 'Tenth',
+  'Eleventh', 'Twelfth'
+];
+
+const sortClassesInOrder = (classesArray) => {
+  return [...classesArray].sort((a, b) => {
+    const idxA = CLASS_ORDER.findIndex(c => c.toLowerCase() === a.trim().toLowerCase());
+    const idxB = CLASS_ORDER.findIndex(c => c.toLowerCase() === b.trim().toLowerCase());
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+};
+
 export default function HomeworkPublisherManager() {
   const [classSubjectsMap, setClassSubjectsMap] = useState({});
   const [selectedClass, setSelectedClass] = useState('First');
@@ -131,8 +150,8 @@ export default function HomeworkPublisherManager() {
       });
       setClassSubjectsMap(map);
       if (!map[selectedClass] && Object.keys(map).length > 0) {
-        const firstKey = Object.keys(map)[0];
-        setSelectedClass(firstKey);
+        const sortedKeys = sortClassesInOrder(Object.keys(map));
+        setSelectedClass(sortedKeys[0]);
       }
     }
   };
@@ -155,7 +174,7 @@ export default function HomeworkPublisherManager() {
         results = results.filter(item => {
           const dbClass = (item.class_name || '').trim().toLowerCase();
           const filterClass = historyFilterClass.trim().toLowerCase();
-          return dbClass === filterClass || dbClass.includes(filterClass) || filterClass.includes(dbClass);
+          return dbClass === filterClass;
         });
       }
 
@@ -281,12 +300,12 @@ export default function HomeworkPublisherManager() {
     setHistoryFilterDate('');
   };
 
-  // Ensure all available classes from history are also included in class dropdown options
+  // Ensure all available classes are included and sorted so 'Eight' comes right after 'Seventh'
   const dynamicClassNames = new Set(Object.keys(classSubjectsMap));
   history.forEach(item => {
     if (item.class_name) dynamicClassNames.add(item.class_name.trim());
   });
-  const classNamesList = Array.from(dynamicClassNames);
+  const classNamesList = sortClassesInOrder(Array.from(dynamicClassNames));
 
   const currentSubjects = classSubjectsMap[selectedClass] || [];
 
@@ -321,7 +340,6 @@ export default function HomeworkPublisherManager() {
     const subjectMap = {};
     const officialSubjects = historyFilterClass !== 'All' ? (classSubjectsMap[historyFilterClass] || []) : [];
     
-    // Ensure all history subjects and official subjects appear
     history.forEach(item => {
       let sub = item.subject_name ? item.subject_name.trim() : 'General';
       if (!subjectMap[sub]) {
@@ -421,7 +439,7 @@ export default function HomeworkPublisherManager() {
           </div>
         </div>
 
-        {/* Dynamic Subject Homework Entry Boxes Grid */}
+        {/* Dynamic Subject Homework Entry Boxes Grid - Mobile par ek ke niche ek (grid-cols-1), laptop par 2 ya 3 */}
         <div className="space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="text-base font-bold text-slate-700">
@@ -438,8 +456,7 @@ export default function HomeworkPublisherManager() {
             </button>
           </div>
 
-          {/* Mobile par grid-cols-1 (ek ke niche ek), aur laptop par lg:grid-cols-2 xl:grid-cols-3 (file code ke anusaar) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
             {currentSubjects.map((subject) => {
               const subData = homeworkInputs[subject] || {};
               const isFilled = (subData.title && subData.title.trim() !== '') || (subData.description && subData.description.trim() !== '');
@@ -596,8 +613,8 @@ export default function HomeworkPublisherManager() {
         {loading ? (
           <div className="text-center py-10 text-slate-500 font-bold">Loading homework data from Supabase...</div>
         ) : historyFilterClass !== 'All' ? (
-          /* VIEW 1: Consolidated Subject-wise View */
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+          /* VIEW 1: Consolidated Subject-wise View - Mobile par single column (grid-cols-1) */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-5">
             {Object.keys(subjectWiseConsolidatedData).map((subject) => {
               const entriesList = subjectWiseConsolidatedData[subject];
               const { dark } = getSubjectStyles(subject);
@@ -674,8 +691,8 @@ export default function HomeworkPublisherManager() {
                     </div>
                   </div>
 
-                  {/* Mobile par grid-cols-1 (ek ke niche ek), aur laptop par lg:grid-cols-2 xl:grid-cols-3 */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
+                  {/* Mobile par ek ke niche ek (grid-cols-1) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
                     {Object.entries(item.entries).map(([sub, work]) => {
                       const { dark } = getSubjectStyles(sub);
                       
