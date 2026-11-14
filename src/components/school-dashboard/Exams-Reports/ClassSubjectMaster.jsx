@@ -26,7 +26,7 @@ export default function ClassSubjectMaster() {
     'Fifth', 
     'Sixth', 
     'Seventh', 
-    'Eighth', 
+    'Eight', 
     'Ninth', 
     'Tenth', 
     'Eleventh (Arts)', 
