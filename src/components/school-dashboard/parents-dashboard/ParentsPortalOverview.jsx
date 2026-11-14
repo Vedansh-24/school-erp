@@ -17,13 +17,28 @@ import {
 } from 'lucide-react';
 import OnlineTestQuiz from '@/components/school-dashboard/parents-dashboard/OnlineTestQuiz';
 
+// 🎨 Subject 3D Color Gradients & Styles (Home2 के अनुसार)
 const getSubjectStyles = (subject) => {
   const subLower = (subject || '').toLowerCase();
-  if (subLower.includes('english')) return { dark: 'bg-blue-600 text-white' };
-  if (subLower.includes('hindi')) return { dark: 'bg-orange-600 text-white' };
-  if (subLower.includes('math')) return { dark: 'bg-rose-600 text-white' };
-  if (subLower.includes('science') || subLower.includes('evs')) return { dark: 'bg-emerald-600 text-white' };
-  return { dark: 'bg-slate-700 text-white' };
+  if (subLower.includes('english')) {
+    return { light: 'bg-blue-100 text-blue-900 border-blue-300', dark: 'bg-gradient-to-r from-blue-500 via-indigo-600 to-blue-700 text-white border-t border-blue-200 border-b-[4px] border-blue-950 shadow-md' };
+  } else if (subLower.includes('hindi')) {
+    return { light: 'bg-orange-100 text-orange-900 border-orange-300', dark: 'bg-gradient-to-r from-orange-500 via-amber-600 to-orange-700 text-white border-t border-orange-200 border-b-[4px] border-orange-950 shadow-md' };
+  } else if (subLower.includes('math') || subLower.includes('ganit') || subLower.includes('mathematics')) {
+    return { light: 'bg-rose-100 text-rose-900 border-rose-300', dark: 'bg-gradient-to-r from-rose-500 via-pink-600 to-red-700 text-white border-t border-rose-200 border-b-[4px] border-rose-950 shadow-md' };
+  } else if (subLower.includes('evs') || subLower.includes('science') || subLower.includes('biology')) {
+    return { light: 'bg-emerald-100 text-emerald-900 border-emerald-300', dark: 'bg-gradient-to-r from-emerald-500 via-teal-600 to-green-700 text-white border-t border-emerald-200 border-b-[4px] border-emerald-950 shadow-md' };
+  } else if (subLower.includes('physics') || subLower.includes('chemistry') || subLower.includes('computer')) {
+    return { light: 'bg-indigo-100 text-indigo-900 border-indigo-300', dark: 'bg-gradient-to-r from-indigo-500 via-purple-600 to-blue-700 text-white border-t border-indigo-200 border-b-[4px] border-indigo-950 shadow-md' };
+  } else if (subLower.includes('social') || subLower.includes('history')) {
+    return { light: 'bg-amber-100 text-amber-900 border-amber-300', dark: 'bg-gradient-to-r from-amber-500 via-orange-600 to-yellow-700 text-white border-t border-amber-200 border-b-[4px] border-amber-950 shadow-md' };
+  } else if (subLower.includes('sanskrit')) {
+    return { light: 'bg-purple-100 text-purple-900 border-purple-300', dark: 'bg-gradient-to-r from-purple-500 via-indigo-600 to-purple-700 text-white border-t border-purple-200 border-b-[4px] border-purple-950 shadow-md' };
+  } else if (subLower.includes('g.k.') || subLower.includes('gk')) {
+    return { light: 'bg-lime-100 text-lime-900 border-lime-300', dark: 'bg-gradient-to-r from-lime-500 via-emerald-600 to-green-700 text-white border-t border-lime-200 border-b-[4px] border-lime-950 shadow-md' };
+  }
+  
+  return { light: 'bg-slate-100 text-slate-800 border-slate-300', dark: 'bg-gradient-to-r from-slate-600 via-slate-700 to-slate-800 text-white border-t border-slate-300 border-b-[4px] border-slate-950 shadow-md' };
 };
 
 const getPriorityColor = (priority) => {
@@ -393,12 +408,21 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 <h2 className="text-[16px] font-black text-blue-900">Class Homework ({studentInfo.class})</h2>
                 <div className="space-y-3">
                   {rawHomeworkList.length > 0 ? (
-                    rawHomeworkList.slice(0, 4).map((hw) => (
-                      <div key={hw.id} className="bg-slate-50 border rounded-xl p-3 text-xs">
-                        <div className="font-bold text-blue-800">📘 {hw.subject_name} ({hw.assign_date})</div>
-                        <div className="text-slate-700 mt-1">{hw.instructions}</div>
-                      </div>
-                    ))
+                    rawHomeworkList.slice(0, 4).map((hw) => {
+                      const { dark } = getSubjectStyles(hw.subject_name);
+                      return (
+                        <div key={hw.id} className="bg-white border rounded-xl overflow-hidden shadow-sm">
+                          <div className={`${dark} px-3 py-1.5 text-xs font-black flex justify-between items-center`}>
+                            <span>📘 {hw.subject_name}</span>
+                            <span>{hw.assign_date}</span>
+                          </div>
+                          <div className="p-3 text-xs space-y-1">
+                            {hw.chapter_title && <div className="font-bold text-slate-900">📌 {hw.chapter_title}</div>}
+                            <div className="text-slate-700">{hw.instructions}</div>
+                          </div>
+                        </div>
+                      );
+                    })
                   ) : <p className="text-xs text-slate-400">No homework found.</p>}
                 </div>
               </div>
@@ -469,14 +493,26 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           {activeTab === 'homework' && (
             <div className="bg-white border rounded-2xl p-6 shadow-md space-y-4">
               <h2 className="text-[18px] font-black text-blue-900">Class Homework ({studentInfo.class})</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {rawHomeworkList.length > 0 ? rawHomeworkList.map((hw) => (
-                  <div key={hw.id} className="bg-slate-50 border rounded-2xl p-4 space-y-2">
-                    <div className="font-black text-xs text-indigo-700">📘 {hw.subject_name} ({hw.assign_date})</div>
-                    <h4 className="font-extrabold text-sm">{hw.chapter_title}</h4>
-                    <p className="text-xs text-slate-700">{hw.instructions}</p>
-                  </div>
-                )) : <p className="text-xs text-slate-400">No homework assigned.</p>}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {rawHomeworkList.length > 0 ? rawHomeworkList.map((hw) => {
+                  const { dark } = getSubjectStyles(hw.subject_name);
+                  return (
+                    <div key={hw.id} className="bg-white border rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
+                      <div className={`${dark} px-4 py-3 text-xs font-black flex justify-between items-center`}>
+                        <span>📘 {hw.subject_name}</span>
+                        <span>{hw.assign_date}</span>
+                      </div>
+                      <div className="p-4 space-y-2 flex-1">
+                        {hw.chapter_title && <div className="font-extrabold text-sm text-slate-900 bg-slate-100 px-3 py-1.5 rounded-lg">📌 {hw.chapter_title}</div>}
+                        <p className="text-xs text-slate-700 whitespace-pre-wrap leading-relaxed">{hw.instructions}</p>
+                      </div>
+                      <div className="px-4 py-2 bg-slate-50 border-t text-[11px] text-slate-500 font-bold flex justify-between">
+                        <span>Submission:</span>
+                        <span className="text-emerald-700">{hw.submission_date || 'Next Class'}</span>
+                      </div>
+                    </div>
+                  );
+                }) : <p className="text-xs text-slate-400">No homework assigned.</p>}
               </div>
             </div>
           )}
