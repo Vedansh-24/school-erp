@@ -1,3 +1,4 @@
+// Filename: StudentRegistration.jsx
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -225,8 +226,9 @@ export default function StudentRegistration() {
 
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
+  const [existingPhotoUrl, setExistingPhotoUrl] = useState(null); // 🟢 पुराने डेटाबेस URL को सुरक्षित रखने के लिए
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [facingMode, setFacingMode] = useState('environment'); // 'environment' for mobile back, 'user' for laptop front
+  const [facingMode, setFacingMode] = useState('environment');
 
   const fileInputRef = useRef(null);
   const bulkFileInputRef = useRef(null);
@@ -470,7 +472,12 @@ export default function StudentRegistration() {
 
         if (data.photo_url) {
           setPhotoPreview(data.photo_url);
+          setExistingPhotoUrl(data.photo_url); // 🟢 डेटाबेस वाले असली URL को सेव रखा
+        } else {
+          setPhotoPreview(null);
+          setExistingPhotoUrl(null);
         }
+        setPhotoFile(null);
 
         setSuccessMsg(`SR No: ${searchSrNo} ka data safaltapoorvak load ho gaya hai! 🎉`);
       }
@@ -486,10 +493,11 @@ export default function StudentRegistration() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleDateChange = (name, dateStr) => {
+  const handleDateCategoryChange = (name, dateStr) => {
     setFormData((prev) => ({ ...prev, [name]: dateStr }));
   };
 
+  // 🟢 सुरक्षा जाँच के साथ अपडेट किया गया handleSubmit फंक्शन
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -497,8 +505,9 @@ export default function StudentRegistration() {
     setErrorMsg('');
 
     try {
-      let photoUrl = photoPreview;
+      let photoUrl = existingPhotoUrl; // डिफ़ॉल्ट रूप से पुराना फोटो यूआरएल सेट करें
 
+      // 1. यदि यूजर ने नई फोटो चुनी या कैप्चर की है, तो Supabase स्टोरेज पर अपलोड करें
       if (photoFile) {
         const fileExt = photoFile.name.split('.').pop();
         const fileName = `${formData.srNo || 'student'}_${Date.now()}.${fileExt}`;
@@ -508,13 +517,19 @@ export default function StudentRegistration() {
           .upload(fileName, photoFile, { upsert: true });
 
         if (uploadError) {
-          console.warn('Photo upload warning:', uploadError.message);
+          throw new Error('Photo upload fail ho gayi: ' + uploadError.message);
         } else {
           const { data: publicUrlData } = supabase.storage
             .from('student-photos')
             .getPublicUrl(fileName);
-          photoUrl = publicUrlData.publicUrl;
+          photoUrl = publicUrlData.publicUrl; // 🟢 Supabase का पक्का पब्लिक URL मिलेगा
         }
+      } 
+      // 2. सुरक्षा जाँच: यदि photoPreview में 'blob:' है लेकिन यूजर ने नई फाइल नहीं चुनी, तो उसे डेटाबेस में जाने से रोकें
+      else if (photoPreview && photoPreview.startsWith('blob:')) {
+        photoUrl = existingPhotoUrl; 
+      } else {
+        photoUrl = photoPreview;
       }
 
       const { error } = await supabase
@@ -533,7 +548,7 @@ export default function StudentRegistration() {
             category: formData.socialCategory,
             gender: formData.gender,
             dob: formData.dob,
-            photo_url: photoUrl,
+            photo_url: photoUrl, // 🟢 यहाँ हमेशा सुरक्षित और सही URL ही जाएगा (कभी भी blob: नहीं)
             religion: formData.religion,
             aadhaar_no: formData.aadhaarNo,
             rte_status: formData.rteStatus,
@@ -555,10 +570,11 @@ export default function StudentRegistration() {
 
       setSuccessMsg('Student registration database me safaltapoorvak save ho gaya! 🎉 Ab aap agla student register kar sakte hain.');
       
-      // Reset form fields and photo preview to blank for next student
+      // फॉर्म रीसेट करें
       setFormData(initialFormState);
       setPhotoPreview(null);
       setPhotoFile(null);
+      setExistingPhotoUrl(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
 
     } catch (error) {
@@ -793,7 +809,7 @@ export default function StudentRegistration() {
           </div>
 
           <div>
-            <CustomDatePicker label="DOB (जन्म तिथि)" required={true} value={formData.dob} onChange={(dateStr) => handleDateChange('dob', dateStr)} />
+            <CustomDatePicker label="DOB (जन्म तिथि)" required={true} value={formData.dob} onChange={(dateStr) => handleDateCategoryChange('dob', dateStr)} />
           </div>
           <div>
             <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Religion</label>
@@ -819,7 +835,7 @@ export default function StudentRegistration() {
           </div>
 
           <div>
-            <CustomDatePicker label="Admission Date" value={formData.dateOfAdmission} onChange={(dateStr) => handleDateChange('dateOfAdmission', dateStr)} />
+            <CustomDatePicker label="Admission Date" value={formData.dateOfAdmission} onChange={(dateStr) => handleDateCategoryChange('dateOfAdmission', dateStr)} />
           </div>
           <div>
             <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-1 truncate">Admission Type</label>
