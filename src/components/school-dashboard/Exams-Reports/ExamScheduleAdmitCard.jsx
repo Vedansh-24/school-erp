@@ -491,7 +491,7 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT OVERRIDE STYLES (STRICT 2 PER A4 PAGE WITHOUT OVERFLOW) */}
+      {/* GLOBAL PRINT OVERRIDE STYLES (EXACT 0.5 INCH MARGINS AND TOP ALIGNMENT) */}
       <style jsx global>{`
         @media print {
           body * {
@@ -513,7 +513,7 @@ export default function ClassSubjectMaster() {
 
           @page {
             size: A4 portrait;
-            margin: 4mm 8mm;
+            margin: 0.5in 0.5in 0.5in 0.5in; /* Top, Right, Bottom, Left margins set to 0.5in */
           }
 
           body {
@@ -524,7 +524,7 @@ export default function ClassSubjectMaster() {
             print-color-adjust: exact !important;
           }
 
-          /* Exact height to fit 2 cards per A4 page without spillover */
+          /* Exact height to fit 2 cards per A4 page without spillover, aligned at top */
           .a4-admit-card-item {
             height: 48vh;
             max-height: 48vh;
@@ -532,6 +532,7 @@ export default function ClassSubjectMaster() {
             box-sizing: border-box;
             page-break-inside: avoid;
             break-inside: avoid;
+            margin-top: 0 !important;
             margin-bottom: 2mm;
           }
 
