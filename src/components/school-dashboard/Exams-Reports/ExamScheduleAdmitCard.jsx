@@ -338,11 +338,11 @@ export default function ClassSubjectMaster() {
 
   const inputTheme = "w-full bg-[#F4F7F9] border-2 border-gray-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:border-[#1B3A6B] focus:bg-white focus:ring-4 focus:ring-[#1B3A6B]/15 shadow-inner transition-all duration-200";
 
-  // Reusable Single Admit Card Sheet JSX (Compact format to fit 2 per A4 page)
-  const renderAdmitCardSheet = (student, isBulk = false) => (
+  // Reusable Single Admit Card Sheet JSX (Exact Full Content, compact padding/spacing to fit 2 per A4 page perfectly)
+  const renderAdmitCardSheet = (student) => (
     <div
       key={student.srNo}
-      className={`border-2 border-[#1B3A6B] p-3 md:p-4 rounded-xl bg-white text-slate-900 space-y-2.5 shadow-sm ${isBulk ? 'a4-admit-card-item' : 'max-w-xl mx-auto'}`}
+      className="a4-admit-card-item border-2 border-[#1B3A6B] p-3 rounded-xl bg-white text-slate-900 space-y-2 mb-4"
     >
       {/* Header with School Logo */}
       <div className="flex items-center justify-between border-b border-gray-300 pb-2">
@@ -373,7 +373,7 @@ export default function ClassSubjectMaster() {
 
       {/* Student Details Grid with Photo */}
       <div className="bg-slate-50 p-2.5 rounded-lg border border-gray-200 text-[11px] flex items-center justify-between gap-3">
-        <div className="space-y-1.5 flex-1">
+        <div className="space-y-1 flex-1">
           <div className="grid grid-cols-2 gap-2">
             <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Roll No :</span> <span className="font-black text-[#1B3A6B]">{student.rollNo}</span></div>
             <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">SR No :</span> <span className="font-black text-slate-900">{student.srNo}</span></div>
@@ -388,7 +388,7 @@ export default function ClassSubjectMaster() {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Mobile No:</span> <span className="font-bold">{student.mobileNo}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Fee Due:</span> <span className="font-bold text-[#10B981]">{student.feeDue}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Remaining Fee Due:</span> <span className="font-bold text-[#10B981]">{student.feeDue}</span></div>
           </div>
         </div>
 
@@ -449,22 +449,22 @@ export default function ClassSubjectMaster() {
       </div>
 
       {/* Professional Bottom Signature & Centered School Stamp Section */}
-      <div className="grid grid-cols-3 items-end pt-2 text-[9px] font-black uppercase text-slate-700">
+      <div className="grid grid-cols-3 items-end pt-1 text-[9px] font-black uppercase text-slate-700">
         <div className="text-center">
-          <div className="border-t border-slate-400 pt-1 w-24 mx-auto">
+          <div className="border-t border-slate-400 pt-0.5 w-24 mx-auto">
             Student Signature
           </div>
         </div>
         
         <div className="text-center flex flex-col items-center justify-center">
-          <div className="w-16 h-8 border border-dashed border-gray-400 rounded flex items-center justify-center text-[8px] text-gray-400 bg-slate-50 mb-0.5 shadow-inner">
+          <div className="w-16 h-7 border border-dashed border-gray-400 rounded flex items-center justify-center text-[8px] text-gray-400 bg-slate-50 mb-0.5 shadow-inner">
             School Stamp
           </div>
-          <span className="text-[8px] tracking-tighter text-slate-500">Official Seal</span>
+          <span className="text-[7.5px] tracking-tighter text-slate-500">Official Seal</span>
         </div>
 
         <div className="text-center">
-          <div className="border-t border-slate-400 pt-1 w-28 mx-auto">
+          <div className="border-t border-slate-400 pt-0.5 w-28 mx-auto">
             Principal / Controller
           </div>
         </div>
@@ -475,20 +475,19 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT OVERRIDE STYLES (HIDES APP SIDEBAR/HEADER & SETS 2 PER A4 PAGE) */}
+      {/* GLOBAL PRINT STYLING: HIDES HEADER/SIDEBAR & SETS 2 ADMIT CARDS PER A4 PAGE */}
       <style jsx global>{`
         @media print {
-          /* Hide everything outside print containers */
+          /* Hide everything outside print areas */
           body * {
             visibility: hidden;
           }
           
-          /* Only show printable content container */
-          .printable-admit-area, .printable-admit-area * {
+          .printable-admit-wrapper, .printable-admit-wrapper * {
             visibility: visible;
           }
 
-          .printable-admit-area {
+          .printable-admit-wrapper {
             position: absolute;
             left: 0;
             top: 0;
@@ -499,7 +498,7 @@ export default function ClassSubjectMaster() {
 
           @page {
             size: A4 portrait;
-            margin: 10mm;
+            margin: 8mm;
           }
 
           body {
@@ -510,15 +509,15 @@ export default function ClassSubjectMaster() {
             print-color-adjust: exact !important;
           }
 
-          /* Force exactly 2 Admit Cards per A4 page */
+          /* Force exactly 2 admit cards per A4 page */
           .a4-admit-card-item {
-            height: 48vh;
-            max-height: 48vh;
+            height: 47vh;
+            max-height: 47vh;
             overflow: hidden;
             box-sizing: border-box;
             page-break-inside: avoid;
             break-inside: avoid;
-            margin-bottom: 10mm;
+            margin-bottom: 6mm;
           }
 
           .a4-admit-card-item:nth-child(even) {
@@ -958,7 +957,7 @@ export default function ClassSubjectMaster() {
       {/* SINGLE ADMIT CARD PRINT MODAL PREVIEW */}
       {selectedStudentForAdmitCard && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-4 md:p-6 shadow-2xl relative my-2">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-4 md:p-6 shadow-2xl relative my-2">
             
             {/* Modal Actions (Hidden in Print) */}
             <div className="flex justify-between items-center pb-3 mb-3 border-b border-gray-200 print:hidden">
@@ -982,8 +981,8 @@ export default function ClassSubjectMaster() {
             </div>
 
             {/* PRINTABLE ADMIT CARD CONTAINER */}
-            <div className="printable-admit-area">
-              {renderAdmitCardSheet(selectedStudentForAdmitCard, false)}
+            <div className="printable-admit-wrapper">
+              {renderAdmitCardSheet(selectedStudentForAdmitCard)}
             </div>
           </div>
         </div>
@@ -992,7 +991,7 @@ export default function ClassSubjectMaster() {
       {/* ENTIRE CLASS ADMIT CARDS (2 PER A4 PAGE) PRINT MODAL */}
       {printAllClassStudents && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-start justify-center p-2 md:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-4 md:p-6 shadow-2xl relative my-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-4 md:p-6 shadow-2xl relative my-4">
             
             {/* Modal Actions (Hidden in Print) */}
             <div className="flex justify-between items-center pb-3 mb-4 border-b border-gray-200 print:hidden sticky top-0 bg-white z-10 pt-1">
@@ -1016,8 +1015,8 @@ export default function ClassSubjectMaster() {
             </div>
 
             {/* ALL STUDENTS A4 PAGES (2 PER PAGE) */}
-            <div className="printable-admit-area space-y-6">
-              {printAllClassStudents.map((student) => renderAdmitCardSheet(student, true))}
+            <div className="printable-admit-wrapper">
+              {printAllClassStudents.map((student) => renderAdmitCardSheet(student))}
             </div>
           </div>
         </div>
