@@ -338,15 +338,15 @@ export default function ClassSubjectMaster() {
 
   const inputTheme = "w-full bg-[#F4F7F9] border-2 border-gray-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:border-[#1B3A6B] focus:bg-white focus:ring-4 focus:ring-[#1B3A6B]/15 shadow-inner transition-all duration-200";
 
-  // Reusable Single Admit Card Sheet JSX
+  // Reusable Single Admit Card Sheet JSX (Compact format to fit 2 per A4 page)
   const renderAdmitCardSheet = (student, isBulk = false) => (
     <div
       key={student.srNo}
-      className={`border-4 border-[#1B3A6B] p-5 rounded-2xl bg-white text-slate-900 space-y-4 ${isBulk ? 'a4-admit-card-page mb-6 print:mb-0' : ''}`}
+      className={`border-2 border-[#1B3A6B] p-3 md:p-4 rounded-xl bg-white text-slate-900 space-y-2.5 shadow-sm ${isBulk ? 'a4-admit-card-item' : 'max-w-xl mx-auto'}`}
     >
       {/* Header with School Logo */}
-      <div className="flex items-center justify-between border-b-2 border-gray-300 pb-3">
-        <div className="w-16 h-16 flex items-center justify-center bg-slate-100 rounded-xl overflow-hidden border shrink-0">
+      <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+        <div className="w-12 h-12 flex items-center justify-center bg-slate-100 rounded-lg overflow-hidden border shrink-0">
           <img 
             src={schoolLogo} 
             alt="School Logo" 
@@ -354,46 +354,46 @@ export default function ClassSubjectMaster() {
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         </div>
-        <div className="text-center flex-1 px-4">
-          <h2 className="text-xl md:text-2xl font-black text-[#1B3A6B] uppercase tracking-wide">
+        <div className="text-center flex-1 px-2">
+          <h2 className="text-sm md:text-base font-black text-[#1B3A6B] uppercase tracking-wide">
             BLUE HEAVEN KIDS ACADEMY
           </h2>
-          <p className="text-[10px] md:text-[11px] font-bold text-gray-700 mt-0.5">
+          <p className="text-[9px] font-bold text-gray-700">
             133-134 Shri Dev Nagar, Benar Road, Jaipur
           </p>
-          <p className="text-[10px] font-bold text-gray-600 mt-1">
+          <p className="text-[9px] font-bold text-gray-600">
             ADMIT CARD - SESSION {currentAdmitCardExamData?.session || currentSession}
           </p>
-          <span className="inline-block mt-1 bg-[#1B3A6B] text-white text-[11px] font-black px-4 py-0.5 rounded-full uppercase tracking-widest">
+          <span className="inline-block mt-0.5 bg-[#1B3A6B] text-white text-[9px] font-black px-3 py-0.5 rounded-full uppercase tracking-widest">
             {admitCardExam || 'EXAMINATION'}
           </span>
         </div>
-        <div className="w-16 h-16 shrink-0"></div>
+        <div className="w-12 h-12 shrink-0"></div>
       </div>
 
       {/* Student Details Grid with Photo */}
-      <div className="bg-slate-50 p-4 rounded-xl border border-gray-200 text-xs flex items-center justify-between gap-4">
-        <div className="space-y-2 flex-1">
+      <div className="bg-slate-50 p-2.5 rounded-lg border border-gray-200 text-[11px] flex items-center justify-between gap-3">
+        <div className="space-y-1.5 flex-1">
           <div className="grid grid-cols-2 gap-2">
-            <div><span className="font-extrabold text-slate-500 uppercase text-[10px]">Roll No :</span> <span className="font-black text-[#1B3A6B]">{student.rollNo}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[10px]">SR No :</span> <span className="font-black text-slate-900">{student.srNo}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Roll No :</span> <span className="font-black text-[#1B3A6B]">{student.rollNo}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">SR No :</span> <span className="font-black text-slate-900">{student.srNo}</span></div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div><span className="font-extrabold text-slate-500 uppercase text-[10px]">Student Name:</span> <span className="font-black text-slate-900">{student.name}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[10px]">Class:</span> <span className="font-bold">{student.class}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Student Name:</span> <span className="font-black text-slate-900">{student.name}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Class:</span> <span className="font-bold">{student.class}</span></div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div><span className="font-extrabold text-slate-500 uppercase text-[10px]">Father Name:</span> <span className="font-bold">{student.fatherName}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[10px]">Mother Name:</span> <span className="font-bold">{student.motherName}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Father Name:</span> <span className="font-bold">{student.fatherName}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Mother Name:</span> <span className="font-bold">{student.motherName}</span></div>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div><span className="font-extrabold text-slate-500 uppercase text-[10px]">Mobile No:</span> <span className="font-bold">{student.mobileNo}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[10px]">Remaining Fee Due:</span> <span className="font-bold text-[#10B981]">{student.feeDue}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Mobile No:</span> <span className="font-bold">{student.mobileNo}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Fee Due:</span> <span className="font-bold text-[#10B981]">{student.feeDue}</span></div>
           </div>
         </div>
 
         {/* Student Photo Box */}
-        <div className="w-20 h-24 bg-white border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-inner">
+        <div className="w-16 h-20 bg-white border border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-inner">
           {student.studentPhoto ? (
             <img 
               src={student.studentPhoto} 
@@ -402,8 +402,8 @@ export default function ClassSubjectMaster() {
             />
           ) : (
             <div className="text-center p-1">
-              <UserCheck size={22} className="text-gray-300 mx-auto mb-1" />
-              <span className="text-[9px] font-black uppercase text-gray-400 tracking-tighter">Photo</span>
+              <UserCheck size={18} className="text-gray-300 mx-auto mb-1" />
+              <span className="text-[8px] font-black uppercase text-gray-400 tracking-tighter">Photo</span>
             </div>
           )}
         </div>
@@ -411,29 +411,29 @@ export default function ClassSubjectMaster() {
 
       {/* Schedule Table */}
       <div>
-        <h4 className="text-xs font-black uppercase tracking-wider text-slate-700 mb-1.5">Examination Timetable</h4>
-        <table className="w-full text-center border-collapse border border-gray-300 text-xs">
+        <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-700 mb-1">Examination Timetable</h4>
+        <table className="w-full text-center border-collapse border border-gray-300 text-[10px]">
           <thead>
-            <tr className="bg-[#1B3A6B] text-white font-black uppercase text-[10px]">
-              <th className="p-2 border border-gray-300 text-center">Date</th>
-              <th className="p-2 border border-gray-300 text-center">Day</th>
-              <th className="p-2 border border-gray-300 text-center">Subject</th>
-              <th className="p-2 border border-gray-300 text-center">Time Slot</th>
+            <tr className="bg-[#1B3A6B] text-white font-black uppercase text-[9px]">
+              <th className="p-1 border border-gray-300 text-center">Date</th>
+              <th className="p-1 border border-gray-300 text-center">Day</th>
+              <th className="p-1 border border-gray-300 text-center">Subject</th>
+              <th className="p-1 border border-gray-300 text-center">Time Slot</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 font-bold">
             {currentAdmitCardExamData?.schedule && currentAdmitCardExamData.schedule.length > 0 ? (
               currentAdmitCardExamData.schedule.map((sc, idx) => (
                 <tr key={idx} className="nth-[even]:bg-slate-50">
-                  <td className="p-1.5 border border-gray-300 text-center">{sc.date || 'N/A'}</td>
-                  <td className="p-1.5 border border-gray-300 text-center">{sc.dayFormat || 'N/A'}</td>
-                  <td className="p-1.5 border border-gray-300 text-slate-900 text-center">{sc.subject}</td>
-                  <td className="p-1.5 border border-gray-300 text-slate-600 text-center">{sc.timeSlot}</td>
+                  <td className="p-1 border border-gray-300 text-center">{sc.date || 'N/A'}</td>
+                  <td className="p-1 border border-gray-300 text-center">{sc.dayFormat || 'N/A'}</td>
+                  <td className="p-1 border border-gray-300 text-slate-900 text-center">{sc.subject}</td>
+                  <td className="p-1 border border-gray-300 text-slate-600 text-center">{sc.timeSlot}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="p-3 text-center text-gray-400">No schedule available</td>
+                <td colSpan={4} className="p-2 text-center text-gray-400">No schedule available</td>
               </tr>
             )}
           </tbody>
@@ -441,30 +441,30 @@ export default function ClassSubjectMaster() {
       </div>
 
       {/* Instructions */}
-      <div className="bg-slate-50 p-2.5 rounded-xl border border-gray-200 text-[11px]">
-        <h5 className="font-black uppercase text-slate-700 mb-1 text-[10px]">Rules & Instructions:</h5>
-        <pre className="whitespace-pre-wrap font-sans text-slate-600 text-[9.5px] leading-relaxed">
+      <div className="bg-slate-50 p-2 rounded-lg border border-gray-200 text-[9px]">
+        <h5 className="font-black uppercase text-slate-700 mb-0.5 text-[9px]">Rules & Instructions:</h5>
+        <pre className="whitespace-pre-wrap font-sans text-slate-600 text-[8.5px] leading-tight">
           {currentAdmitCardExamData?.instructions || defaultInstructions}
         </pre>
       </div>
 
       {/* Professional Bottom Signature & Centered School Stamp Section */}
-      <div className="grid grid-cols-3 items-end pt-4 text-[11px] font-black uppercase text-slate-700">
+      <div className="grid grid-cols-3 items-end pt-2 text-[9px] font-black uppercase text-slate-700">
         <div className="text-center">
-          <div className="border-t border-slate-400 pt-1 w-32 mx-auto">
+          <div className="border-t border-slate-400 pt-1 w-24 mx-auto">
             Student Signature
           </div>
         </div>
         
         <div className="text-center flex flex-col items-center justify-center">
-          <div className="w-24 h-12 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center text-[9px] text-gray-400 bg-slate-50 mb-1 shadow-inner">
+          <div className="w-16 h-8 border border-dashed border-gray-400 rounded flex items-center justify-center text-[8px] text-gray-400 bg-slate-50 mb-0.5 shadow-inner">
             School Stamp
           </div>
-          <span className="text-[9px] tracking-tighter text-slate-500">Official Seal</span>
+          <span className="text-[8px] tracking-tighter text-slate-500">Official Seal</span>
         </div>
 
         <div className="text-center">
-          <div className="border-t border-slate-400 pt-1 w-36 mx-auto">
+          <div className="border-t border-slate-400 pt-1 w-28 mx-auto">
             Principal / Controller
           </div>
         </div>
@@ -475,13 +475,33 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* PRINT MARGIN & TOP SPACING ZERO OVERRIDE */}
+      {/* GLOBAL PRINT OVERRIDE STYLES (HIDES APP SIDEBAR/HEADER & SETS 2 PER A4 PAGE) */}
       <style jsx global>{`
         @media print {
+          /* Hide everything outside print containers */
+          body * {
+            visibility: hidden;
+          }
+          
+          /* Only show printable content container */
+          .printable-admit-area, .printable-admit-area * {
+            visibility: visible;
+          }
+
+          .printable-admit-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+          }
+
           @page {
             size: A4 portrait;
-            margin: 8mm;
+            margin: 10mm;
           }
+
           body {
             background: white !important;
             margin: 0 !important;
@@ -489,31 +509,21 @@ export default function ClassSubjectMaster() {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          .print-modal-wrapper {
-            position: static !important;
-            inset: auto !important;
-            background: transparent !important;
-            padding: 0 !important;
-            display: block !important;
-            overflow: visible !important;
-          }
-          .print-container {
-            margin: 0 !important;
-            padding: 0 !important;
-            border: none !important;
-            box-shadow: none !important;
-            width: 100% !important;
-            max-width: 100% !important;
-          }
-          .a4-admit-card-page {
-            page-break-after: always;
-            break-after: page;
+
+          /* Force exactly 2 Admit Cards per A4 page */
+          .a4-admit-card-item {
+            height: 48vh;
+            max-height: 48vh;
+            overflow: hidden;
+            box-sizing: border-box;
             page-break-inside: avoid;
             break-inside: avoid;
+            margin-bottom: 10mm;
           }
-          .a4-admit-card-page:last-child {
-            page-break-after: auto;
-            break-after: auto;
+
+          .a4-admit-card-item:nth-child(even) {
+            page-break-after: always;
+            break-after: page;
           }
         }
       `}</style>
@@ -840,7 +850,7 @@ export default function ClassSubjectMaster() {
               onClick={handlePrintEntireClassAdmitCards}
               className="bg-[#1B3A6B] hover:bg-[#112544] text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-[0_4px_0_#0F213E] active:translate-y-[3px] transition-all inline-flex items-center justify-center gap-2 uppercase tracking-wider cursor-pointer"
             >
-              <Printer size={16} /> Print Entire Class Admit Cards (A4 Size)
+              <Printer size={16} /> Print Entire Class Admit Cards (2 per A4 Page)
             </button>
           )}
         </div>
@@ -947,8 +957,8 @@ export default function ClassSubjectMaster() {
 
       {/* SINGLE ADMIT CARD PRINT MODAL PREVIEW */}
       {selectedStudentForAdmitCard && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4 overflow-y-auto print-modal-wrapper">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-4 md:p-6 shadow-2xl relative my-2 print:p-0 print:shadow-none print:m-0 print:w-full print:max-w-none print-container">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-4 md:p-6 shadow-2xl relative my-2">
             
             {/* Modal Actions (Hidden in Print) */}
             <div className="flex justify-between items-center pb-3 mb-3 border-b border-gray-200 print:hidden">
@@ -972,20 +982,22 @@ export default function ClassSubjectMaster() {
             </div>
 
             {/* PRINTABLE ADMIT CARD CONTAINER */}
-            {renderAdmitCardSheet(selectedStudentForAdmitCard, false)}
+            <div className="printable-admit-area">
+              {renderAdmitCardSheet(selectedStudentForAdmitCard, false)}
+            </div>
           </div>
         </div>
       )}
 
-      {/* ENTIRE CLASS ADMIT CARDS (A4 SIZE) PRINT MODAL */}
+      {/* ENTIRE CLASS ADMIT CARDS (2 PER A4 PAGE) PRINT MODAL */}
       {printAllClassStudents && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-start justify-center p-2 md:p-4 overflow-y-auto print-modal-wrapper">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-4 md:p-6 shadow-2xl relative my-4 print:p-0 print:shadow-none print:m-0 print:w-full print:max-w-none print-container">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-start justify-center p-2 md:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-4 md:p-6 shadow-2xl relative my-4">
             
             {/* Modal Actions (Hidden in Print) */}
             <div className="flex justify-between items-center pb-3 mb-4 border-b border-gray-200 print:hidden sticky top-0 bg-white z-10 pt-1">
               <h3 className="text-sm font-black text-[#1B3A6B] uppercase tracking-wider">
-                Entire Class Admit Cards ({printAllClassStudents.length} Students - A4 Size)
+                Entire Class Admit Cards ({printAllClassStudents.length} Students - 2 per A4)
               </h3>
               <div className="flex items-center gap-3">
                 <button
@@ -1003,8 +1015,8 @@ export default function ClassSubjectMaster() {
               </div>
             </div>
 
-            {/* ALL STUDENTS A4 PAGES */}
-            <div>
+            {/* ALL STUDENTS A4 PAGES (2 PER PAGE) */}
+            <div className="printable-admit-area space-y-6">
               {printAllClassStudents.map((student) => renderAdmitCardSheet(student, true))}
             </div>
           </div>
