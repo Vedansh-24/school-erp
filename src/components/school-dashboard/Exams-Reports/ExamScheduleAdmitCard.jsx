@@ -351,144 +351,147 @@ export default function ClassSubjectMaster() {
 
   const inputTheme = "w-full bg-[#F4F7F9] border-2 border-gray-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:border-[#1B3A6B] focus:bg-white focus:ring-4 focus:ring-[#1B3A6B]/15 shadow-inner transition-all duration-200";
 
-  // Reusable Single Admit Card Sheet JSX (Optimized padding and spacing for perfect fitting without cutoffs)
-  const renderAdmitCardSheet = (student, isBulk = false) => (
-    <div
-      key={student.srNo}
-      className={`border-2 border-[#1B3A6B] p-3 rounded-xl bg-white text-slate-900 space-y-2 shadow-sm a4-admit-card-item ${isBulk ? 'mb-3' : 'mx-auto'}`}
-    >
-      {/* Header with School Logo */}
-      <div className="flex items-center justify-between border-b border-gray-300 pb-1.5">
-        <div className="w-11 h-11 flex items-center justify-center bg-slate-100 rounded-lg overflow-hidden border shrink-0">
-          <img 
-            src={schoolLogo} 
-            alt="School Logo" 
-            className="object-contain max-h-full max-w-full"
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-        </div>
-        <div className="text-center flex-1 px-2">
-          <h2 className="text-sm md:text-base font-black text-[#1B3A6B] uppercase tracking-wide">
-            BLUE HEAVEN KIDS ACADEMY
-          </h2>
-          <p className="text-[8.5px] font-bold text-gray-700">
-            133-134 Shri Dev Nagar, Benar Road, Jaipur
-          </p>
-          <p className="text-[8.5px] font-bold text-gray-650">
-            EXAMINATION ADMIT CARD {currentAdmitCardExamData?.session || currentSession}
-          </p>
-          <span className="inline-block mt-0.5 bg-[#1B3A6B] text-white text-[8.5px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest">
-            {admitCardExam || 'EXAMINATION'}
-          </span>
-        </div>
-        <div className="w-11 h-11 shrink-0"></div>
-      </div>
-
-      {/* Student Details Grid with Photo */}
-      <div className="bg-slate-50 p-2 rounded-lg border border-gray-200 text-[10.5px] flex items-center justify-between gap-3">
-        <div className="space-y-1 flex-1">
-          <div className="grid grid-cols-2 gap-2">
-            <div><span className="font-extrabold text-slate-500 uppercase text-[8.5px]">Roll No :</span> <span className="font-black text-[#1B3A6B]">{student.rollNo}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[8.5px]">SR No :</span> <span className="font-black text-slate-900">{student.srNo}</span></div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div><span className="font-extrabold text-slate-500 uppercase text-[8.5px]">Student Name:</span> <span className="font-black text-slate-900">{student.name}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[8.5px]">Class:</span> <span className="font-bold">{student.class}</span></div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div><span className="font-extrabold text-slate-500 uppercase text-[8.5px]">Father Name:</span> <span className="font-bold">{student.fatherName}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[8.5px]">Mother Name:</span> <span className="font-bold">{student.motherName}</span></div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div><span className="font-extrabold text-slate-500 uppercase text-[8.5px]">Mobile No:</span> <span className="font-bold">{student.mobileNo}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[8.5px]">Fee Due:</span> <span className="font-bold text-[#10B981]">{student.feeDue}</span></div>
-          </div>
-        </div>
-
-        {/* Student Photo Box */}
-        <div className="w-14 h-18 bg-white border border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-inner">
-          {student.studentPhoto ? (
+  // Reusable Single Admit Card Sheet JSX (Optimized padding and spacing for 2 per A4 without overflow)
+  const renderAdmitCardSheet = (student, isBulk = false) => {
+    const activeSession = currentAdmitCardExamData?.session || currentSession;
+    return (
+      <div
+        key={student.srNo}
+        className={`border-2 border-[#1B3A6B] p-2.5 rounded-xl bg-white text-slate-900 space-y-1.5 shadow-sm a4-admit-card-item ${isBulk ? 'mb-2' : 'mx-auto'}`}
+      >
+        {/* Header with School Logo */}
+        <div className="flex items-center justify-between border-b border-gray-300 pb-1">
+          <div className="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-lg overflow-hidden border shrink-0">
             <img 
-              src={student.studentPhoto} 
-              alt="Student" 
-              className="w-full h-full object-cover"
+              src={schoolLogo} 
+              alt="School Logo" 
+              className="object-contain max-h-full max-w-full"
+              onError={(e) => { e.target.style.display = 'none'; }}
             />
-          ) : (
-            <div className="text-center p-1">
-              <UserCheck size={16} className="text-gray-300 mx-auto mb-0.5" />
-              <span className="text-[7.5px] font-black uppercase text-gray-400 tracking-tighter">Photo</span>
+          </div>
+          <div className="text-center flex-1 px-2">
+            <h2 className="text-xs md:text-sm font-black text-[#1B3A6B] uppercase tracking-wide">
+              BLUE HEAVEN KIDS ACADEMY
+            </h2>
+            <p className="text-[8px] font-bold text-gray-700">
+              133-134 Shri Dev Nagar, Benar Road, Jaipur
+            </p>
+            <p className="text-[8px] font-bold text-gray-600">
+              ADMIT CARD - SESSION {activeSession}
+            </p>
+            <span className="inline-block mt-0.5 bg-[#1B3A6B] text-white text-[8px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest">
+              {admitCardExam || 'EXAMINATION'} ({activeSession})
+            </span>
+          </div>
+          <div className="w-10 h-10 shrink-0"></div>
+        </div>
+
+        {/* Student Details Grid with Photo */}
+        <div className="bg-slate-50 p-2 rounded-lg border border-gray-200 text-[10px] flex items-center justify-between gap-3">
+          <div className="space-y-0.5 flex-1">
+            <div className="grid grid-cols-2 gap-2">
+              <div><span className="font-extrabold text-slate-500 uppercase text-[8px]">Roll No :</span> <span className="font-black text-[#1B3A6B]">{student.rollNo}</span></div>
+              <div><span className="font-extrabold text-slate-500 uppercase text-[8px]">SR No :</span> <span className="font-black text-slate-900">{student.srNo}</span></div>
             </div>
-          )}
-        </div>
-      </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><span className="font-extrabold text-slate-500 uppercase text-[8px]">Student Name:</span> <span className="font-black text-slate-900">{student.name}</span></div>
+              <div><span className="font-extrabold text-slate-500 uppercase text-[8px]">Class:</span> <span className="font-bold">{student.class}</span></div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><span className="font-extrabold text-slate-500 uppercase text-[8px]">Father Name:</span> <span className="font-bold">{student.fatherName}</span></div>
+              <div><span className="font-extrabold text-slate-500 uppercase text-[8px]">Mother Name:</span> <span className="font-bold">{student.motherName}</span></div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><span className="font-extrabold text-slate-500 uppercase text-[8px]">Mobile No:</span> <span className="font-bold">{student.mobileNo}</span></div>
+              <div><span className="font-extrabold text-slate-500 uppercase text-[8px]">Fee Due:</span> <span className="font-bold text-[#10B981]">{student.feeDue}</span></div>
+            </div>
+          </div>
 
-      {/* Schedule Table */}
-      <div>
-        <h4 className="text-[9.5px] font-black uppercase tracking-wider text-slate-700 mb-0.5">Examination Timetable</h4>
-        <table className="w-full text-center border-collapse border border-gray-300 text-[9.5px]">
-          <thead>
-            <tr className="bg-[#1B3A6B] text-white font-black uppercase text-[8.5px]">
-              <th className="p-0.5 border border-gray-300 text-center">Date</th>
-              <th className="p-0.5 border border-gray-300 text-center">Day</th>
-              <th className="p-0.5 border border-gray-300 text-center">Subject</th>
-              <th className="p-0.5 border border-gray-300 text-center">Time Slot</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 font-bold">
-            {currentAdmitCardExamData?.schedule && currentAdmitCardExamData.schedule.length > 0 ? (
-              currentAdmitCardExamData.schedule.map((sc, idx) => (
-                <tr key={idx} className="nth-[even]:bg-slate-50">
-                  <td className="p-0.5 border border-gray-300 text-center">{sc.formattedDate || formatDateDDMMYYYY(sc.date) || 'N/A'}</td>
-                  <td className="p-0.5 border border-gray-300 text-center">{sc.dayFormat || 'N/A'}</td>
-                  <td className="p-0.5 border border-gray-300 text-slate-900 text-center">{sc.subject}</td>
-                  <td className="p-0.5 border border-gray-300 text-slate-600 text-center">{sc.timeSlot}</td>
-                </tr>
-              ))
+          {/* Student Photo Box */}
+          <div className="w-12 h-16 bg-white border border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center overflow-hidden shrink-0 shadow-inner">
+            {student.studentPhoto ? (
+              <img 
+                src={student.studentPhoto} 
+                alt="Student" 
+                className="w-full h-full object-cover"
+              />
             ) : (
-              <tr>
-                <td colSpan={4} className="p-1.5 text-center text-gray-400">No schedule available</td>
-              </tr>
+              <div className="text-center p-1">
+                <UserCheck size={14} className="text-gray-300 mx-auto mb-0.5" />
+                <span className="text-[7px] font-black uppercase text-gray-400 tracking-tighter">Photo</span>
+              </div>
             )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Instructions */}
-      <div className="bg-slate-50 p-1.5 rounded-lg border border-gray-200 text-[8.5px]">
-        <h5 className="font-black uppercase text-slate-700 mb-0.5 text-[8.5px]">Rules & Instructions:</h5>
-        <pre className="whitespace-pre-wrap font-sans text-slate-600 text-[8px] leading-tight">
-          {currentAdmitCardExamData?.instructions || defaultInstructions}
-        </pre>
-      </div>
-
-      {/* Professional Bottom Signature & Centered School Stamp Section */}
-      <div className="grid grid-cols-3 items-end pt-1 text-[8.5px] font-black uppercase text-slate-700">
-        <div className="text-center">
-          <div className="border-t border-slate-400 pt-0.5 w-24 mx-auto">
-            Student Signature
           </div>
         </div>
-        
-        <div className="text-center flex flex-col items-center justify-center">
-          <div className="w-14 h-6 border border-dashed border-gray-400 rounded flex items-center justify-center text-[7.5px] text-gray-400 bg-slate-50 mb-0.5 shadow-inner">
-            School Stamp
-          </div>
-          <span className="text-[7px] tracking-tighter text-slate-500">Official Seal</span>
+
+        {/* Schedule Table */}
+        <div>
+          <h4 className="text-[9px] font-black uppercase tracking-wider text-slate-700 mb-0.5">Examination Timetable</h4>
+          <table className="w-full text-center border-collapse border border-gray-300 text-[9px]">
+            <thead>
+              <tr className="bg-[#1B3A6B] text-white font-black uppercase text-[8px]">
+                <th className="p-0.5 border border-gray-300 text-center">Date</th>
+                <th className="p-0.5 border border-gray-300 text-center">Day</th>
+                <th className="p-0.5 border border-gray-300 text-center">Subject</th>
+                <th className="p-0.5 border border-gray-300 text-center">Time Slot</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 font-bold">
+              {currentAdmitCardExamData?.schedule && currentAdmitCardExamData.schedule.length > 0 ? (
+                currentAdmitCardExamData.schedule.map((sc, idx) => (
+                  <tr key={idx} className="nth-[even]:bg-slate-50">
+                    <td className="p-0.5 border border-gray-300 text-center">{sc.formattedDate || formatDateDDMMYYYY(sc.date) || 'N/A'}</td>
+                    <td className="p-0.5 border border-gray-300 text-center">{sc.dayFormat || 'N/A'}</td>
+                    <td className="p-0.5 border border-gray-300 text-slate-900 text-center">{sc.subject}</td>
+                    <td className="p-0.5 border border-gray-300 text-slate-600 text-center">{sc.timeSlot}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="p-1 text-center text-gray-400">No schedule available</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
 
-        <div className="text-center">
-          <div className="border-t border-slate-400 pt-0.5 w-28 mx-auto">
-            Principal / Controller
+        {/* Instructions */}
+        <div className="bg-slate-50 p-1 rounded-lg border border-gray-200 text-[8px]">
+          <h5 className="font-black uppercase text-slate-700 mb-0.5 text-[8px]">Rules & Instructions:</h5>
+          <pre className="whitespace-pre-wrap font-sans text-slate-600 text-[7.5px] leading-tight">
+            {currentAdmitCardExamData?.instructions || defaultInstructions}
+          </pre>
+        </div>
+
+        {/* Professional Bottom Signature & Centered School Stamp Section */}
+        <div className="grid grid-cols-3 items-end pt-0.5 text-[8px] font-black uppercase text-slate-700">
+          <div className="text-center">
+            <div className="border-t border-slate-400 pt-0.5 w-24 mx-auto">
+              Student Signature
+            </div>
+          </div>
+          
+          <div className="text-center flex flex-col items-center justify-center">
+            <div className="w-12 h-5 border border-dashed border-gray-400 rounded flex items-center justify-center text-[7px] text-gray-400 bg-slate-50 mb-0.5 shadow-inner">
+              School Stamp
+            </div>
+            <span className="text-[6.5px] tracking-tighter text-slate-500">Official Seal</span>
+          </div>
+
+          <div className="text-center">
+            <div className="border-t border-slate-400 pt-0.5 w-28 mx-auto">
+              Principal / Controller
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT OVERRIDE STYLES (FIXES MARGINS & PREVENTS BOTTOM CUTTING) */}
+      {/* GLOBAL PRINT OVERRIDE STYLES (STRICT 2 PER A4 PAGE WITHOUT OVERFLOW) */}
       <style jsx global>{`
         @media print {
           body * {
@@ -510,7 +513,7 @@ export default function ClassSubjectMaster() {
 
           @page {
             size: A4 portrait;
-            margin: 6mm 10mm;
+            margin: 4mm 8mm;
           }
 
           body {
@@ -521,15 +524,15 @@ export default function ClassSubjectMaster() {
             print-color-adjust: exact !important;
           }
 
-          /* Force exactly 2 Admit Cards per A4 page without footer clipping */
+          /* Exact height to fit 2 cards per A4 page without spillover */
           .a4-admit-card-item {
-            height: 46vh;
-            max-height: 46vh;
+            height: 48vh;
+            max-height: 48vh;
             overflow: hidden;
             box-sizing: border-box;
             page-break-inside: avoid;
             break-inside: avoid;
-            margin-bottom: 4mm;
+            margin-bottom: 2mm;
           }
 
           .a4-admit-card-item:nth-child(even) {
