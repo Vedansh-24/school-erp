@@ -380,7 +380,7 @@ export default function ClassSubjectMaster() {
               EXAMINATION ADMIT CARD 
             </p>
             <span className="inline-block mt-0.5 bg-[#1B3A6B] text-white text-[8px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest">
-              {admitCardExam || 'EXAMINATION'} ({activeSession})
+              {admitCardExam || 'EXAMINATION'} (SESSION {activeSession})
             </span>
           </div>
           <div className="w-10 h-10 shrink-0"></div>
