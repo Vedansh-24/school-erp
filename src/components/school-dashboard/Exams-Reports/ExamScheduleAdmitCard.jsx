@@ -53,6 +53,17 @@ export default function ClassSubjectMaster() {
   const [selectedStudentForAdmitCard, setSelectedStudentForAdmitCard] = useState(null);
   const [printAllClassStudents, setPrintAllClassStudents] = useState(null);
 
+  // Helper function to format date as DD-MM-YYYY
+  const formatDateDDMMYYYY = (dateString) => {
+    if (!dateString) return 'N/A';
+    const parts = dateString.split('T')[0].split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day}-${month}-${year}`;
+    }
+    return dateString;
+  };
+
   // FETCH DATA FROM SUPABASE ON MOUNT
   useEffect(() => {
     fetchAllData();
@@ -138,6 +149,7 @@ export default function ClassSubjectMaster() {
           groupedExams[key].schedule.push({
             id: item.id,
             date: item.exam_date || '',
+            formattedDate: formatDateDDMMYYYY(item.exam_date),
             dayFormat: dayName || 'Monday',
             subject: item.subject_name || '',
             timeSlot: item.time_slot || '08:30 AM - 11:30 AM'
@@ -146,8 +158,8 @@ export default function ClassSubjectMaster() {
 
         const formattedExams = Object.values(groupedExams).map((ex) => {
           const dates = ex.schedule.map((s) => s.date).filter(Boolean);
-          const minDate = dates.length > 0 ? dates[0] : 'N/A';
-          const maxDate = dates.length > 0 ? dates[dates.length - 1] : 'N/A';
+          const minDate = dates.length > 0 ? formatDateDDMMYYYY(dates[0]) : 'N/A';
+          const maxDate = dates.length > 0 ? formatDateDDMMYYYY(dates[dates.length - 1]) : 'N/A';
           
           return {
             ...ex,
@@ -204,6 +216,7 @@ export default function ClassSubjectMaster() {
       const autoSchedule = defaultSubjs.map((sub, idx) => ({
         id: `temp_${Date.now()}_${idx}`,
         date: `2026-08-${17 + idx}`,
+        formattedDate: `17-08-2026`,
         dayFormat: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][idx % 6],
         subject: sub,
         timeSlot: '08:30 AM - 11:30 AM'
@@ -216,7 +229,7 @@ export default function ClassSubjectMaster() {
     const currentClassSubjs = classSubjectsMap[examClass] || ['Subject'];
     setScheduleEntries([
       ...scheduleEntries,
-      { id: `temp_${Date.now()}`, date: '', dayFormat: '', subject: currentClassSubjs[0] || '', timeSlot: '08:30 AM - 11:30 AM' }
+      { id: `temp_${Date.now()}`, date: '', formattedDate: '', dayFormat: '', subject: currentClassSubjs[0] || '', timeSlot: '08:30 AM - 11:30 AM' }
     ]);
   };
 
@@ -338,11 +351,11 @@ export default function ClassSubjectMaster() {
 
   const inputTheme = "w-full bg-[#F4F7F9] border-2 border-gray-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:border-[#1B3A6B] focus:bg-white focus:ring-4 focus:ring-[#1B3A6B]/15 shadow-inner transition-all duration-200";
 
-  // Reusable Single Admit Card Sheet JSX (Exact Full Content, compact padding/spacing to fit 2 per A4 page perfectly)
-  const renderAdmitCardSheet = (student) => (
+  // Reusable Single Admit Card Sheet JSX (Compact format for 2 per A4 page)
+  const renderAdmitCardSheet = (student, isBulk = false) => (
     <div
       key={student.srNo}
-      className="a4-admit-card-item border-2 border-[#1B3A6B] p-3 rounded-xl bg-white text-slate-900 space-y-2 mb-4"
+      className={`border-2 border-[#1B3A6B] p-3.5 rounded-xl bg-white text-slate-900 space-y-2.5 shadow-sm a4-admit-card-item ${isBulk ? 'mb-4' : 'mx-auto'}`}
     >
       {/* Header with School Logo */}
       <div className="flex items-center justify-between border-b border-gray-300 pb-2">
@@ -373,7 +386,7 @@ export default function ClassSubjectMaster() {
 
       {/* Student Details Grid with Photo */}
       <div className="bg-slate-50 p-2.5 rounded-lg border border-gray-200 text-[11px] flex items-center justify-between gap-3">
-        <div className="space-y-1 flex-1">
+        <div className="space-y-1.5 flex-1">
           <div className="grid grid-cols-2 gap-2">
             <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Roll No :</span> <span className="font-black text-[#1B3A6B]">{student.rollNo}</span></div>
             <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">SR No :</span> <span className="font-black text-slate-900">{student.srNo}</span></div>
@@ -388,7 +401,7 @@ export default function ClassSubjectMaster() {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Mobile No:</span> <span className="font-bold">{student.mobileNo}</span></div>
-            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Remaining Fee Due:</span> <span className="font-bold text-[#10B981]">{student.feeDue}</span></div>
+            <div><span className="font-extrabold text-slate-500 uppercase text-[9px]">Fee Due:</span> <span className="font-bold text-[#10B981]">{student.feeDue}</span></div>
           </div>
         </div>
 
@@ -425,7 +438,7 @@ export default function ClassSubjectMaster() {
             {currentAdmitCardExamData?.schedule && currentAdmitCardExamData.schedule.length > 0 ? (
               currentAdmitCardExamData.schedule.map((sc, idx) => (
                 <tr key={idx} className="nth-[even]:bg-slate-50">
-                  <td className="p-1 border border-gray-300 text-center">{sc.date || 'N/A'}</td>
+                  <td className="p-1 border border-gray-300 text-center">{sc.formattedDate || formatDateDDMMYYYY(sc.date) || 'N/A'}</td>
                   <td className="p-1 border border-gray-300 text-center">{sc.dayFormat || 'N/A'}</td>
                   <td className="p-1 border border-gray-300 text-slate-900 text-center">{sc.subject}</td>
                   <td className="p-1 border border-gray-300 text-slate-600 text-center">{sc.timeSlot}</td>
@@ -449,7 +462,7 @@ export default function ClassSubjectMaster() {
       </div>
 
       {/* Professional Bottom Signature & Centered School Stamp Section */}
-      <div className="grid grid-cols-3 items-end pt-1 text-[9px] font-black uppercase text-slate-700">
+      <div className="grid grid-cols-3 items-end pt-1.5 text-[9px] font-black uppercase text-slate-700">
         <div className="text-center">
           <div className="border-t border-slate-400 pt-0.5 w-24 mx-auto">
             Student Signature
@@ -475,19 +488,18 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT STYLING: HIDES HEADER/SIDEBAR & SETS 2 ADMIT CARDS PER A4 PAGE */}
+      {/* GLOBAL PRINT OVERRIDE STYLES (HIDES DASHBOARD LAYOUT & ENSURES 2 PER A4 PAGE) */}
       <style jsx global>{`
         @media print {
-          /* Hide everything outside print areas */
           body * {
             visibility: hidden;
           }
           
-          .printable-admit-wrapper, .printable-admit-wrapper * {
+          .printable-admit-area, .printable-admit-area * {
             visibility: visible;
           }
 
-          .printable-admit-wrapper {
+          .printable-admit-area {
             position: absolute;
             left: 0;
             top: 0;
@@ -498,7 +510,7 @@ export default function ClassSubjectMaster() {
 
           @page {
             size: A4 portrait;
-            margin: 8mm;
+            margin: 10mm;
           }
 
           body {
@@ -509,7 +521,7 @@ export default function ClassSubjectMaster() {
             print-color-adjust: exact !important;
           }
 
-          /* Force exactly 2 admit cards per A4 page */
+          /* Force exactly 2 Admit Cards per A4 page */
           .a4-admit-card-item {
             height: 47vh;
             max-height: 47vh;
@@ -676,6 +688,7 @@ export default function ClassSubjectMaster() {
                     onChange={(e) => {
                       const updated = [...scheduleEntries];
                       updated[index].date = e.target.value;
+                      updated[index].formattedDate = formatDateDDMMYYYY(e.target.value);
                       setScheduleEntries(updated);
                     }}
                     className={inputTheme}
@@ -981,7 +994,7 @@ export default function ClassSubjectMaster() {
             </div>
 
             {/* PRINTABLE ADMIT CARD CONTAINER */}
-            <div className="printable-admit-wrapper">
+            <div className="printable-admit-area">
               {renderAdmitCardSheet(selectedStudentForAdmitCard)}
             </div>
           </div>
@@ -1015,8 +1028,8 @@ export default function ClassSubjectMaster() {
             </div>
 
             {/* ALL STUDENTS A4 PAGES (2 PER PAGE) */}
-            <div className="printable-admit-wrapper">
-              {printAllClassStudents.map((student) => renderAdmitCardSheet(student))}
+            <div className="printable-admit-area">
+              {printAllClassStudents.map((student) => renderAdmitCardSheet(student, true))}
             </div>
           </div>
         </div>
