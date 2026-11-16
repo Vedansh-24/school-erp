@@ -315,6 +315,7 @@ export default function ClassSubjectMaster() {
 
   const filteredStudents = allStudents.filter(st => st.class === admitCardClass);
 
+  // DIRECT PRINT FOR SINGLE STUDENT (No modal layout issues, prints strictly at top)
   const handlePrintAdmitCard = (student) => {
     const assignedRollNo = manualRollNos[student.srNo] !== undefined ? manualRollNos[student.srNo] : student.rollNo;
     setSelectedStudentForAdmitCard({
@@ -323,7 +324,7 @@ export default function ClassSubjectMaster() {
     });
     setTimeout(() => {
       window.print();
-    }, 300);
+    }, 250);
   };
 
   const handlePrintEntireClassAdmitCards = () => {
@@ -338,7 +339,7 @@ export default function ClassSubjectMaster() {
     setPrintAllClassStudents(studentsWithRollNos);
     setTimeout(() => {
       window.print();
-    }, 400);
+    }, 350);
   };
 
   const triggerBrowserPrint = () => {
@@ -351,13 +352,13 @@ export default function ClassSubjectMaster() {
 
   const inputTheme = "w-full bg-[#F4F7F9] border-2 border-gray-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:border-[#1B3A6B] focus:bg-white focus:ring-4 focus:ring-[#1B3A6B]/15 shadow-inner transition-all duration-200";
 
-  // Reusable Single Admit Card Sheet JSX (Optimized to take half page space, leaving bottom half empty for manual page flipping & re-printing)
+  // Reusable Single Admit Card Sheet JSX
   const renderAdmitCardSheet = (student, isBulk = false) => {
     const activeSession = currentAdmitCardExamData?.session || currentSession;
     return (
       <div
         key={student.srNo}
-        className={`border-2 border-[#1B3A6B] p-2.5 rounded-xl bg-white text-slate-900 space-y-1.5 shadow-sm a4-admit-card-item ${isBulk ? 'mb-2' : 'mx-auto'}`}
+        className={`border-2 border-[#1B3A6B] p-2.5 rounded-xl bg-white text-slate-900 space-y-1.5 shadow-sm a4-admit-card-item ${isBulk ? 'mb-4' : 'mx-auto'}`}
       >
         {/* Header with School Logo */}
         <div className="flex items-center justify-between border-b border-gray-300 pb-1">
@@ -491,21 +492,20 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT OVERRIDE STYLES (STRICT TOP HALF ALIGNMENT FOR SINGLE PRINT) */}
+      {/* BULLET-PROOF PRINT CSS (STRICT TOP ZERO ALIGNMENT) */}
       <style jsx global>{`
         @media print {
           body * {
-            visibility: hidden;
+            visibility: hidden !important;
           }
           
           .printable-single-area, .printable-single-area *,
           .printable-bulk-area, .printable-bulk-area * {
-            visibility: visible;
+            visibility: visible !important;
           }
 
-          /* FORCE SINGLE PRINT TO ABSOLUTE TOP OF THE PAGE */
           .printable-single-area {
-            position: absolute !important;
+            position: fixed !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
@@ -514,7 +514,7 @@ export default function ClassSubjectMaster() {
           }
 
           .printable-bulk-area {
-            position: absolute !important;
+            position: fixed !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
@@ -535,28 +535,25 @@ export default function ClassSubjectMaster() {
             print-color-adjust: exact !important;
           }
 
-          /* Exact height for half-page fitting */
           .a4-admit-card-item {
-            height: 48vh;
-            max-height: 48vh;
-            overflow: hidden;
-            box-sizing: border-box;
-            page-break-inside: avoid;
-            break-inside: avoid;
-            margin-bottom: 2mm;
+            height: 48vh !important;
+            max-height: 48vh !important;
+            overflow: hidden !important;
+            box-sizing: border-box !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
 
-          /* For class bulk printing: page break after every 2 cards */
           .printable-bulk-area .a4-admit-card-item:nth-child(even) {
-            page-break-after: always;
-            break-after: page;
+            page-break-after: always !important;
+            break-after: page !important;
           }
         }
       `}</style>
 
       {/* LOADING OVERLAY */}
       {loading && (
-        <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50 flex items-center justify-center print:hidden">
+        <div className="fixed inset-0 bg-slate-900/35 backdrop-blur-sm z-50 flex items-center justify-center print:hidden">
           <div className="bg-white p-5 rounded-2xl shadow-xl flex items-center gap-3 font-bold text-xs text-[#1B3A6B]">
             <Loader2 className="animate-spin" size={20} /> Syncing with Supabase...
           </div>
@@ -982,13 +979,13 @@ export default function ClassSubjectMaster() {
         )}
       </div>
 
-      {/* SINGLE ADMIT CARD PRINT MODAL PREVIEW (TOP HALF POSITION) */}
+      {/* SINGLE ADMIT CARD PRINT MODAL PREVIEW */}
       {selectedStudentForAdmitCard && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4 overflow-y-auto print:hidden">
           <div className="bg-white rounded-3xl max-w-xl w-full p-4 md:p-6 shadow-2xl relative my-2">
             
-            {/* Modal Actions (Hidden in Print) */}
-            <div className="flex justify-between items-center pb-3 mb-3 border-b border-gray-200 print:hidden">
+            {/* Modal Actions */}
+            <div className="flex justify-between items-center pb-3 mb-3 border-b border-gray-200">
               <h3 className="text-sm font-black text-[#1B3A6B] uppercase tracking-wider">
                 Admit Card Preview (Top Half Page)
               </h3>
@@ -1008,21 +1005,26 @@ export default function ClassSubjectMaster() {
               </div>
             </div>
 
-            {/* PRINTABLE SINGLE ADMIT CARD CONTAINER */}
-            <div className="printable-single-area">
+            {/* PREVIEW CONTAINER */}
+            <div>
               {renderAdmitCardSheet(selectedStudentForAdmitCard)}
             </div>
           </div>
         </div>
       )}
 
+      {/* HIDDEN PRINT DIV FOR SINGLE ADMIT CARD (STRICTLY TOP POSITIONED) */}
+      <div className="printable-single-area hidden print:block">
+        {selectedStudentForAdmitCard && renderAdmitCardSheet(selectedStudentForAdmitCard)}
+      </div>
+
       {/* ENTIRE CLASS ADMIT CARDS (2 PER A4 PAGE) PRINT MODAL */}
       {printAllClassStudents && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-start justify-center p-2 md:p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-start justify-center p-2 md:p-4 overflow-y-auto print:hidden">
           <div className="bg-white rounded-3xl max-w-2xl w-full p-4 md:p-6 shadow-2xl relative my-4">
             
-            {/* Modal Actions (Hidden in Print) */}
-            <div className="flex justify-between items-center pb-3 mb-4 border-b border-gray-200 print:hidden sticky top-0 bg-white z-10 pt-1">
+            {/* Modal Actions */}
+            <div className="flex justify-between items-center pb-3 mb-4 border-b border-gray-200 sticky top-0 bg-white z-10 pt-1">
               <h3 className="text-sm font-black text-[#1B3A6B] uppercase tracking-wider">
                 Entire Class Admit Cards ({printAllClassStudents.length} Students - 2 per A4)
               </h3>
@@ -1042,13 +1044,18 @@ export default function ClassSubjectMaster() {
               </div>
             </div>
 
-            {/* PRINTABLE BULK ADMIT CARDS CONTAINER */}
-            <div className="printable-bulk-area">
+            {/* PREVIEW CONTAINER */}
+            <div>
               {printAllClassStudents.map((student, idx) => renderAdmitCardSheet(student, true))}
             </div>
           </div>
         </div>
       )}
+
+      {/* HIDDEN PRINT DIV FOR BULK CLASS ADMIT CARDS */}
+      <div className="printable-bulk-area hidden print:block">
+        {printAllClassStudents && printAllClassStudents.map((student, idx) => renderAdmitCardSheet(student, true))}
+      </div>
 
     </div>
   );
