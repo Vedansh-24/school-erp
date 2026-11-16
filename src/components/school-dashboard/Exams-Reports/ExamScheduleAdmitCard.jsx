@@ -377,7 +377,7 @@ export default function ClassSubjectMaster() {
               133-134 Shri Dev Nagar, Benar Road, Jaipur
             </p>
             <p className="text-[8px] font-bold text-gray-600">
-              ADMIT CARD - SESSION {activeSession}
+              EXAMINATION ADMIT CARD 
             </p>
             <span className="inline-block mt-0.5 bg-[#1B3A6B] text-white text-[8px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest">
               {admitCardExam || 'EXAMINATION'} ({activeSession})
