@@ -1027,7 +1027,7 @@ export default function ClassSubjectMaster() {
 
             {/* ALL STUDENTS A4 PAGES (2 PER PAGE) */}
             <div className="printable-admit-area">
-              {printAllClassStudents.map((student) => renderAdmitCardSheet(student, true))}
+              {printAllClassStudents.map((student, idx) => renderAdmitCardSheet(student, true))}
             </div>
           </div>
         </div>
