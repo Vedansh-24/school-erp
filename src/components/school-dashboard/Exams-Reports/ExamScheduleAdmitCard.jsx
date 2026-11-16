@@ -491,18 +491,28 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT OVERRIDE STYLES (HALF-PAGE TOP ALIGNMENT FOR BOTH SINGLE & BULK PRINT) */}
+      {/* GLOBAL PRINT OVERRIDE STYLES (HALF-PAGE TOP ALIGNMENT FIXED FOR SINGLE & BULK PRINT) */}
       <style jsx global>{`
         @media print {
           body * {
             visibility: hidden;
           }
           
-          .printable-admit-area, .printable-admit-area * {
+          .printable-single-area, .printable-single-area *,
+          .printable-bulk-area, .printable-bulk-area * {
             visibility: visible;
           }
 
-          .printable-admit-area {
+          .printable-single-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+          }
+
+          .printable-bulk-area {
             position: absolute;
             left: 0;
             top: 0;
@@ -536,7 +546,7 @@ export default function ClassSubjectMaster() {
           }
 
           /* For class bulk printing: page break after every 2 cards */
-          .printable-admit-area .a4-admit-card-item:nth-child(even) {
+          .printable-bulk-area .a4-admit-card-item:nth-child(even) {
             page-break-after: always;
             break-after: page;
           }
@@ -997,8 +1007,8 @@ export default function ClassSubjectMaster() {
               </div>
             </div>
 
-            {/* PRINTABLE ADMIT CARD CONTAINER */}
-            <div className="printable-admit-area">
+            {/* PRINTABLE SINGLE ADMIT CARD CONTAINER */}
+            <div className="printable-single-area">
               {renderAdmitCardSheet(selectedStudentForAdmitCard)}
             </div>
           </div>
@@ -1031,8 +1041,8 @@ export default function ClassSubjectMaster() {
               </div>
             </div>
 
-            {/* ALL STUDENTS A4 PAGES (2 PER PAGE) */}
-            <div className="printable-admit-area">
+            {/* PRINTABLE BULK ADMIT CARDS CONTAINER */}
+            <div className="printable-bulk-area">
               {printAllClassStudents.map((student, idx) => renderAdmitCardSheet(student, true))}
             </div>
           </div>
