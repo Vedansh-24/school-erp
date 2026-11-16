@@ -491,7 +491,7 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT OVERRIDE STYLES (SINGLE CARD POSITIONED ON TOP HALF FOR MANUAL HALF-PAGE RE-PRINTING) */}
+      {/* GLOBAL PRINT OVERRIDE STYLES (STRICT HALF-PAGE TOP ALIGNMENT FOR BOTH SINGLE & BULK PRINT) */}
       <style jsx global>{`
         @media print {
           body * {
@@ -524,7 +524,7 @@ export default function ClassSubjectMaster() {
             print-color-adjust: exact !important;
           }
 
-          /* Restricts single card to top half, leaving bottom half blank for manual page re-insertion */
+          /* Exact height to fit cards perfectly on half-page without spillover */
           .a4-admit-card-item {
             height: 48vh;
             max-height: 48vh;
@@ -532,7 +532,13 @@ export default function ClassSubjectMaster() {
             box-sizing: border-box;
             page-break-inside: avoid;
             break-inside: avoid;
-            margin-bottom: 50vh; /* Leaves bottom half blank for second pass printing */
+            margin-bottom: 2mm;
+          }
+
+          /* For bulk/class printing: page break after every 2 cards */
+          .printable-admit-area .a4-admit-card-item:nth-child(even) {
+            page-break-after: always;
+            break-after: page;
           }
         }
       `}</style>
