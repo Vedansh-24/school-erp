@@ -491,7 +491,7 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT OVERRIDE STYLES (STRICT HALF-PAGE TOP ALIGNMENT FOR BOTH SINGLE & BULK PRINT) */}
+      {/* GLOBAL PRINT OVERRIDE STYLES (HALF-PAGE TOP ALIGNMENT FOR BOTH SINGLE & BULK PRINT) */}
       <style jsx global>{`
         @media print {
           body * {
@@ -524,7 +524,7 @@ export default function ClassSubjectMaster() {
             print-color-adjust: exact !important;
           }
 
-          /* Exact height to fit cards perfectly on half-page without spillover */
+          /* Exact height for half-page fitting */
           .a4-admit-card-item {
             height: 48vh;
             max-height: 48vh;
@@ -535,7 +535,7 @@ export default function ClassSubjectMaster() {
             margin-bottom: 2mm;
           }
 
-          /* For bulk/class printing: page break after every 2 cards */
+          /* For class bulk printing: page break after every 2 cards */
           .printable-admit-area .a4-admit-card-item:nth-child(even) {
             page-break-after: always;
             break-after: page;
