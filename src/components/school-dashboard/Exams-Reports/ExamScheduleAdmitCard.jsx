@@ -491,7 +491,7 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT OVERRIDE STYLES (HALF-PAGE TOP ALIGNMENT FIXED FOR SINGLE & BULK PRINT) */}
+      {/* GLOBAL PRINT OVERRIDE STYLES (STRICT TOP HALF ALIGNMENT FOR SINGLE PRINT) */}
       <style jsx global>{`
         @media print {
           body * {
@@ -503,22 +503,23 @@ export default function ClassSubjectMaster() {
             visibility: visible;
           }
 
+          /* FORCE SINGLE PRINT TO ABSOLUTE TOP OF THE PAGE */
           .printable-single-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 0;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
 
           .printable-bulk-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 0;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
 
           @page {
