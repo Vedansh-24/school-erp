@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Layers, BookOpen, Plus, Trash2, Calendar, FileText, Edit2, CheckCircle2, Printer, X, UserCheck, Image, Loader2 } from 'lucide-react';
+import { Layers, BookOpen, Plus, Trash2, Calendar, FileText, Edit2, CheckCircle2, Printer, X, UserCheck, Image, Loader2, Users } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function ClassSubjectMaster() {
@@ -49,8 +49,9 @@ export default function ClassSubjectMaster() {
   // Manual Roll No / Input state per student SR No
   const [manualRollNos, setManualRollNos] = useState({});
 
-  // Modal State for Print View (Single Student & Entire Class)
-  const [selectedStudentForAdmitCard, setSelectedStudentForAdmitCard] = useState(null);
+  // Print Queue States for Half-Page Sequential Printing (2 students per A4 page)
+  const [printQueue, setPrintQueue] = useState([]);
+  const [showPrintQueueModal, setShowPrintQueueModal] = useState(false);
   const [printAllClassStudents, setPrintAllClassStudents] = useState(null);
 
   // Helper function to format date as DD-MM-YYYY
@@ -315,15 +316,35 @@ export default function ClassSubjectMaster() {
 
   const filteredStudents = allStudents.filter(st => st.class === admitCardClass);
 
-  const handlePrintAdmitCard = (student) => {
+  // SEQUENTIAL HALF-PAGE QUEUE LOGIC:
+  // Adds student to queue. If queue reaches 2 students, automatically opens print preview.
+  const handleAddToPrintQueue = (student) => {
     const assignedRollNo = manualRollNos[student.srNo] !== undefined ? manualRollNos[student.srNo] : student.rollNo;
-    setSelectedStudentForAdmitCard({
+    const processedStudent = {
       ...student,
       rollNo: assignedRollNo
-    });
-    setTimeout(() => {
-      window.print();
-    }, 300);
+    };
+
+    const updatedQueue = [...printQueue, processedStudent];
+    setPrintQueue(updatedQueue);
+
+    if (updatedQueue.length === 2) {
+      // 2 students collected! Open print preview modal automatically
+      setShowPrintQueueModal(true);
+    } else {
+      alert(`Student "${student.name}" added to print queue (1/2). Click print for one more student to complete the A4 page.`);
+    }
+  };
+
+  // Direct Print for a single student (1 per page)
+  const handlePrintSingleDirect = (student) => {
+    const assignedRollNo = manualRollNos[student.srNo] !== undefined ? manualRollNos[student.srNo] : student.rollNo;
+    const processedStudent = {
+      ...student,
+      rollNo: assignedRollNo
+    };
+    setPrintQueue([processedStudent]);
+    setShowPrintQueueModal(true);
   };
 
   const handlePrintEntireClassAdmitCards = () => {
@@ -351,13 +372,13 @@ export default function ClassSubjectMaster() {
 
   const inputTheme = "w-full bg-[#F4F7F9] border-2 border-gray-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 outline-none focus:border-[#1B3A6B] focus:bg-white focus:ring-4 focus:ring-[#1B3A6B]/15 shadow-inner transition-all duration-200";
 
-  // Reusable Single Admit Card Sheet JSX (Optimized padding and spacing for 2 per A4 without overflow)
-  const renderAdmitCardSheet = (student, isBulk = false) => {
+  // Reusable Single Admit Card Sheet JSX
+  const renderAdmitCardSheet = (student, index) => {
     const activeSession = currentAdmitCardExamData?.session || currentSession;
     return (
       <div
-        key={student.srNo}
-        className={`border-2 border-[#1B3A6B] p-2.5 rounded-xl bg-white text-slate-900 space-y-1.5 shadow-sm a4-admit-card-item ${isBulk ? 'mb-2' : 'mx-auto'}`}
+        key={`${student.srNo}_${index}`}
+        className="border-2 border-[#1B3A6B] p-2.5 rounded-xl bg-white text-slate-900 space-y-1.5 shadow-sm a4-admit-card-item mb-2"
       >
         {/* Header with School Logo */}
         <div className="flex items-center justify-between border-b border-gray-300 pb-1">
@@ -491,7 +512,7 @@ export default function ClassSubjectMaster() {
   return (
     <div className="bg-[#F5F7FA] min-h-screen w-full p-4 md:p-8 font-sans space-y-8 text-[#1A2332]">
       
-      {/* GLOBAL PRINT OVERRIDE STYLES (EXACT 0.5 INCH MARGINS AND TOP ALIGNMENT) */}
+      {/* GLOBAL PRINT OVERRIDE STYLES (STRICT 2 PER A4 PAGE WITHOUT OVERFLOW) */}
       <style jsx global>{`
         @media print {
           body * {
@@ -513,7 +534,7 @@ export default function ClassSubjectMaster() {
 
           @page {
             size: A4 portrait;
-            margin: 0.5in 0.5in 0.5in 0.5in; /* Top, Right, Bottom, Left margins set to 0.5in */
+            margin: 4mm 8mm;
           }
 
           body {
@@ -524,7 +545,7 @@ export default function ClassSubjectMaster() {
             print-color-adjust: exact !important;
           }
 
-          /* Exact height to fit 2 cards per A4 page without spillover, aligned at top */
+          /* Exact height to fit 2 cards per A4 page without spillover */
           .a4-admit-card-item {
             height: 48vh;
             max-height: 48vh;
@@ -532,7 +553,6 @@ export default function ClassSubjectMaster() {
             box-sizing: border-box;
             page-break-inside: avoid;
             break-inside: avoid;
-            margin-top: 0 !important;
             margin-bottom: 2mm;
           }
 
@@ -860,15 +880,28 @@ export default function ClassSubjectMaster() {
             <h2 className="text-[15px] font-black text-slate-800 uppercase tracking-wide">3. Admit Card Generator</h2>
           </div>
 
-          {admitCardExam && admitCardClass && filteredStudents.length > 0 && (
-            <button
-              type="button"
-              onClick={handlePrintEntireClassAdmitCards}
-              className="bg-[#1B3A6B] hover:bg-[#112544] text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-[0_4px_0_#0F213E] active:translate-y-[3px] transition-all inline-flex items-center justify-center gap-2 uppercase tracking-wider cursor-pointer"
-            >
-              <Printer size={16} /> Print Entire Class Admit Cards (2 per A4 Page)
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Queue Badge/Button */}
+            {printQueue.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowPrintQueueModal(true)}
+                className="bg-[#D97706] hover:bg-[#B45309] text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-[0_3px_0_#92400E] active:translate-y-[2px] transition-all inline-flex items-center gap-2 uppercase tracking-wider cursor-pointer"
+              >
+                <Users size={14} /> Print Queue ({printQueue.length}/2)
+              </button>
+            )}
+
+            {admitCardExam && admitCardClass && filteredStudents.length > 0 && (
+              <button
+                type="button"
+                onClick={handlePrintEntireClassAdmitCards}
+                className="bg-[#1B3A6B] hover:bg-[#112544] text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-[0_4px_0_#0F213E] active:translate-y-[3px] transition-all inline-flex items-center justify-center gap-2 uppercase tracking-wider cursor-pointer"
+              >
+                <Printer size={16} /> Print Entire Class Admit Cards (2 per A4 Page)
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
@@ -943,12 +976,23 @@ export default function ClassSubjectMaster() {
                           />
                         </td>
                         <td className="p-4 font-bold text-slate-700">{st.feeDue}</td>
-                        <td className="p-4 text-center">
+                        <td className="p-4 text-center space-x-2">
+                          {/* Sequential Add to Print Queue Button */}
                           <button
-                            onClick={() => handlePrintAdmitCard(st)}
-                            className="bg-[#10B981] hover:bg-[#059669] text-white px-4 py-2 rounded-xl text-xs font-bold shadow-[0_3px_0_#047857] active:translate-y-[2px] transition-all inline-flex items-center gap-2 uppercase tracking-wider cursor-pointer"
+                            onClick={() => handleAddToPrintQueue(st)}
+                            className="bg-[#10B981] hover:bg-[#059669] text-white px-3 py-2 rounded-xl text-xs font-bold shadow-[0_3px_0_#047857] active:translate-y-[2px] transition-all inline-flex items-center gap-1.5 uppercase tracking-wider cursor-pointer"
+                            title="Add to half-page print queue (2 per A4)"
                           >
-                            <Printer size={14} /> Print Admit Card
+                            <Printer size={13} /> Print Admit Card
+                          </button>
+                          
+                          {/* Optional Direct 1-per-page print */}
+                          <button
+                            onClick={() => handlePrintSingleDirect(st)}
+                            className="bg-slate-600 hover:bg-slate-700 text-white px-2 py-2 rounded-xl text-[10px] font-bold shadow-[0_3px_0_#374151] active:translate-y-[2px] transition-all inline-flex items-center cursor-pointer"
+                            title="Print Single (1 per page)"
+                          >
+                            1-Page
                           </button>
                         </td>
                       </tr>
@@ -971,25 +1015,40 @@ export default function ClassSubjectMaster() {
         )}
       </div>
 
-      {/* SINGLE ADMIT CARD PRINT MODAL PREVIEW */}
-      {selectedStudentForAdmitCard && (
+      {/* SEQUENTIAL PRINT QUEUE / MODAL PREVIEW */}
+      {showPrintQueueModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 md:p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-xl w-full p-4 md:p-6 shadow-2xl relative my-2">
             
             {/* Modal Actions (Hidden in Print) */}
             <div className="flex justify-between items-center pb-3 mb-3 border-b border-gray-200 print:hidden">
-              <h3 className="text-sm font-black text-[#1B3A6B] uppercase tracking-wider">
-                Admit Card Preview
-              </h3>
-              <div className="flex items-center gap-3">
+              <div>
+                <h3 className="text-sm font-black text-[#1B3A6B] uppercase tracking-wider">
+                  Print Queue Preview ({printQueue.length}/2 Students)
+                </h3>
+                <p className="text-[10px] text-gray-500 font-bold">
+                  {printQueue.length === 1 ? '1 student queued. Add one more or print now.' : '2 students ready for A4 page (Half-page each).'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
                 <button
                   onClick={triggerBrowserPrint}
-                  className="bg-[#1B3A6B] hover:bg-[#112544] text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 uppercase shadow-md transition-all cursor-pointer"
+                  className="bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 uppercase shadow-md transition-all cursor-pointer"
                 >
                   <Printer size={16} /> Print Now
                 </button>
                 <button
-                  onClick={() => setSelectedStudentForAdmitCard(null)}
+                  onClick={() => {
+                    setPrintQueue([]);
+                    setShowPrintQueueModal(false);
+                  }}
+                  className="bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold px-3 py-2 rounded-xl transition-all cursor-pointer"
+                  title="Clear Queue"
+                >
+                  Clear Queue
+                </button>
+                <button
+                  onClick={() => setShowPrintQueueModal(false)}
                   className="bg-gray-200 hover:bg-gray-300 text-gray-700 p-2 rounded-xl transition-all cursor-pointer"
                 >
                   <X size={18} />
@@ -997,9 +1056,14 @@ export default function ClassSubjectMaster() {
               </div>
             </div>
 
-            {/* PRINTABLE ADMIT CARD CONTAINER */}
+            {/* PRINTABLE ADMIT CARDS CONTAINER */}
             <div className="printable-admit-area">
-              {renderAdmitCardSheet(selectedStudentForAdmitCard)}
+              {printQueue.map((student, idx) => renderAdmitCardSheet(student, idx))}
+              {printQueue.length === 1 && (
+                <div className="border-2 border-dashed border-gray-300 p-6 rounded-xl bg-slate-50 text-center text-xs font-bold text-gray-400 print:hidden">
+                  [ Second half of A4 page is empty. Click another student's "Print Admit Card" button to fill this space! ]
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1033,7 +1097,7 @@ export default function ClassSubjectMaster() {
 
             {/* ALL STUDENTS A4 PAGES (2 PER PAGE) */}
             <div className="printable-admit-area">
-              {printAllClassStudents.map((student) => renderAdmitCardSheet(student, true))}
+              {printAllClassStudents.map((student, idx) => renderAdmitCardSheet(student, idx))}
             </div>
           </div>
         </div>
