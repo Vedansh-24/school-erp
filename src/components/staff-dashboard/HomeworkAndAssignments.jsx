@@ -3,11 +3,29 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-// 💡 Professional Standard Homework Templates
+// 💡 Professional Standard Homework Templates (Updated with New Lines in Hindi & English)
 const getSubjectTemplates = (subject) => {
   const subLower = (subject || '').toLowerCase();
+  
+  // Common professional templates requested for all subjects
+  const commonProfessionalTemplates = [
+    'Learn and repeat C.W. ',
+    'Revise and practice today\'s Classwork (C.W.) thoroughly.', 
+    'Learn model paper', 
+    'Go through and memorize the solutions for the model test paper.',
+    'Learn and write model paper ',
+    'Practice by writing the model test paper after learning it.',
+    'Learn half-yearly syllabus ',
+    'Comprehend and revise the complete half-yearly examination syllabus.',
+    'आज के क्लास वर्क (C.W.) को अच्छी तरह दोहराएँ और अभ्यास करें।',
+    'मॉडल प्रश्न पत्र (Model Paper) के उत्तरों को समझें और याद करें।',
+    'मॉडल प्रश्न पत्र को याद करने के बाद लिखकर अभ्यास करें।',
+    'अर्धवार्षिक परीक्षा (Half-Yearly) के संपूर्ण पाठ्यक्रम (Syllabus) को तैयार करें और दोहराएँ।',
+  ];
+
   if (subLower.includes('english')) {
     return [
+      ...commonProfessionalTemplates,
       'Read Chapter thoroughly and write down all difficult word meanings in your notebook.',
       'Solve comprehension exercises (Q1 to Q5) from the chapter in your fair notebook.',
       'Complete paragraph writing and grammar worksheet given in class neatly.',
@@ -18,12 +36,14 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('hindi')) {
     return [
+      ...commonProfessionalTemplates,
       'पाठ को ध्यानपूर्वक पढ़ें और कठिन शब्दों के अर्थ अपनी उत्तर-पुस्तिका में लिखें।',
       'अभ्यास के प्रश्न-उत्तर (प्रश्न 1 से 5) को फेयर कॉपी में सुंदर लेख में हल करें।',
       'दिए गए ग्यांश/व्याकरण कार्य को पूरा करें और याद करें।'
     ];
   } else if (subLower.includes('math') || subLower.includes('ganit') || subLower.includes('mathematics')) {
     return [
+      ...commonProfessionalTemplates,
       'Solve all numerical problems and examples from Exercise in your homework notebook.',
       'Revise formulas related to the chapter and practice key sums.',
       'Complete the math worksheet / workbook problems neatly with proper steps.',
@@ -34,6 +54,7 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('science') || subLower.includes('evs') || subLower.includes('physics') || subLower.includes('chemistry')) {
     return [
+      ...commonProfessionalTemplates,
       'Read Chapter thoroughly, underline scientific terms, and write short definitions.',
       'Draw well-labeled diagrams of the given topic in your notebook.',
       'Answer review questions and exercises given at the end of the chapter.',
@@ -42,6 +63,7 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('social') || subLower.includes('history') || subLower.includes('political') || subLower.includes('econ')) {
     return [
+      ...commonProfessionalTemplates,
       'Read the chapter carefully and prepare short notes/bullet points.',
       'Answer long and short question-answers related to the chapter in your notebook.',
       'Complete map-pointing / geography exercises given for homework.',
@@ -49,12 +71,14 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('sanskrit')) {
     return [
+      ...commonProfessionalTemplates,
       'पाठ का हिंदी अनुवाद पढ़ें और शब्द-ार्थ अपनी उत्तर-पुस्तिका में लिखें।',
       'संस्कृत व्याकरण (शब्द रूप/धातु रूप) को लिखकर अभ्यास करें।',
       'अभ्यास कार्य के सभी प्रश्न-उत्तर पूर्ण करें।'
     ];
   } else if (subLower.includes('computer') || subLower.includes('gk') || subLower.includes('g.k.')) {
     return [
+      ...commonProfessionalTemplates,
       'Read Chapter thoroughly and write down important definitions and shortcuts.',
       'Practice the practical steps and syntax discussed in the lab.',
       'Complete question-answers and exercise review in your notebook.'
@@ -62,6 +86,7 @@ const getSubjectTemplates = (subject) => {
   }
 
   return [
+    ...commonProfessionalTemplates,
     'Read the assigned chapter thoroughly and complete all exercises in your notebook.',
     'Revise key concepts and solve review questions discussed during the lecture.',
     'Complete the given worksheet/assignment neatly before the next class.'
@@ -98,6 +123,25 @@ const normalizeSubject = (sub) => {
   return sub.toLowerCase().replace(/[^a-z0-9]/g, '');
 };
 
+// 📋 Standard Class Order (Seventh ke thik bad Eight)
+const CLASS_ORDER = [
+  'PP.3+', 'PP.4+', 'PP.5+',
+  'First', 'Second', 'Third', 'Fourth', 'Fifth',
+  'Sixth', 'Seventh', 'Eight', 'Ninth', 'Tenth',
+  'Eleventh', 'Twelfth'
+];
+
+const sortClassesInOrder = (classesArray) => {
+  return [...classesArray].sort((a, b) => {
+    const idxA = CLASS_ORDER.findIndex(c => c.toLowerCase() === a.trim().toLowerCase());
+    const idxB = CLASS_ORDER.findIndex(c => c.toLowerCase() === b.trim().toLowerCase());
+    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+    if (idxA !== -1) return -1;
+    if (idxB !== -1) return 1;
+    return a.localeCompare(b);
+  });
+};
+
 export default function HomeworkPublisherManager() {
   const [classSubjectsMap, setClassSubjectsMap] = useState({});
   const [selectedClass, setSelectedClass] = useState('First');
@@ -131,8 +175,8 @@ export default function HomeworkPublisherManager() {
       });
       setClassSubjectsMap(map);
       if (!map[selectedClass] && Object.keys(map).length > 0) {
-        const firstKey = Object.keys(map)[0];
-        setSelectedClass(firstKey);
+        const sortedKeys = sortClassesInOrder(Object.keys(map));
+        setSelectedClass(sortedKeys[0]);
       }
     }
   };
@@ -155,7 +199,7 @@ export default function HomeworkPublisherManager() {
         results = results.filter(item => {
           const dbClass = (item.class_name || '').trim().toLowerCase();
           const filterClass = historyFilterClass.trim().toLowerCase();
-          return dbClass === filterClass || dbClass.includes(filterClass) || filterClass.includes(dbClass);
+          return dbClass === filterClass;
         });
       }
 
@@ -281,12 +325,12 @@ export default function HomeworkPublisherManager() {
     setHistoryFilterDate('');
   };
 
-  // Ensure all available classes from history are also included in class dropdown options
+  // Ensure all available classes are included and sorted so 'Eight' comes right after 'Seventh'
   const dynamicClassNames = new Set(Object.keys(classSubjectsMap));
   history.forEach(item => {
     if (item.class_name) dynamicClassNames.add(item.class_name.trim());
   });
-  const classNamesList = Array.from(dynamicClassNames);
+  const classNamesList = sortClassesInOrder(Array.from(dynamicClassNames));
 
   const currentSubjects = classSubjectsMap[selectedClass] || [];
 
@@ -321,7 +365,6 @@ export default function HomeworkPublisherManager() {
     const subjectMap = {};
     const officialSubjects = historyFilterClass !== 'All' ? (classSubjectsMap[historyFilterClass] || []) : [];
     
-    // Ensure all history subjects and official subjects appear
     history.forEach(item => {
       let sub = item.subject_name ? item.subject_name.trim() : 'General';
       if (!subjectMap[sub]) {
@@ -438,7 +481,6 @@ export default function HomeworkPublisherManager() {
             </button>
           </div>
 
-          {/* Mobile par grid-cols-1 (ek ke niche ek), aur laptop par lg:grid-cols-2 xl:grid-cols-3 (file code ke anusaar) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
             {currentSubjects.map((subject) => {
               const subData = homeworkInputs[subject] || {};
@@ -674,7 +716,6 @@ export default function HomeworkPublisherManager() {
                     </div>
                   </div>
 
-                  {/* Mobile par grid-cols-1 (ek ke niche ek), aur laptop par lg:grid-cols-2 xl:grid-cols-3 */}
                   <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
                     {Object.entries(item.entries).map(([sub, work]) => {
                       const { dark } = getSubjectStyles(sub);
