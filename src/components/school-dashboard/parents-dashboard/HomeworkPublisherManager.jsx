@@ -20,7 +20,7 @@ const getSubjectTemplates = (subject) => {
     'आज के क्लास वर्क (C.W.) को अच्छी तरह दोहराएँ और अभ्यास करें।',
     'मॉडल प्रश्न पत्र (Model Paper) के उत्तरों को समझें और याद करें।',
     'मॉडल प्रश्न पत्र को याद करने के बाद लिखकर अभ्यास करें।',
-    'अर्धवार्षिक परीक्षा (Half-Yearly) के संपूर्ण पाठ्यक्रम (Syllabus) को तैयार करें और दोहराएँ।',
+    'अर्धवार्षिक परीक्षा (Half-Yearly) के संपूर्ण पाठ्यक्रम (Syllabus) को तैयार करें और दोहराएँ।'
   ];
 
   if (subLower.includes('english')) {
@@ -155,6 +155,46 @@ export default function HomeworkPublisherManager() {
 
   const [historyFilterClass, setHistoryFilterClass] = useState('All');
   const [historyFilterDate, setHistoryFilterDate] = useState('');
+
+  // 🎤 Voice Recognition State tracking active input & language ('hi-IN' or 'en-US')
+  const [listeningField, setListeningField] = useState(null);
+
+  // 🎙️ Speech Recognition Handler Function for Both Languages
+  const startVoiceInput = (subject, field, lang = 'hi-IN') => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Your browser does not support voice input. Please use Google Chrome or MS Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang; // 'hi-IN' for Hindi, 'en-US' for English
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    const fieldKey = `${subject}-${field}-${lang}`;
+    setListeningField(fieldKey);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      const currentVal = homeworkInputs[subject]?.[field] || '';
+      const newVal = currentVal ? `${currentVal} ${transcript}` : transcript;
+      
+      handleHomeworkChange(subject, field, newVal);
+      setListeningField(null);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setListeningField(null);
+    };
+
+    recognition.onend = () => {
+      setListeningField(null);
+    };
+
+    recognition.start();
+  };
 
   // 🔄 Fetch Class Subjects dynamically
   const fetchClassSubjects = async () => {
@@ -421,7 +461,7 @@ export default function HomeworkPublisherManager() {
               <span>📝</span> Publish Daily Homework
             </h2>
             <p className="text-xs sm:text-sm font-semibold text-indigo-100/90 mt-1">
-              प्रत्येक विषय के लिए Chapter/Title एवं Professional Instructions दर्ज करें।
+              हिंदी या अंग्रेज़ी में बोलकर (Voice Note) या टाइप करके Instructions दर्ज करें।
             </p>
           </div>
 
@@ -488,6 +528,11 @@ export default function HomeworkPublisherManager() {
               const { dark } = getSubjectStyles(subject);
               const subjectTemplates = getSubjectTemplates(subject);
 
+              const isTitleHindiListening = listeningField === `${subject}-title-hi-IN`;
+              const isTitleEnglishListening = listeningField === `${subject}-title-en-US`;
+              const isDescHindiListening = listeningField === `${subject}-description-hi-IN`;
+              const isDescEnglishListening = listeningField === `${subject}-description-en-US`;
+
               return (
                 <div key={subject} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
                   <div className={`${dark} font-black text-base px-4 py-3 flex items-center justify-between`}>
@@ -501,9 +546,39 @@ export default function HomeworkPublisherManager() {
 
                   <div className="p-4 space-y-4 flex-1">
                     <div>
-                      <label className="text-xs font-black uppercase text-slate-500 block mb-1.5">
-                        📌 Title / Chapter:
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                        <label className="text-xs font-black uppercase text-slate-500">
+                          📌 Title / Chapter:
+                        </label>
+                        {/* Dual Language Voice Note Buttons for Title */}
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => startVoiceInput(subject, 'title', 'hi-IN')}
+                            className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all ${
+                              isTitleHindiListening 
+                                ? 'bg-rose-600 text-white animate-pulse' 
+                                : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                            }`}
+                            title="हिंदी में बोलें"
+                          >
+                            <span>{isTitleHindiListening ? '🎙️ सुन रहे हैं...' : '🇮🇳 हिंदी माइक'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => startVoiceInput(subject, 'title', 'en-US')}
+                            className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all ${
+                              isTitleEnglishListening 
+                                ? 'bg-rose-600 text-white animate-pulse' 
+                                : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                            }`}
+                            title="Speak in English"
+                          >
+                            <span>{isTitleEnglishListening ? '🎙️ Listening...' : '🇬🇧 English Mic'}</span>
+                          </button>
+                        </div>
+                      </div>
                       <input
                         type="text"
                         value={subData.title || ''}
@@ -534,14 +609,44 @@ export default function HomeworkPublisherManager() {
                     </div>
 
                     <div>
-                      <label className="text-xs font-black uppercase text-slate-500 block mb-1.5">
-                        📝 Instructions / Details (Editable):
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                        <label className="text-xs font-black uppercase text-slate-500">
+                          📝 Instructions / Details:
+                        </label>
+                        {/* Dual Language Voice Note Buttons for Instructions */}
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => startVoiceInput(subject, 'description', 'hi-IN')}
+                            className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all ${
+                              isDescHindiListening 
+                                ? 'bg-rose-600 text-white animate-pulse' 
+                                : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                            }`}
+                            title="हिंदी में बोलकर निर्देश दर्ज करें"
+                          >
+                            <span>{isDescHindiListening ? '🎙️ सुन रहे हैं...' : '🇮🇳 हिंदी माइक'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => startVoiceInput(subject, 'description', 'en-US')}
+                            className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all ${
+                              isDescEnglishListening 
+                                ? 'bg-rose-600 text-white animate-pulse' 
+                                : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                            }`}
+                            title="Speak instructions in English"
+                          >
+                            <span>{isDescEnglishListening ? '🎙️ Listening...' : '🇬🇧 English Mic'}</span>
+                          </button>
+                        </div>
+                      </div>
                       <textarea
                         rows={3}
                         value={subData.description || ''}
                         onChange={(e) => handleHomeworkChange(subject, 'description', e.target.value)}
-                        placeholder="Select above or type custom instructions here..."
+                        placeholder="Select template, type, or click Hindi/English mic to speak..."
                         className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 resize-none font-sans font-semibold shadow-inner"
                       />
                     </div>
