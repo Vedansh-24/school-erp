@@ -3,11 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-// 💡 Professional Standard Homework Templates
+// 💡 Professional Standard Homework Templates (Updated with New Lines in Hindi & English)
 const getSubjectTemplates = (subject) => {
   const subLower = (subject || '').toLowerCase();
+  
+  // Common professional templates requested for all subjects
+  const commonProfessionalTemplates = [
+    'Learn and repeat C.W. (Revise and practice today\'s Classwork (C.W.) thoroughly.) / आज के क्लास वर्क (C.W.) को अच्छी तरह दोहराएँ और अभ्यास करें।',
+    'Learn model paper (Go through and memorize the solutions for the model test paper.) / मॉडल प्रश्न पत्र (Model Paper) के उत्तरों को समझें और याद करें।',
+    'Learn and write model paper (Practice by writing the model test paper after learning it.) / मॉडल प्रश्न पत्र को याद करने के बाद लिखकर अभ्यास करें।',
+    'Learn half-yearly syllabus (Comprehend and revise the complete half-yearly examination syllabus.) / अर्धवार्षिक परीक्षा (Half-Yearly) के संपूर्ण पाठ्यक्रम (Syllabus) को तैयार करें और दोहराएँ।'
+  ];
+
   if (subLower.includes('english')) {
     return [
+      ...commonProfessionalTemplates,
       'Read Chapter thoroughly and write down all difficult word meanings in your notebook.',
       'Solve comprehension exercises (Q1 to Q5) from the chapter in your fair notebook.',
       'Complete paragraph writing and grammar worksheet given in class neatly.',
@@ -18,12 +28,14 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('hindi')) {
     return [
+      ...commonProfessionalTemplates,
       'पाठ को ध्यानपूर्वक पढ़ें और कठिन शब्दों के अर्थ अपनी उत्तर-पुस्तिका में लिखें।',
       'अभ्यास के प्रश्न-उत्तर (प्रश्न 1 से 5) को फेयर कॉपी में सुंदर लेख में हल करें।',
       'दिए गए ग्यांश/व्याकरण कार्य को पूरा करें और याद करें।'
     ];
   } else if (subLower.includes('math') || subLower.includes('ganit') || subLower.includes('mathematics')) {
     return [
+      ...commonProfessionalTemplates,
       'Solve all numerical problems and examples from Exercise in your homework notebook.',
       'Revise formulas related to the chapter and practice key sums.',
       'Complete the math worksheet / workbook problems neatly with proper steps.',
@@ -34,6 +46,7 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('science') || subLower.includes('evs') || subLower.includes('physics') || subLower.includes('chemistry')) {
     return [
+      ...commonProfessionalTemplates,
       'Read Chapter thoroughly, underline scientific terms, and write short definitions.',
       'Draw well-labeled diagrams of the given topic in your notebook.',
       'Answer review questions and exercises given at the end of the chapter.',
@@ -42,6 +55,7 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('social') || subLower.includes('history') || subLower.includes('political') || subLower.includes('econ')) {
     return [
+      ...commonProfessionalTemplates,
       'Read the chapter carefully and prepare short notes/bullet points.',
       'Answer long and short question-answers related to the chapter in your notebook.',
       'Complete map-pointing / geography exercises given for homework.',
@@ -49,12 +63,14 @@ const getSubjectTemplates = (subject) => {
     ];
   } else if (subLower.includes('sanskrit')) {
     return [
+      ...commonProfessionalTemplates,
       'पाठ का हिंदी अनुवाद पढ़ें और शब्द-ार्थ अपनी उत्तर-पुस्तिका में लिखें।',
       'संस्कृत व्याकरण (शब्द रूप/धातु रूप) को लिखकर अभ्यास करें।',
       'अभ्यास कार्य के सभी प्रश्न-उत्तर पूर्ण करें।'
     ];
   } else if (subLower.includes('computer') || subLower.includes('gk') || subLower.includes('g.k.')) {
     return [
+      ...commonProfessionalTemplates,
       'Read Chapter thoroughly and write down important definitions and shortcuts.',
       'Practice the practical steps and syntax discussed in the lab.',
       'Complete question-answers and exercise review in your notebook.'
@@ -62,6 +78,7 @@ const getSubjectTemplates = (subject) => {
   }
 
   return [
+    ...commonProfessionalTemplates,
     'Read the assigned chapter thoroughly and complete all exercises in your notebook.',
     'Revise key concepts and solve review questions discussed during the lecture.',
     'Complete the given worksheet/assignment neatly before the next class.'
