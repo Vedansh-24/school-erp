@@ -15,7 +15,7 @@ const getSubjectTemplates = (subject) => {
     'Go through and memorize the solutions for the model test paper.',
     'Learn and write model paper ',
     'Practice by writing the model test paper after learning it.',
-    'Learn half-yearly syllabus 
+    'Learn half-yearly syllabus ',
     'Comprehend and revise the complete half-yearly examination syllabus.',
     'आज के क्लास वर्क (C.W.) को अच्छी तरह दोहराएँ और अभ्यास करें।',
     'मॉडल प्रश्न पत्र (Model Paper) के उत्तरों को समझें और याद करें।',
