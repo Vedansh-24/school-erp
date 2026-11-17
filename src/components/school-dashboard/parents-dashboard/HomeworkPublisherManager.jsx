@@ -9,10 +9,18 @@ const getSubjectTemplates = (subject) => {
   
   // Common professional templates requested for all subjects
   const commonProfessionalTemplates = [
-    'Learn and repeat C.W. (Revise and practice today\'s Classwork (C.W.) thoroughly.) / आज के क्लास वर्क (C.W.) को अच्छी तरह दोहराएँ और अभ्यास करें।',
-    'Learn model paper (Go through and memorize the solutions for the model test paper.) / मॉडल प्रश्न पत्र (Model Paper) के उत्तरों को समझें और याद करें।',
-    'Learn and write model paper (Practice by writing the model test paper after learning it.) / मॉडल प्रश्न पत्र को याद करने के बाद लिखकर अभ्यास करें।',
-    'Learn half-yearly syllabus (Comprehend and revise the complete half-yearly examination syllabus.) / अर्धवार्षिक परीक्षा (Half-Yearly) के संपूर्ण पाठ्यक्रम (Syllabus) को तैयार करें और दोहराएँ।'
+    'Learn and repeat C.W. ',
+    'Revise and practice today\'s Classwork (C.W.) thoroughly.', 
+    'Learn model paper', 
+    'Go through and memorize the solutions for the model test paper.',
+    'Learn and write model paper ',
+    'Practice by writing the model test paper after learning it.',
+    'Learn half-yearly syllabus 
+    'Comprehend and revise the complete half-yearly examination syllabus.',
+    'आज के क्लास वर्क (C.W.) को अच्छी तरह दोहराएँ और अभ्यास करें।',
+    'मॉडल प्रश्न पत्र (Model Paper) के उत्तरों को समझें और याद करें।',
+    'मॉडल प्रश्न पत्र को याद करने के बाद लिखकर अभ्यास करें।',
+    'अर्धवार्षिक परीक्षा (Half-Yearly) के संपूर्ण पाठ्यक्रम (Syllabus) को तैयार करें और दोहराएँ।',
   ];
 
   if (subLower.includes('english')) {
