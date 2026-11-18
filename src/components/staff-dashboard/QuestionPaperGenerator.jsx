@@ -1,3 +1,7 @@
+
+QuestionPaperGenerator Updated Code.txt
+
+100%
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -20,6 +24,9 @@ export default function QuestionPaperGenerator() {
   const [generatedPaper, setGeneratedPaper] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [paperPrintMode, setPaperPrintMode] = useState('student'); // 'student' or 'teacher'
+
+  // 🎤 Voice Note State tracking active field & language ('hi-IN' or 'en-US')
+  const [listeningField, setListeningField] = useState(null);
 
   // Generate Paper Form State
   const [formData, setFormData] = useState({
@@ -126,6 +133,54 @@ export default function QuestionPaperGenerator() {
     marks: 1,
     school_name: 'BLUE HEAVEN KIDS ACADEMY'
   });
+
+  // 🎙️ Speech Recognition Handler Function (Supports Auto-Sync for Hindi/Sanskrit)
+  const startVoiceInput = (fieldKey, lang = 'hi-IN') => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Your browser does not support voice input. Please use Google Chrome or MS Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang; // 'en-US' for English side, 'hi-IN' for Hindi/Sanskrit side
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    setListeningField(fieldKey);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setSuggestData((prev) => {
+        const currentVal = prev[fieldKey] || '';
+        const newVal = currentVal ? `${currentVal} ${transcript}` : transcript;
+        let updated = { ...prev, [fieldKey]: newVal };
+
+        // Preserve Auto-Sync behavior when typing via voice on English side
+        if (updated.auto_sync) {
+          if (fieldKey === 'question_text') updated.question_text_hi = newVal;
+          else if (fieldKey === 'option_a') updated.option_a_hi = newVal;
+          else if (fieldKey === 'option_b') updated.option_b_hi = newVal;
+          else if (fieldKey === 'option_c') updated.option_c_hi = newVal;
+          else if (fieldKey === 'option_d') updated.option_d_hi = newVal;
+          else if (fieldKey === 'correct_answer') updated.correct_answer_hi = newVal;
+        }
+        return updated;
+      });
+      setListeningField(null);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setListeningField(null);
+    };
+
+    recognition.onend = () => {
+      setListeningField(null);
+    };
+
+    recognition.start();
+  };
 
   // Manual Picker Form State
   const [manualData, setManualData] = useState({
@@ -1874,7 +1929,7 @@ export default function QuestionPaperGenerator() {
                       )}
                     </div>
 
-                    {/* SIDE-BY-SIDE SEPARATE ENGLISH AND HINDI MEDIUM & QUESTION TYPE SECTIONS WITH EXACT 1 TO 8 HEADINGS */}
+                    {/* SIDE-BY-SIDE SEPARATE ENGLISH AND HINDI MEDIUM & QUESTION TYPE SECTIONS WITH VOICE NOTE */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-3 border-t border-gray-200">
                       
                       {/* LEFT COLUMN: ENGLISH MEDIUM SETUP */}
@@ -1952,7 +2007,21 @@ export default function QuestionPaperGenerator() {
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="block text-xs font-semibold text-gray-700">Question Text (English)</label>
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-semibold text-gray-700">Question Text (English)</label>
+                            <button
+                              type="button"
+                              onClick={() => startVoiceInput('question_text', 'en-US')}
+                              className={`text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                                listeningField === 'question_text' 
+                                  ? 'bg-rose-600 text-white animate-pulse' 
+                                  : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                              }`}
+                              title="Speak question in English"
+                            >
+                              <span>{listeningField === 'question_text' ? '🎙️ Listening...' : '🇬🇧 English Mic'}</span>
+                            </button>
+                          </div>
                           <textarea 
                             name="question_text" 
                             rows="2" 
@@ -1965,16 +2034,50 @@ export default function QuestionPaperGenerator() {
 
                         <div className="space-y-2 bg-white p-3 rounded-lg border border-blue-200">
                           <label className="block text-[11px] font-bold text-blue-900 uppercase">English Options (A, B, C, D)</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <input type="text" name="option_a" value={suggestData.option_a} onChange={handleSuggestChange} placeholder="Option A" className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" />
-                            <input type="text" name="option_b" value={suggestData.option_b} onChange={handleSuggestChange} placeholder="Option B" className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" />
-                            <input type="text" name="option_c" value={suggestData.option_c} onChange={handleSuggestChange} placeholder="Option C" className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" />
-                            <input type="text" name="option_d" value={suggestData.option_d} onChange={handleSuggestChange} placeholder="Option D" className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" />
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {['a', 'b', 'c', 'd'].map((opt) => (
+                              <div key={opt} className="flex items-center gap-1">
+                                <input 
+                                  type="text" 
+                                  name={`option_${opt}`} 
+                                  value={suggestData[`option_${opt}`]} 
+                                  onChange={handleSuggestChange} 
+                                  placeholder={`Option ${opt.toUpperCase()}`} 
+                                  className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" 
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => startVoiceInput(`option_${opt}`, 'en-US')}
+                                  className={`text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer shrink-0 ${
+                                    listeningField === `option_${opt}` 
+                                      ? 'bg-rose-600 text-white animate-pulse' 
+                                      : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                                  }`}
+                                  title={`Speak Option ${opt.toUpperCase()} in English`}
+                                >
+                                  {listeningField === `option_${opt}` ? '🎙️' : '🇬🇧'}
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="block text-xs font-semibold text-gray-700">Correct Answer (English)</label>
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-semibold text-gray-700">Correct Answer (English)</label>
+                            <button
+                              type="button"
+                              onClick={() => startVoiceInput('correct_answer', 'en-US')}
+                              className={`text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                                listeningField === 'correct_answer' 
+                                  ? 'bg-rose-600 text-white animate-pulse' 
+                                  : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                              }`}
+                              title="Speak Correct Answer in English"
+                            >
+                              <span>{listeningField === 'correct_answer' ? '🎙️ Listening...' : '🇬🇧 English Mic'}</span>
+                            </button>
+                          </div>
                           <input type="text" name="correct_answer" value={suggestData.correct_answer} onChange={handleSuggestChange} placeholder="Correct Answer (Eng)" className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-xs font-bold" />
                         </div>
                       </div>
@@ -2051,7 +2154,21 @@ export default function QuestionPaperGenerator() {
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="block text-xs font-semibold text-gray-700">Question Text (प्रश्न हिंदी / संस्कृत में)</label>
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-semibold text-gray-700">Question Text (प्रश्न हिंदी / संस्कृत में)</label>
+                            <button
+                              type="button"
+                              onClick={() => startVoiceInput('question_text_hi', 'hi-IN')}
+                              className={`text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                                listeningField === 'question_text_hi' 
+                                  ? 'bg-rose-600 text-white animate-pulse' 
+                                  : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                              }`}
+                              title="हिंदी में बोलकर प्रश्न लिखें"
+                            >
+                              <span>{listeningField === 'question_text_hi' ? '🎙️ सुन रहे हैं...' : '🇮🇳 हिंदी माइक'}</span>
+                            </button>
+                          </div>
                           <textarea 
                             name="question_text_hi" 
                             rows="2" 
@@ -2064,16 +2181,55 @@ export default function QuestionPaperGenerator() {
 
                         <div className="space-y-2 bg-white p-3 rounded-lg border border-orange-200">
                           <label className="block text-[11px] font-bold text-orange-900 uppercase">Hindi Options (विकल्प अ, ब, स, द)</label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <input type="text" name="option_a_hi" value={suggestData.option_a_hi} onChange={handleSuggestChange} placeholder="विकल्प (अ)" className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" />
-                            <input type="text" name="option_b_hi" value={suggestData.option_b_hi} onChange={handleSuggestChange} placeholder="विकल्प (ब)" className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" />
-                            <input type="text" name="option_c_hi" value={suggestData.option_c_hi} onChange={handleSuggestChange} placeholder="विकल्प (स)" className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" />
-                            <input type="text" name="option_d_hi" value={suggestData.option_d_hi} onChange={handleSuggestChange} placeholder="विकल्प (द)" className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" />
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {[
+                              { key: 'a', label: 'अ' },
+                              { key: 'b', label: 'ब' },
+                              { key: 'c', label: 'स' },
+                              { key: 'd', label: 'द' }
+                            ].map((opt) => (
+                              <div key={opt.key} className="flex items-center gap-1">
+                                <input 
+                                  type="text" 
+                                  name={`option_${opt.key}_hi`} 
+                                  value={suggestData[`option_${opt.key}_hi`]} 
+                                  onChange={handleSuggestChange} 
+                                  placeholder={`विकल्प (${opt.label})`} 
+                                  className="w-full bg-slate-50 border border-gray-300 rounded px-2 py-1 text-xs" 
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => startVoiceInput(`option_${opt.key}_hi`, 'hi-IN')}
+                                  className={`text-[10px] font-bold px-2 py-1 rounded transition-all cursor-pointer shrink-0 ${
+                                    listeningField === `option_${opt.key}_hi` 
+                                      ? 'bg-rose-600 text-white animate-pulse' 
+                                      : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                                  }`}
+                                  title={`हिंदी में बोलकर विकल्प (${opt.label}) लिखें`}
+                                >
+                                  {listeningField === `option_${opt.key}_hi` ? '🎙️' : '🇮🇳'}
+                                </button>
+                              </div>
+                            ))}
                           </div>
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="block text-xs font-semibold text-gray-700">Correct Answer (सही उत्तर)</label>
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-semibold text-gray-700">Correct Answer (सही उत्तर)</label>
+                            <button
+                              type="button"
+                              onClick={() => startVoiceInput('correct_answer_hi', 'hi-IN')}
+                              className={`text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                                listeningField === 'correct_answer_hi' 
+                                  ? 'bg-rose-600 text-white animate-pulse' 
+                                  : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                              }`}
+                              title="हिंदी में बोलकर सही उत्तर लिखें"
+                            >
+                              <span>{listeningField === 'correct_answer_hi' ? '🎙️ सुन रहे हैं...' : '🇮🇳 हिंदी माइक'}</span>
+                            </button>
+                          </div>
                           <input type="text" name="correct_answer_hi" value={suggestData.correct_answer_hi} onChange={handleSuggestChange} placeholder="सही उत्तर (हिंदी/संस्कृत)" className="w-full bg-white border border-gray-300 rounded-md px-3 py-2 text-xs font-bold" />
                         </div>
                       </div>
