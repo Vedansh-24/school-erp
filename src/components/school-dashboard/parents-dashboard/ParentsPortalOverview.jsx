@@ -1,4 +1,3 @@
-// Filename: ParentsPortalOverview.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -59,8 +58,8 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const [studentInfo, setStudentInfo] = useState({
     id: '', name: '', class: '', section: 'A', rollNo: '', admissionNo: '',
-    fatherName: '', mobile: '', attendanceRate: '0%', totalPresents: '0 Days',
-    totalAbsents: '0 Days', totalLates: '0 Days', annualFee: '₹ 0',
+    fatherName: '', mobile: '', attendanceRate: '0%', totalPresents: '0',
+    totalAbsents: '0', totalLates: '0', annualFee: '₹ 0',
     paidFee: '₹ 0', pendingFee: '₹ 0', academicSession: '2026 - 2027'
   });
 
@@ -212,9 +211,9 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           fatherName: activeStudent.father_name || '',
           mobile: activeStudent.mobile_number || activeStudent.whatsapp_number || '',
           attendanceRate: '0%',
-          totalPresents: '0 Days',
-          totalAbsents: '0 Days',
-          totalLates: '0 Days',
+          totalPresents: '0',
+          totalAbsents: '0',
+          totalLates: '0',
           annualFee: annualFeeNum > 0 ? `₹ ${annualFeeNum.toLocaleString()}` : '₹ 0',
           paidFee: '₹ 0',
           pendingFee: '₹ 0',
@@ -247,9 +246,9 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           setStudentInfo(prev => ({
             ...prev,
             attendanceRate: `${rate}%`,
-            totalPresents: `${presents + lates} Days`,
-            totalAbsents: `${absents} Days`,
-            totalLates: `${lates} Times`
+            totalPresents: `${presents}`,
+            totalAbsents: `${absents}`,
+            totalLates: `${lates}`
           }));
         }
 
@@ -359,10 +358,14 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-2xl p-5 shadow-lg">
-          <div className="text-[11px] font-extrabold uppercase">Attendance Rate</div>
-          <div className="text-[24px] font-black my-2">{studentInfo.attendanceRate}</div>
-          <div className="text-[11px] bg-white/20 px-2 py-0.5 rounded font-bold w-fit">Presents: {studentInfo.totalPresents}</div>
+        <div className="bg-gradient-to-br from-emerald-500 to-teal-700 text-white rounded-2xl p-5 shadow-lg space-y-2">
+          <div className="text-[11px] font-extrabold uppercase tracking-wide">Attendance Rate</div>
+          <div className="text-[24px] font-black">{studentInfo.attendanceRate}</div>
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold">Present: {studentInfo.totalPresents}</span>
+            <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold">Absent: {studentInfo.totalAbsents}</span>
+            <span className="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold">Late: {studentInfo.totalLates}</span>
+          </div>
         </div>
         <div className="bg-gradient-to-br from-blue-500 to-sky-700 text-white rounded-2xl p-5 shadow-lg">
           <div className="text-[11px] font-extrabold uppercase">Total Fee Paid</div>
@@ -485,7 +488,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                       <td className="p-3">{att.sr_no || studentInfo.rollNo}</td>
                       <td className="p-3">{att.attendance_date || att.date}</td>
                       <td className="p-3 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[11px] ${att.status?.toLowerCase().startsWith('p') ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                        <span className={`px-2 py-0.5 rounded text-[11px] ${
+                          att.status?.toLowerCase().startsWith('p') ? 'bg-emerald-100 text-emerald-800' : 
+                          att.status?.toLowerCase().startsWith('l') ? 'bg-amber-100 text-amber-800' : 
+                          'bg-rose-100 text-rose-800'
+                        }`}>
                           {att.status}
                         </span>
                       </td>
