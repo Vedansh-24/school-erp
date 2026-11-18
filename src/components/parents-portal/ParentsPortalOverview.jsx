@@ -2,21 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
-import {
-  Loader2,
-  Calendar,
-  FileText,
-  CheckCircle,
-  Download,
-  Eye,
-  AlertCircle,
-  Paperclip,
+import { 
+  Loader2, 
+  Calendar, 
+  FileText, 
+  CheckCircle, 
+  Download, 
+  Eye, 
+  AlertCircle, 
+  Paperclip, 
   X,
   Users
 } from 'lucide-react';
 import OnlineTestQuiz from '@/components/school-dashboard/parents-dashboard/OnlineTestQuiz';
 
-// 🎨 Subject 3D Color Gradients & Styles
+// 🎨 Subject 3D Color Gradients & Styles (Home2 के अनुसार)
 const getSubjectStyles = (subject) => {
   const subLower = (subject || '').toLowerCase();
   if (subLower.includes('english')) {
@@ -65,15 +65,11 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
 
   const [noticesList, setNoticesList] = useState([]);
   const [rawHomeworkList, setRawHomeworkList] = useState([]);
-  const [homeworkFilterDate, setHomeworkFilterDate] = useState('');
+  // 📅 By default current date set ki gayi hai
+  const [homeworkFilterDate, setHomeworkFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [feeRecordsList, setFeeRecordsList] = useState([]);
   const [viewingNotice, setViewingNotice] = useState(null);
-
-  // Set initial date safely on client side
-  useEffect(() => {
-    setHomeworkFilterDate(new Date().toISOString().split('T')[0]);
-  }, []);
 
   // Auto-detect Parent ID from localStorage
   useEffect(() => {
@@ -82,23 +78,21 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
       return;
     }
 
-    try {
-      const parentInfoStr = localStorage.getItem('parentInfo');
-      if (parentInfoStr) {
+    const parentInfoStr = localStorage.getItem('parentInfo');
+    if (parentInfoStr) {
+      try {
         const pInfo = JSON.parse(parentInfoStr);
-        if (pInfo?.id) {
+        if (pInfo.id) {
           setResolvedParentId(pInfo.id);
           return;
         }
-      }
+      } catch (e) {}
+    }
 
-      const storedLogin = localStorage.getItem('parent_login_id');
-      if (storedLogin) {
-        setResolvedParentId(storedLogin);
-      } else {
-        setResolvedParentId('ALL');
-      }
-    } catch (e) {
+    const storedLogin = localStorage.getItem('parent_login_id');
+    if (storedLogin) {
+      setResolvedParentId(storedLogin);
+    } else {
       setResolvedParentId('ALL');
     }
   }, [loggedInParentId]);
@@ -106,10 +100,9 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
   // Fetch all children linked to this parent
   useEffect(() => {
     async function fetchParentChildren() {
-      if (!resolvedParentId) return;
       setLoading(true);
       try {
-        if (resolvedParentId === 'ALL') {
+        if (!resolvedParentId || resolvedParentId === 'ALL') {
           const { data: allSt } = await supabase.from('students').select('*').limit(10);
           if (allSt && allSt.length > 0) {
             setChildrenList(allSt);
@@ -120,8 +113,8 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         }
 
         const cleanKey = String(resolvedParentId).trim();
-        let parentCredUuid = cleanKey;
 
+        let parentCredUuid = cleanKey;
         const { data: credData } = await supabase
           .from('parent_credentials')
           .select('id')
@@ -132,6 +125,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           parentCredUuid = credData[0].id;
         }
 
+        // Fetch from mapping table
         const { data: mappingData } = await supabase
           .from('parent_student_mapping')
           .select('student_id, sr_no')
@@ -157,6 +151,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }
         }
 
+        // Fallback search directly in students table
         const { data: directSt } = await supabase
           .from('students')
           .select('*')
@@ -173,7 +168,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           }
         }
       } catch (err) {
-        console.error('Error fetching children:', err?.message || err);
+        console.error('Error fetching children:', err.message);
       } finally {
         setLoading(false);
       }
@@ -190,9 +185,9 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
       setLoading(true);
       try {
         const activeStudent = childrenList.find(
-          s => String(s?.student_id) === String(selectedStudentId) || 
-               String(s?.id) === String(selectedStudentId) || 
-               String(s?.sr_no) === String(selectedStudentId)
+          s => String(s.student_id) === String(selectedStudentId) || 
+               String(s.id) === String(selectedStudentId) || 
+               String(s.sr_no) === String(selectedStudentId)
         ) || childrenList[0];
 
         if (!activeStudent) {
@@ -242,9 +237,9 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
         const { data: attData } = await attQuery;
         if (attData) {
           setAttendanceRecords(attData);
-          const presents = attData.filter(a => ['present', 'p'].includes(a?.status?.toLowerCase())).length;
-          const lates = attData.filter(a => ['late', 'l'].includes(a?.status?.toLowerCase())).length;
-          const absents = attData.filter(a => ['absent', 'a'].includes(a?.status?.toLowerCase())).length;
+          const presents = attData.filter(a => ['present', 'p'].includes(a.status?.toLowerCase())).length;
+          const lates = attData.filter(a => ['late', 'l'].includes(a.status?.toLowerCase())).length;
+          const absents = attData.filter(a => ['absent', 'a'].includes(a.status?.toLowerCase())).length;
           const totalWorking = presents + lates + absents;
           const rate = totalWorking > 0 ? Math.round(((presents + lates) / totalWorking) * 100) : 0;
 
@@ -315,6 +310,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
     fetchStudentData();
   }, [selectedStudentId, childrenList]);
 
+  // Filtered homework list based on selected date
   const filteredHomeworkList = homeworkFilterDate 
     ? rawHomeworkList.filter(hw => hw.assign_date === homeworkFilterDate)
     : rawHomeworkList;
@@ -480,43 +476,37 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
           {activeTab === 'attendance' && (
             <div className="bg-white border rounded-2xl p-6 shadow-md space-y-4">
               <h2 className="text-[16px] font-black">Attendance Records ({studentInfo.name})</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 border-b text-slate-500 font-bold">
-                      <th className="p-3">SR.NO</th>
-                      <th className="p-3">Date</th>
-                      <th className="p-3">Class</th>
-                      <th className="p-3">Session</th>
-                      <th className="p-3 text-center">Status</th>
-                      <th className="p-3">Marked By</th>
-                      <th className="p-3">Remarks</th>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b text-slate-500 font-bold">
+                    <th className="p-3">SR.NO</th><th className="p-3">Date</th><th className="p-3 text-center">Status</th><th className="p-3">Remarks</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y font-semibold">
+                  {attendanceRecords.length > 0 ? attendanceRecords.map((att, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50">
+                      <td className="p-3">{att.sr_no || studentInfo.rollNo}</td>
+                      <td className="p-3">{att.attendance_date || att.date}</td>
+                      <td className="p-3 text-center">
+                        <span className={`px-2 py-0.5 rounded text-[11px] ${
+                          att.status?.toLowerCase().startsWith('p') ? 'bg-emerald-100 text-emerald-800' : 
+                          att.status?.toLowerCase().startsWith('l') ? 'bg-amber-100 text-amber-800' : 
+                          'bg-rose-100 text-rose-800'
+                        }`}>
+                          {att.status}
+                        </span>
+                      </td>
+                      <td className="p-3">{att.remarks || 'No remarks'}</td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y font-semibold">
-                    {attendanceRecords.length > 0 ? attendanceRecords.map((att, idx) => (
-                      <tr key={att.id || idx} className="hover:bg-slate-50">
-                        <td className="p-3">{att.sr_no || studentInfo.rollNo}</td>
-                        <td className="p-3">{att.attendance_date || att.date}</td>
-                        <td className="p-3">{att.class_name || studentInfo.class}</td>
-                        <td className="p-3">{att.session || '-'}</td>
-                        <td className="p-3 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[11px] ${att.status?.toLowerCase().startsWith('p') ? 'bg-emerald-100 text-emerald-800' : att.status?.toLowerCase().startsWith('l') ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'}`}>
-                            {att.status}
-                          </span>
-                        </td>
-                        <td className="p-3">{att.marked_by || 'Teacher'}</td>
-                        <td className="p-3">{att.remarks || 'No remarks'}</td>
-                      </tr>
-                    )) : <tr><td colSpan="7" className="p-6 text-center text-slate-400">No attendance records.</td></tr>}
-                  </tbody>
-                </table>
-              </div>
+                  )) : <tr><td colSpan="4" className="p-6 text-center text-slate-400">No attendance records.</td></tr>}
+                </tbody>
+              </table>
             </div>
           )}
 
           {activeTab === 'homework' && (
             <div className="bg-white border rounded-2xl p-6 shadow-md space-y-6">
+              {/* Header & Date Filter Bar */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
                 <h2 className="text-[18px] font-black text-blue-900">
                   Class Homework ({studentInfo.class})
@@ -543,6 +533,7 @@ export default function ParentsPortalOverview({ loggedInParentId = null }) {
                 </div>
               </div>
 
+              {/* Homework Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredHomeworkList.length > 0 ? filteredHomeworkList.map((hw) => {
                   const { dark } = getSubjectStyles(hw.subject_name);
