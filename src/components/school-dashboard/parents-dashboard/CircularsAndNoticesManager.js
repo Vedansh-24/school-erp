@@ -22,6 +22,9 @@ export default function CircularsAndNoticesManager() {
   // View Document Modal State
   const [viewingNotice, setViewingNotice] = useState(null);
 
+  // Voice Note State for Description
+  const [listeningLang, setListeningLang] = useState(null);
+
   // Form State for New Notice Modal
   const [newNotice, setNewNotice] = useState({
     title: '',
@@ -32,6 +35,42 @@ export default function CircularsAndNoticesManager() {
     description: '',
     session: '2026-2027'
   });
+
+  // 🎙️ Speech Recognition Handler Function for Description (Hindi & English)
+  const startVoiceInput = (lang = 'hi-IN') => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Your browser does not support voice input. Please use Google Chrome or MS Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang; // 'hi-IN' for Hindi, 'en-US' for English
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    setListeningLang(lang);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      const currentVal = newNotice.description || '';
+      const newVal = currentVal ? `${currentVal} ${transcript}` : transcript;
+      
+      setNewNotice(prev => ({ ...prev, description: newVal }));
+      setListeningLang(null);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setListeningLang(null);
+    };
+
+    recognition.onend = () => {
+      setListeningLang(null);
+    };
+
+    recognition.start();
+  };
 
   // Fetch Notices from Supabase Table 'circulars_and_notices'
   const fetchNotices = async () => {
@@ -495,13 +534,45 @@ export default function CircularsAndNoticesManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-500 uppercase mb-1.5">Detailed Description (Optional if File Attached)</label>
+                <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                  <label className="block text-xs font-black text-slate-500 uppercase">Detailed Description (Optional if File Attached)</label>
+                  
+                  {/* Dual Language Voice Note Buttons */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => startVoiceInput('hi-IN')}
+                      className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                        listeningLang === 'hi-IN' 
+                          ? 'bg-rose-600 text-white animate-pulse' 
+                          : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                      }`}
+                      title="हिंदी में बोलकर विवरण दर्ज करें"
+                    >
+                      <span>{listeningLang === 'hi-IN' ? '🎙️ सुन रहे हैं...' : '🇮🇳 हिंदी माइक'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => startVoiceInput('en-US')}
+                      className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                        listeningLang === 'en-US' 
+                          ? 'bg-rose-600 text-white animate-pulse' 
+                          : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                      }`}
+                      title="Speak description in English"
+                    >
+                      <span>{listeningLang === 'en-US' ? '🎙️ Listening...' : '🇬🇧 English Mic'}</span>
+                    </button>
+                  </div>
+                </div>
+
                 <textarea 
                   rows="3" 
                   value={newNotice.description}
                   onChange={(e) => setNewNotice({ ...newNotice, description: e.target.value })}
                   className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:border-sky-500 outline-none resize-none" 
-                  placeholder="Type the circular details here..."
+                  placeholder="Type or use mic to dictate circular details here..."
                 ></textarea>
               </div>
 
