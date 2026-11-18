@@ -34,6 +34,9 @@ export default function TeacherDashboard() {
   const [availableChapters, setAvailableChapters] = useState([]);
   const [availableQTypes, setAvailableQTypes] = useState([]);
 
+  // 🎤 Voice Note State tracking active field & language ('hi-IN' or 'en-US')
+  const [listeningField, setListeningField] = useState(null);
+
   const classOptions = [
     'PP.3+', 'PP.4+', 'PP.5+', 'First', 'Second', 'Third', 'Fourth', 'Fifth',
     'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth',
@@ -45,6 +48,49 @@ export default function TeacherDashboard() {
     'Mathematics', 'Science', 'English', 'Hindi', 'Social Science', 
     'Sanskrit', 'Computer', 'G.K.', 'Physics', 'Chemistry', 'Biology', 'Accountancy', 'Business Studies'
   ];
+
+  // 🎙️ Speech Recognition Handler Function for Title, Questions & Options (Hindi & English)
+  const startVoiceInput = (index, fieldKey, lang = 'hi-IN') => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Your browser does not support voice input. Please use Google Chrome or MS Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang; // 'hi-IN' for Hindi, 'en-US' for English
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    const trackingId = fieldKey === 'quizTitle' ? `quizTitle-${lang}` : `${index}-${fieldKey}-${lang}`;
+    setListeningField(trackingId);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      
+      if (fieldKey === 'quizTitle') {
+        setQuizTitle((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      } else {
+        const newQ = [...questions];
+        const currentVal = newQ[index][fieldKey] || '';
+        newQ[index][fieldKey] = currentVal ? `${currentVal} ${transcript}` : transcript;
+        setQuestions(newQ);
+      }
+      
+      setListeningField(null);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setListeningField(null);
+    };
+
+    recognition.onend = () => {
+      setListeningField(null);
+    };
+
+    recognition.start();
+  };
 
   // जब क्लास या सब्जेक्ट बदले, तो Question Bank से डेटा फेच करें
   useEffect(() => {
@@ -312,9 +358,39 @@ export default function TeacherDashboard() {
             </div>
 
             <div>
-              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 mb-1.5">
-                Test / Paper Title
-              </label>
+              <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                  Test / Paper Title
+                </label>
+                {/* Dual Language Voice Note Buttons for Test / Paper Title */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => startVoiceInput(null, 'quizTitle', 'hi-IN')}
+                    className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                      listeningField === 'quizTitle-hi-IN' 
+                        ? 'bg-rose-600 text-white animate-pulse' 
+                        : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                    }`}
+                    title="हिंदी में बोलकर पेपर का शीर्षक लिखें"
+                  >
+                    <span>{listeningField === 'quizTitle-hi-IN' ? '🎙️ सुन रहे हैं...' : '🇮🇳 हिंदी माइक'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => startVoiceInput(null, 'quizTitle', 'en-US')}
+                    className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                      listeningField === 'quizTitle-en-US' 
+                        ? 'bg-rose-600 text-white animate-pulse' 
+                        : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                    }`}
+                    title="Speak Paper Title in English"
+                  >
+                    <span>{listeningField === 'quizTitle-en-US' ? '🎙️ Listening...' : '🇬🇧 English Mic'}</span>
+                  </button>
+                </div>
+              </div>
               <input
                 type="text"
                 placeholder="e.g., Chapter 1: Real Numbers - Unit Evaluation Test"
@@ -380,6 +456,38 @@ export default function TeacherDashboard() {
                     </div>
 
                     <div>
+                      <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+                        <label className="text-xs font-black uppercase text-slate-500">Question Text:</label>
+                        {/* Dual Language Voice Note Buttons for Question Text */}
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => startVoiceInput(index, 'question_text', 'hi-IN')}
+                            className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                              listeningField === `${index}-question_text-hi-IN` 
+                                ? 'bg-rose-600 text-white animate-pulse' 
+                                : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                            }`}
+                            title="हिंदी में बोलकर प्रश्न लिखें"
+                          >
+                            <span>{listeningField === `${index}-question_text-hi-IN` ? '🎙️ सुन रहे हैं...' : '🇮🇳 हिंदी माइक'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => startVoiceInput(index, 'question_text', 'en-US')}
+                            className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                              listeningField === `${index}-question_text-en-US` 
+                                ? 'bg-rose-600 text-white animate-pulse' 
+                                : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                            }`}
+                            title="Speak question in English"
+                          >
+                            <span>{listeningField === `${index}-question_text-en-US` ? '🎙️ Listening...' : '🇬🇧 English Mic'}</span>
+                          </button>
+                        </div>
+                      </div>
+
                       <input
                         type="text"
                         placeholder={`Enter Question ${index + 1} text here...`}
@@ -393,25 +501,62 @@ export default function TeacherDashboard() {
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {['A', 'B', 'C', 'D'].map((opt) => (
-                        <div key={opt} className="flex items-center gap-2">
-                          <span className="text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-2 w-9 text-center">
-                            {opt}
-                          </span>
-                          <input
-                            type="text"
-                            placeholder={`Option ${opt} text`}
-                            value={q[`option_${opt.toLowerCase()}`]}
-                            onChange={(e) => {
-                              const newQ = [...questions];
-                              newQ[index][`option_${opt.toLowerCase()}`] = e.target.value;
-                              setQuestions(newQ);
-                            }}
-                            className="w-full px-3.5 py-2 border border-slate-300 rounded-xl bg-white outline-none text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 shadow-sm"
-                          />
-                        </div>
-                      ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {['A', 'B', 'C', 'D'].map((opt) => {
+                        const fieldKey = `option_${opt.toLowerCase()}`;
+                        const isHiListening = listeningField === `${index}-${fieldKey}-hi-IN`;
+                        const isEnListening = listeningField === `${index}-${fieldKey}-en-US`;
+
+                        return (
+                          <div key={opt} className="space-y-1.5 bg-slate-50/50 p-3 rounded-xl border border-slate-200">
+                            <div className="flex items-center justify-between flex-wrap gap-1">
+                              <span className="text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-2.5 py-1">
+                                Option {opt}
+                              </span>
+                              {/* Dual Language Voice Note Buttons for Options */}
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => startVoiceInput(index, fieldKey, 'hi-IN')}
+                                  className={`text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-0.5 transition-all cursor-pointer ${
+                                    isHiListening 
+                                      ? 'bg-rose-600 text-white animate-pulse' 
+                                      : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                                  }`}
+                                  title={`हिंदी में बोलकर Option ${opt} लिखें`}
+                                >
+                                  <span>{isHiListening ? '🎙️...' : '🇮🇳'}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => startVoiceInput(index, fieldKey, 'en-US')}
+                                  className={`text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-0.5 transition-all cursor-pointer ${
+                                    isEnListening 
+                                      ? 'bg-rose-600 text-white animate-pulse' 
+                                      : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                                  }`}
+                                  title={`Speak Option ${opt} in English`}
+                                >
+                                  <span>{isEnListening ? '🎙️...' : '🇬🇧'}</span>
+                                </button>
+                              </div>
+                            </div>
+
+                            <input
+                              type="text"
+                              placeholder={`Option ${opt} text`}
+                              value={q[fieldKey]}
+                              onChange={(e) => {
+                                const newQ = [...questions];
+                                newQ[index][fieldKey] = e.target.value;
+                                setQuestions(newQ);
+                              }}
+                              className="w-full px-3.5 py-2 border border-slate-300 rounded-xl bg-white outline-none text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 shadow-sm"
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
 
                     <div className="flex items-center gap-3 pt-3 border-t border-slate-100 bg-slate-50/60 p-3 rounded-xl">
