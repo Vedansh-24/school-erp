@@ -19,6 +19,9 @@ export default function ParentsCommunication() {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
 
+  // Voice Note State for Manual Message Text
+  const [listeningLang, setListeningLang] = useState(null);
+
   // Unpaid Defaulters Filters & Data State
   const [unpaidClassFilter, setUnpaidClassFilter] = useState('All Classes');
   const [defaultersList, setDefaultersList] = useState([]);
@@ -37,6 +40,42 @@ export default function ParentsCommunication() {
     'Eleventh (Arts)', 'Eleventh (Commerce)', 'Eleventh (Science)',
     'Twelth (Arts)', 'Twelth (Commerce)', 'Twelth (Science)'
   ];
+
+  // 🎙️ Speech Recognition Handler Function for Message Text (Hindi & English)
+  const startVoiceInput = (lang = 'hi-IN') => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert('Your browser does not support voice input. Please use Google Chrome or MS Edge.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = lang; // 'hi-IN' for Hindi, 'en-US' for English
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    setListeningLang(lang);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      const currentVal = messageText || '';
+      const newVal = currentVal ? `${currentVal} ${transcript}` : transcript;
+      
+      setMessageText(newVal);
+      setListeningLang(null);
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error', event.error);
+      setListeningLang(null);
+    };
+
+    recognition.onend = () => {
+      setListeningLang(null);
+    };
+
+    recognition.start();
+  };
 
   // Fetch Absent Students based on selectedDate & selectedClass
   useEffect(() => {
@@ -501,12 +540,44 @@ export default function ParentsCommunication() {
             </div>
 
             <div>
-              <label className="block text-[12px] font-bold text-slate-700 mb-1">Type Message</label>
+              <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
+                <label className="block text-[12px] font-bold text-slate-700">Type Message</label>
+                
+                {/* Dual Language Voice Note Buttons */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => startVoiceInput('hi-IN')}
+                    className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                      listeningLang === 'hi-IN' 
+                        ? 'bg-rose-600 text-white animate-pulse' 
+                        : 'bg-orange-100 hover:bg-orange-200 text-orange-900'
+                    }`}
+                    title="हिंदी में बोलकर मैसेज टाइप करें"
+                  >
+                    <span>{listeningLang === 'hi-IN' ? '🎙️ सुन रहे हैं...' : '🇮🇳 हिंदी माइक'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => startVoiceInput('en-US')}
+                    className={`text-[11px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition-all cursor-pointer ${
+                      listeningLang === 'en-US' 
+                        ? 'bg-rose-600 text-white animate-pulse' 
+                        : 'bg-blue-100 hover:bg-blue-200 text-blue-900'
+                    }`}
+                    title="Speak message in English"
+                  >
+                    <span>{listeningLang === 'en-US' ? '🎙️ Listening...' : '🇬🇧 English Mic'}</span>
+                  </button>
+                </div>
+              </div>
+
               <textarea
                 rows="2"
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
-                placeholder="Enter message here..."
+                placeholder="Type or use mic to dictate message here..."
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2 text-[13px] text-slate-800 placeholder-slate-400 outline-none focus:border-amber-500 resize-none shadow-sm font-normal"
               ></textarea>
             </div>
