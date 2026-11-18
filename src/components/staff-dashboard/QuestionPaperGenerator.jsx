@@ -1,7 +1,3 @@
-
-QuestionPaperGenerator Updated Code.txt
-
-100%
 'use client';
 
 import React, { useState, useEffect } from 'react';
